@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Profesional | Tasker's México</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PRIMERO cargar Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -28,6 +29,18 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background-color: #fee2e2;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-slate-50 min-h-screen font-sans">
@@ -38,6 +51,12 @@
             <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
             <p class="text-gray-600">Procesando registro...</p>
         </div>
+    </div>
+
+    <!-- Mensaje de error global -->
+    <div id="globalError" class="error-message fixed top-4 right-4 z-50 max-w-md shadow-lg">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        <span id="errorText"></span>
     </div>
 
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
@@ -158,72 +177,97 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN DE SUPABASE - VERSIÓN CORREGIDA
         // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        console.log('✅ Supabase inicializado en registro-taskers');
-
-        // =============================================
-        // FUNCIONES DE UTILIDAD
-        // =============================================
-        function showLoading() {
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingModal').classList.add('hidden');
-            document.getElementById('loadingModal').classList.remove('flex');
-        }
-
-        function showError(message) {
-            alert('❌ Error: ' + message);
-            console.error('Error:', message);
-        }
-
-        function showSuccess(message) {
-            alert('✅ ' + message);
-        }
-
-        // =============================================
-        // MANEJO DE ARCHIVOS
-        // =============================================
-        // Mostrar nombres de archivos seleccionados
-        ['photo', 'ine', 'penal'].forEach(id => {
-            const input = document.getElementById(`file_${id}`);
-            if (input) {
-                input.addEventListener('change', function(e) {
-                    const div = this.closest('.file-upload');
-                    const nameSpan = document.getElementById(`${id}_name`);
-                    
-                    if (this.files && this.files[0]) {
-                        div.classList.add('has-file');
-                        nameSpan.textContent = '✓ ' + this.files[0].name.substring(0, 20) + (this.files[0].name.length > 20 ? '...' : '');
-                        nameSpan.classList.remove('hidden');
-                    } else {
-                        div.classList.remove('has-file');
-                        nameSpan.classList.add('hidden');
-                    }
-                });
-            }
+        
+        // ESPERAR a que Supabase esté completamente cargado
+        window.addEventListener('load', function() {
+            console.log('📦 Página cargada, inicializando...');
+            iniciarApp();
         });
 
-        // =============================================
-        // REGISTRO DE TASKER
-        // =============================================
-        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+        function iniciarApp() {
+            try {
+                // Verificar que supabase esté disponible
+                if (typeof supabase === 'undefined') {
+                    console.error('❌ Supabase no está definido');
+                    mostrarError('Error cargando la biblioteca de Supabase. Recarga la página.');
+                    return;
+                }
+
+                // Configuración
+                const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+                // Crear cliente
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                console.log('✅ Supabase inicializado correctamente');
+
+                // Guardar en window para acceso global
+                window.taskerSupabase = supabaseClient;
+
+                // Configurar event listeners
+                configurarEventListeners();
+
+                // Verificar conexión
+                verificarConexion(supabaseClient);
+
+            } catch (error) {
+                console.error('🔥 Error fatal:', error);
+                mostrarError('Error al inicializar la aplicación: ' + error.message);
+            }
+        }
+
+        function configurarEventListeners() {
+            // Manejo de archivos
+            ['photo', 'ine', 'penal'].forEach(id => {
+                const input = document.getElementById(`file_${id}`);
+                if (input) {
+                    input.addEventListener('change', function(e) {
+                        const div = this.closest('.file-upload');
+                        const nameSpan = document.getElementById(`${id}_name`);
+                        
+                        if (this.files && this.files[0]) {
+                            div.classList.add('has-file');
+                            nameSpan.textContent = '✓ ' + this.files[0].name;
+                            nameSpan.classList.remove('hidden');
+                        } else {
+                            div.classList.remove('has-file');
+                            nameSpan.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+
+            // Formulario de registro
+            document.getElementById('registroForm').addEventListener('submit', handleSubmit);
+        }
+
+        async function verificarConexion(supabaseClient) {
+            try {
+                const { error } = await supabaseClient.from('profiles').select('count', { count: 'exact', head: true });
+                if (error) {
+                    console.warn('⚠️ No se pudo conectar con Supabase:', error.message);
+                } else {
+                    console.log('✅ Conexión con Supabase establecida');
+                }
+            } catch (e) {
+                console.warn('⚠️ Error verificando conexión:', e);
+            }
+        }
+
+        async function handleSubmit(e) {
             e.preventDefault();
             
             const btn = document.getElementById('btnSubmit');
             const originalText = btn.innerHTML;
             
-            // Deshabilitar botón
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando registro...';
+            // Validar que Supabase esté disponible
+            if (!window.taskerSupabase) {
+                mostrarError('Supabase no está inicializado. Recarga la página.');
+                return;
+            }
 
             try {
                 // Validar términos
@@ -238,23 +282,25 @@
                     penal: document.getElementById('file_penal').files[0]
                 };
 
-                // Verificar que todos los archivos estén presentes
+                // Verificar archivos
                 for (let [key, file] of Object.entries(files)) {
                     if (!file) {
                         throw new Error(`Falta el archivo: ${key === 'photo' ? 'Foto' : key === 'ine' ? 'INE' : 'Antecedentes'}`);
                     }
                     
-                    // Validar tamaño (máximo 5MB)
                     if (file.size > 5 * 1024 * 1024) {
                         throw new Error(`El archivo ${key} no debe exceder 5MB`);
                     }
                 }
 
+                // Deshabilitar botón
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
                 showLoading();
 
-                // 1. REGISTRAR USUARIO EN AUTH
-                console.log('📝 Registrando usuario en Auth...');
-                const { data: authData, error: authError } = await supabase.auth.signUp({
+                // 1. REGISTRAR EN AUTH
+                console.log('📝 Registrando usuario...');
+                const { data: authData, error: authError } = await window.taskerSupabase.auth.signUp({
                     email: document.getElementById('email').value.trim(),
                     password: document.getElementById('password').value,
                     options: {
@@ -278,49 +324,37 @@
                 console.log('✅ Usuario creado:', authData.user.id);
                 const userId = authData.user.id;
 
-                // 2. SUBIR ARCHIVOS A STORAGE
+                // 2. SUBIR ARCHIVOS
                 console.log('📤 Subiendo archivos...');
                 const fileUrls = {};
 
-                // Subir cada archivo
                 for (let [key, file] of Object.entries(files)) {
-                    try {
-                        // Crear nombre único para el archivo
-                        const fileExt = file.name.split('.').pop();
-                        const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
-                        
-                        console.log(`Subiendo ${key}...`);
-                        
-                        // Subir archivo
-                        const { error: uploadError } = await supabase.storage
-                            .from('taskers-documents')
-                            .upload(fileName, file, {
-                                cacheControl: '3600',
-                                upsert: false
-                            });
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
+                    
+                    const { error: uploadError } = await window.taskerSupabase.storage
+                        .from('taskers-documents')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
 
-                        if (uploadError) {
-                            console.error(`Error subiendo ${key}:`, uploadError);
-                            throw new Error(`Error al subir ${key}: ${uploadError.message}`);
-                        }
-
-                        // Obtener URL pública
-                        const { data: { publicUrl } } = supabase.storage
-                            .from('taskers-documents')
-                            .getPublicUrl(fileName);
-
-                        fileUrls[key] = publicUrl;
-                        console.log(`✅ ${key} subido:`, publicUrl);
-                        
-                    } catch (uploadError) {
-                        console.error(`Error en subida de ${key}:`, uploadError);
-                        throw uploadError;
+                    if (uploadError) {
+                        console.error(`Error subiendo ${key}:`, uploadError);
+                        throw new Error(`Error al subir ${key}: ${uploadError.message}`);
                     }
+
+                    const { data: { publicUrl } } = window.taskerSupabase.storage
+                        .from('taskers-documents')
+                        .getPublicUrl(fileName);
+
+                    fileUrls[key] = publicUrl;
+                    console.log(`✅ ${key} subido`);
                 }
 
-                // 3. CREAR PERFIL EN LA TABLA PROFILES
+                // 3. CREAR PERFIL
                 console.log('📝 Creando perfil...');
-                const { error: profileError } = await supabase
+                const { error: profileError } = await window.taskerSupabase
                     .from('profiles')
                     .insert([{
                         id: userId,
@@ -328,7 +362,7 @@
                         full_name: document.getElementById('full_name').value.trim(),
                         phone: document.getElementById('phone').value.trim(),
                         role: 'tasker',
-                        status: 'pending', // Pendiente de verificación por admin
+                        status: 'pending',
                         photo_url: fileUrls.photo,
                         document_ine_url: fileUrls.ine,
                         document_penal_url: fileUrls.penal,
@@ -337,50 +371,52 @@
                     }]);
 
                 if (profileError) {
-                    console.error('Error creando perfil:', profileError);
-                    // Intentar limpiar el usuario creado
+                    console.error('Error perfil:', profileError);
                     throw new Error('Error al crear perfil: ' + profileError.message);
                 }
 
-                console.log('✅ Perfil creado exitosamente');
-
-                // 4. REGISTRO EXITOSO - REDIRIGIR
-                showSuccess('¡Registro exitoso! Tu cuenta está pendiente de verificación por el administrador. Te redirigiremos al login.');
-
-                // Esperar 2 segundos y redirigir
+                console.log('✅ Registro completado');
+                
+                // 4. ÉXITO
+                alert('✅ ¡Registro exitoso! Tu cuenta está pendiente de verificación.');
+                
                 setTimeout(() => {
                     window.location.href = 'login.html?registered=tasker';
-                }, 2000);
+                }, 1500);
 
             } catch (error) {
-                console.error('🔥 Error en registro:', error);
-                showError(error.message || 'Error desconocido en el registro');
+                console.error('🔥 Error:', error);
+                mostrarError(error.message);
                 
-                // Restaurar botón
                 btn.disabled = false;
                 btn.innerHTML = originalText;
-            } finally {
                 hideLoading();
             }
-        });
+        }
 
         // =============================================
-        // VERIFICAR CONEXIÓN CON SUPABASE AL CARGAR
+        // FUNCIONES DE UTILIDAD
         // =============================================
-        (async function checkConnection() {
-            try {
-                console.log('🔍 Verificando conexión con Supabase...');
-                const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
-                if (error) {
-                    console.warn('⚠️ No se pudo conectar con Supabase:', error.message);
-                } else {
-                    console.log('✅ Conexión con Supabase establecida');
-                }
-            } catch (e) {
-                console.warn('⚠️ Error verificando conexión:', e);
-            }
-        })();
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
 
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('globalError');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = mensaje;
+            errorDiv.classList.add('show');
+            
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
     </script>
 </body>
 </html>
