@@ -1,0 +1,40 @@
+// config.js
+const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+// Inicialización de Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Función para verificar autenticación
+async function checkAuth(redirectUrl = 'login.html') {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (!session) {
+            window.location.href = redirectUrl;
+            return null;
+        }
+        return session;
+    } catch (error) {
+        console.error('Error checking auth:', error);
+        window.location.href = redirectUrl;
+        return null;
+    }
+}
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    const notif = document.createElement('div');
+    notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        'bg-blue-500'
+    } text-white`;
+    notif.innerHTML = message;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.remove();
+    }, 3000);
+}

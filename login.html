@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Tasker's México</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-600 to-blue-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">Bienvenido</h1>
+            <p class="text-slate-500 mt-2">Accede a tu cuenta de Tasker's</p>
+        </div>
+
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-2">Correo electrónico</label>
+                <input type="email" id="email" required 
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    placeholder="tucorreo@ejemplo.com">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-2">Contraseña</label>
+                <input type="password" id="password" required 
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" id="loginBtn" 
+                class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                Iniciar sesión
+            </button>
+        </form>
+
+        <div class="relative my-8">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+            <div class="relative flex justify-center text-sm"><span class="bg-white px-4 text-slate-400">O continúa con</span></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="loginWithProvider('google')" 
+                class="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                <span class="text-sm font-medium">Google</span>
+            </button>
+            <button onclick="loginWithProvider('facebook')" 
+                class="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+                <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
+                <span class="text-sm font-medium">Facebook</span>
+            </button>
+        </div>
+
+        <p class="text-center text-sm text-slate-500 mt-8">
+            ¿No tienes cuenta? 
+            <a href="registro-clientes.html" class="text-blue-600 hover:underline">Regístrate como cliente</a>
+            <span class="mx-2">|</span>
+            <a href="registro-taskers.html" class="text-blue-600 hover:underline">como profesional</a>
+        </p>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Función mejorada de login con redirección según rol
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
+
+            try {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email, password
+                });
+
+                if (error) throw error;
+
+                // Obtener el perfil para saber el rol
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                // Redirigir según el rol
+                switch(profile?.role) {
+                    case 'admin':
+                        window.location.href = 'admin.html';
+                        break;
+                    case 'tasker':
+                        window.location.href = 'dashboard-tasker.html';
+                        break;
+                    case 'client':
+                    default:
+                        window.location.href = 'dashboard-cliente.html';
+                        break;
+                }
+
+            } catch (error) {
+                alert('Error al iniciar sesión: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Iniciar sesión';
+            }
+        };
+
+        async function loginWithProvider(provider) {
+            try {
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: provider,
+                    options: {
+                        redirectTo: window.location.origin + '/dashboard-redirect.html'
+                    }
+                });
+                if (error) throw error;
+            } catch (error) {
+                alert('Error al conectar con ' + provider + ': ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

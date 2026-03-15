@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Servicio | Tasker's México</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen pb-12">
+
+    <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <button onclick="window.history.back()" class="text-slate-500 hover:text-slate-800 transition">
+            <i class="fas fa-arrow-left mr-2"></i> Volver
+        </button>
+        <h1 class="font-bold text-slate-900 text-lg">Solicitud de Servicio</h1>
+        <div class="w-10"></div> </nav>
+
+    <main class="p-6 max-w-2xl mx-auto">
+        <div class="bg-blue-600 rounded-[2rem] p-8 text-white mb-8 shadow-xl shadow-blue-100">
+            <span id="display-cat" class="text-[10px] uppercase font-bold tracking-widest bg-blue-500 px-3 py-1 rounded-full text-white/90">Categoría</span>
+            <h2 id="display-sub" class="text-3xl font-extrabold mt-3">Cargando servicio...</h2>
+            <p class="text-blue-100 text-sm mt-2">Describe tu necesidad y recibe propuestas de profesionales verificados.</p>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+            <form id="serviceForm" class="space-y-6">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">¿Qué necesitas exactamente?</label>
+                    <textarea id="descripcion" required 
+                        class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition min-h-[120px]"
+                        placeholder="Ej: Necesito reparar una fuga de agua en el fregadero de la cocina..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Ubicación del Servicio</label>
+                    <input type="text" id="ubicacion" required 
+                        class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        placeholder="Colonia o Zona (Ej: Polanco, CDMX)">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Presupuesto Estimado ($MXN)</label>
+                    <div class="relative">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <input type="number" id="monto" required 
+                            class="w-full pl-10 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-bold text-slate-700"
+                            placeholder="0.00">
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-3 px-1 italic">
+                        * Recuerda que Tasker's retiene el pago de forma segura. El 15% de comisión por administración ya debe estar contemplado en tu oferta.
+                    </p>
+                </div>
+
+                <button type="submit" id="submitBtn" 
+                    class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-600 shadow-lg transition-all active:scale-[0.98]">
+                    Publicar Solicitud
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-8 flex items-center justify-center gap-4 text-slate-400">
+            <i class="fas fa-shield-alt text-2xl"></i>
+            <p class="text-[10px] leading-tight max-w-[200px]">Tu dinero está protegido. No liberamos el pago hasta que confirmes la entrega del servicio.</p>
+        </div>
+    </main>
+
+    <script>
+        const supabaseClient = supabase.createClient(
+            'https://ayhflwricnkptoinabhe.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M'
+        );
+
+        // Obtener parámetros de la URL (Categoría y Subcategoría)
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoria = urlParams.get('cat');
+        const subcategoria = urlParams.get('sub');
+
+        // Mostrar datos en pantalla
+        document.getElementById('display-cat').innerText = categoria || 'General';
+        document.getElementById('display-sub').innerText = subcategoria || 'Nuevo Servicio';
+
+        document.getElementById('serviceForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                alert("Debes iniciar sesión para solicitar un servicio.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const payload = {
+                cliente_id: user.id,
+                categoria: categoria,
+                subcategoria: subcategoria,
+                descripcion: document.getElementById('descripcion').value,
+                ubicacion: document.getElementById('ubicacion').value,
+                monto_ofertado: parseFloat(document.getElementById('monto').value),
+                status: 'pendiente_pago' // Iniciamos en este estado para que tú gestiones el cobro
+            };
+
+            // Insertar en la tabla 'servicios'
+            const { error } = await supabaseClient
+                .from('servicios')
+                .insert([payload]);
+
+            if (error) {
+                alert("Error al enviar solicitud: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "Publicar Solicitud";
+            } else {
+                alert("¡Solicitud publicada con éxito! Ahora te redirigiremos a tus servicios.");
+                window.location.href = 'dashboard-cliente.html';
+            }
+        };
+    </script>
+</body>
+</html>

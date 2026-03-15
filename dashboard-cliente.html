@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel | Tasker's Cliente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .active-link { @apply bg-blue-600 text-white; }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        .chat-message { max-width: 70%; }
+        .chat-client { @apply bg-blue-600 text-white ml-auto; }
+        .chat-tasker { @apply bg-gray-100 text-gray-800; }
+        .status-badge { @apply px-3 py-1 rounded-full text-xs font-bold; }
+        .status-pendiente { @apply bg-yellow-100 text-yellow-700; }
+        .status-asignado { @apply bg-blue-100 text-blue-700; }
+        .status-progreso { @apply bg-purple-100 text-purple-700; }
+        .status-completado { @apply bg-green-100 text-green-700; }
+        .status-cancelado { @apply bg-red-100 text-red-700; }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- Modal de carga -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Modal de pago -->
+    <div id="pagoModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Confirmar Pago</h3>
+                <button onclick="cerrarPagoModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="pagoModalContent" class="space-y-4">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white hidden md:flex flex-col">
+            <div class="p-6">
+                <div class="text-2xl font-bold text-blue-400">Tasker's <span class="text-white">Cliente</span></div>
+                <div id="userInfo" class="mt-6 text-sm text-gray-300"></div>
+            </div>
+            
+            <nav class="flex-1 mt-2">
+                <a href="#" onclick="showSection('inicio')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition-all active-link" id="link-inicio">
+                    <i class="fas fa-home w-6"></i> Inicio
+                </a>
+                <a href="#" onclick="showSection('nuevo-servicio')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-nuevo-servicio">
+                    <i class="fas fa-plus-circle w-6"></i> Solicitar Servicio
+                </a>
+                <a href="#" onclick="showSection('mis-servicios')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-mis-servicios">
+                    <i class="fas fa-list w-6"></i> Mis Servicios
+                </a>
+                <a href="#" onclick="showSection('chat')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-chat">
+                    <i class="fas fa-comments w-6"></i> Mensajes
+                    <span id="chatCount" class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full hidden">0</span>
+                </a>
+                <a href="#" onclick="showSection('pagos')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-pagos">
+                    <i class="fas fa-credit-card w-6"></i> Mis Pagos
+                </a>
+                <a href="#" onclick="showSection('perfil')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-perfil">
+                    <i class="fas fa-user w-6"></i> Mi Perfil
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-700">
+                <button onclick="cerrarSesion()" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
+                <div>
+                    <h2 id="section-title" class="text-xl font-bold text-gray-800">Inicio</h2>
+                    <p id="section-subtitle" class="text-sm text-gray-500">Bienvenido a tu panel de control</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="showSection('chat')" class="relative">
+                        <i class="fas fa-comments text-gray-600 text-xl"></i>
+                        <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
+                    </button>
+                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer" onclick="showSection('perfil')">
+                </div>
+            </header>
+
+            <div class="p-6">
+                <!-- SECCIÓN: INICIO -->
+                <section id="inicio" class="section-content active">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-gray-500 text-sm">Servicios Activos</p>
+                            <p id="statsActivos" class="text-3xl font-bold mt-2">0</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-gray-500 text-sm">Completados</p>
+                            <p id="statsCompletados" class="text-3xl font-bold mt-2">0</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-gray-500 text-sm">En Progreso</p>
+                            <p id="statsProgreso" class="text-3xl font-bold mt-2">0</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-gray-500 text-sm">Total Pagado</p>
+                            <p id="statsPagado" class="text-3xl font-bold mt-2">$0</p>
+                        </div>
+                    </div>
+
+                    <!-- Servicios Recientes -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-bold text-lg mb-4">Servicios Recientes</h3>
+                        <div id="recientesLista" class="space-y-3">
+                            <p class="text-gray-400 text-center py-4">Cargando...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: NUEVO SERVICIO -->
+                <section id="nuevo-servicio" class="section-content">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-sm p-8">
+                            <h3 class="text-2xl font-bold mb-2">Solicitar Nuevo Servicio</h3>
+                            <p class="text-gray-500 text-sm mb-6">Todos los pagos se procesan de forma segura a través de Tasker's. El tasker recibirá su pago 24-48 hrs después de que confirmes la finalización.</p>
+                            
+                            <form id="nuevoServicioForm" class="space-y-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+                                        <select id="categoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Selecciona</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Subcategoría *</label>
+                                        <select id="subcategoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" disabled>
+                                            <option value="">Primero selecciona categoría</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción detallada *</label>
+                                    <textarea id="descripcion" required rows="4" 
+                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Describe exactamente qué necesitas..."></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Código Postal *</label>
+                                        <input type="text" id="cp" required maxlength="5"
+                                            class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            placeholder="Ej: 03100">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Colonia</label>
+                                        <input type="text" id="colonia" 
+                                            class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            placeholder="Ej: Del Valle">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Presupuesto máximo ($MXN) *</label>
+                                    <input type="number" id="monto" required min="100" step="100"
+                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Ej: 1000">
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        El tasker recibirá el 85% (comisión Tasker's: 15%)
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">¿Cuándo lo necesitas?</label>
+                                    <input type="datetime-local" id="fecha" 
+                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                                </div>
+
+                                <div class="bg-blue-50 p-4 rounded-xl">
+                                    <h4 class="font-bold text-blue-800 mb-2">📋 Importante:</h4>
+                                    <ul class="text-sm text-blue-700 space-y-1">
+                                        <li>• No compartas datos de contacto directo</li>
+                                        <li>• Toda comunicación debe ser por el chat de la plataforma</li>
+                                        <li>• No realices pagos fuera de Tasker's</li>
+                                        <li>• El pago se libera al tasker solo cuando confirmes la finalización</li>
+                                    </ul>
+                                </div>
+
+                                <div class="flex items-start gap-3">
+                                    <input type="checkbox" id="terminos" required class="mt-1">
+                                    <label class="text-sm text-gray-600">
+                                        Acepto los <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> y entiendo que Tasker's actúa como intermediario en todos los pagos y comunicaciones.
+                                    </label>
+                                </div>
+
+                                <button type="submit" id="btnPublicar"
+                                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                                    Publicar Solicitud
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: MIS SERVICIOS -->
+                <section id="mis-servicios" class="section-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold">Mis Servicios</h3>
+                        <select id="filtroStatus" onchange="cargarMisServicios()" class="p-2 border rounded-lg text-sm">
+                            <option value="todos">Todos</option>
+                            <option value="pendiente_pago">Pendientes de pago</option>
+                            <option value="publicado">Buscando tasker</option>
+                            <option value="asignado">Asignados</option>
+                            <option value="en_progreso">En progreso</option>
+                            <option value="completado">Completados</option>
+                        </select>
+                    </div>
+                    <div id="serviciosContainer" class="space-y-4">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: CHAT (INTERMEDIADO) -->
+                <section id="chat" class="section-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+                        <!-- Lista de conversaciones -->
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-4 border-b bg-gray-50">
+                                <h3 class="font-bold">Conversaciones</h3>
+                            </div>
+                            <div id="conversacionesLista" class="overflow-y-auto h-full">
+                                <p class="text-gray-400 text-center p-4">Cargando...</p>
+                            </div>
+                        </div>
+
+                        <!-- Área de chat -->
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
+                            <div id="chatHeader" class="p-4 border-b bg-gray-50 hidden">
+                                <div class="flex items-center gap-3">
+                                    <img id="chatTaskerAvatar" src="" class="w-10 h-10 rounded-full object-cover">
+                                    <div>
+                                        <h4 id="chatTaskerNombre" class="font-bold"></h4>
+                                        <p id="chatServicioInfo" class="text-xs text-gray-500"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                                <p class="text-gray-400 text-center py-8">Selecciona una conversación</p>
+                            </div>
+
+                            <div id="chatInput" class="p-4 border-t hidden">
+                                <form id="mensajeForm" class="flex gap-2">
+                                    <input type="text" id="mensajeTexto" 
+                                        class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Escribe tu mensaje...">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <p class="text-xs text-gray-400 mt-2 text-center">
+                                    Todos los mensajes son monitoreados. No compartas datos de contacto.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: PAGOS -->
+                <section id="pagos" class="section-content">
+                    <h3 class="text-2xl font-bold mb-6">Historial de Pagos</h3>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Fecha</th>
+                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Servicio</th>
+                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Monto</th>
+                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Comisión</th>
+                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pagosTableBody">
+                                <tr><td colspan="5" class="text-center p-8 text-gray-400">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: PERFIL -->
+                <section id="perfil" class="section-content">
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                        <h3 class="text-2xl font-bold mb-6">Mi Perfil</h3>
+                        
+                        <div class="flex flex-col items-center mb-8">
+                            <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 mb-4">
+                            <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
+                            <button onclick="document.getElementById('fotoPerfil').click()" class="text-blue-600 hover:underline">
+                                <i class="fas fa-camera mr-2"></i>Cambiar foto
+                            </button>
+                        </div>
+
+                        <form id="perfilForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nombre completo</label>
+                                <input type="text" id="perfilNombre" required class="mt-1 w-full p-3 border rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                                <input type="email" id="perfilEmail" readonly class="mt-1 w-full p-3 border rounded-xl bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                <input type="tel" id="perfilTelefono" required class="mt-1 w-full p-3 border rounded-xl">
+                                <p class="text-xs text-gray-500 mt-1">No compartimos tu teléfono con los taskers</p>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
+                                Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Función para verificar autenticación
+        async function checkAuth(redirectUrl = 'login.html') {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (!session) {
+                    window.location.href = redirectUrl;
+                    return null;
+                }
+                return session;
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = redirectUrl;
+                return null;
+            }
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } text-white`;
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.remove();
+            }, 3000);
+        }
+
+        // Variables globales
+        let currentUser = null;
+        let currentChat = null;
+        let chatSubscription = null;
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUserData();
+            await loadCategorias();
+            await loadDashboardData();
+            setupRealtimeSubscriptions();
+        });
+
+        async function loadUserData() {
+            showLoading();
+            try {
+                const session = await checkAuth('login.html');
+                if (!session) return;
+
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (error) throw error;
+                
+                currentUser = profile;
+                updateUserInfo(profile);
+                
+            } catch (error) {
+                console.error('Error loading user:', error);
+                showError('Error al cargar datos del usuario');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function updateUserInfo(profile) {
+            document.getElementById('userInfo').innerHTML = `
+                <p class="font-bold">${profile.full_name || 'Usuario'}</p>
+                <p class="text-xs opacity-75">Cliente</p>
+            `;
+            
+            if (profile.photo_url) {
+                document.getElementById('headerAvatar').src = profile.photo_url;
+                document.getElementById('profileAvatar').src = profile.photo_url;
+            }
+            
+            document.getElementById('perfilNombre').value = profile.full_name || '';
+            document.getElementById('perfilEmail').value = profile.email || '';
+            document.getElementById('perfilTelefono').value = profile.phone || '';
+        }
+
+        // =============================================
+        // CATEGORÍAS
+        // =============================================
+        async function loadCategorias() {
+            try {
+                const { data: categorias, error } = await supabase
+                    .from('categorias')
+                    .select('*')
+                    .eq('activo', true)
+                    .order('orden');
+
+                if (error) throw error;
+
+                const select = document.getElementById('categoria');
+                select.innerHTML = '<option value="">Selecciona una categoría</option>';
+                categorias.forEach(cat => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading categorias:', error);
+            }
+        }
+
+        document.getElementById('categoria').addEventListener('change', async function() {
+            const subcatSelect = document.getElementById('subcategoria');
+            const categoriaId = this.value;
+            
+            if (!categoriaId) {
+                subcatSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
+                subcatSelect.disabled = true;
+                return;
+            }
+
+            try {
+                const { data: subcats, error } = await supabase
+                    .from('subcategorias')
+                    .select('*')
+                    .eq('categoria_id', categoriaId)
+                    .eq('activo', true);
+
+                if (error) throw error;
+
+                subcatSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+                subcats.forEach(sub => {
+                    subcatSelect.innerHTML += `<option value="${sub.id}">${sub.nombre}</option>`;
+                });
+                
+                subcatSelect.disabled = false;
+            } catch (error) {
+                console.error('Error loading subcategorias:', error);
+            }
+        });
+
+        // =============================================
+        // DASHBOARD
+        // =============================================
+        async function loadDashboardData() {
+            try {
+                const { data: servicios, error } = await supabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('cliente_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Calcular estadísticas
+                const stats = {
+                    activos: servicios.filter(s => ['pendiente_pago', 'publicado', 'asignado', 'en_progreso'].includes(s.status)).length,
+                    completados: servicios.filter(s => s.status === 'completado').length,
+                    progreso: servicios.filter(s => s.status === 'en_progreso').length,
+                    pagado: servicios.filter(s => s.status === 'completado').reduce((sum, s) => sum + (s.monto_final || 0), 0)
+                };
+
+                document.getElementById('statsActivos').textContent = stats.activos;
+                document.getElementById('statsCompletados').textContent = stats.completados;
+                document.getElementById('statsProgreso').textContent = stats.progreso;
+                document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
+
+                // Mostrar servicios recientes
+                const recientes = servicios.slice(0, 5);
+                const container = document.getElementById('recientesLista');
+                
+                if (recientes.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-4">No hay servicios aún</p>';
+                } else {
+                    container.innerHTML = recientes.map(s => `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onclick="verServicio('${s.id}')">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">${s.descripcion.substring(0, 60)}...</p>
+                                </div>
+                                <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
+                            </div>
+                            <div class="flex justify-between items-center mt-3 text-sm">
+                                <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion || 'No especificada'}</span>
+                                <span class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2) || '0'}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // =============================================
+        // NUEVO SERVICIO
+        // =============================================
+        document.getElementById('nuevoServicioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnPublicar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
+
+            try {
+                // Construir ubicación
+                const cp = document.getElementById('cp').value;
+                const colonia = document.getElementById('colonia').value;
+                const ubicacion = colonia ? `${colonia}, CP ${cp}` : `CP ${cp}`;
+
+                const servicioData = {
+                    cliente_id: currentUser.id,
+                    categoria: document.getElementById('categoria').value,
+                    subcategoria: document.getElementById('subcategoria').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    ubicacion: ubicacion,
+                    cp: cp,
+                    monto_ofertado: parseFloat(document.getElementById('monto').value),
+                    fecha_solicitada: document.getElementById('fecha').value || null,
+                    status: 'pendiente_pago',
+                    pago_status: 'pendiente',
+                    created_at: new Date()
+                };
+
+                // Crear el servicio (estado pendiente_pago)
+                const { data: servicio, error } = await supabase
+                    .from('servicios')
+                    .insert([servicioData])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                // Aquí integrarías con Stripe/PayPal para el pago
+                // Por ahora, simulamos que el pago se procesó
+                await mostrarModalPago(servicio);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al publicar: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Publicar Solicitud';
+            }
+        });
+
+        async function mostrarModalPago(servicio) {
+            const modal = document.getElementById('pagoModal');
+            const content = document.getElementById('pagoModalContent');
+            
+            const montoTotal = servicio.monto_ofertado;
+            const comision = montoTotal * 0.15;
+            const montoTasker = montoTotal - comision;
+
+            content.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-lock text-4xl text-green-600 mb-4"></i>
+                    <h4 class="font-bold text-lg mb-2">Pago Seguro</h4>
+                    <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago hasta que confirmes la finalización</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-xl space-y-3">
+                    <div class="flex justify-between">
+                        <span>Monto del servicio:</span>
+                        <span class="font-bold">$${montoTotal.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500">
+                        <span>Comisión Tasker's (15%):</span>
+                        <span>$${comision.toFixed(2)}</span>
+                    </div>
+                    <div class="border-t pt-3 flex justify-between font-bold text-lg">
+                        <span>Total a pagar:</span>
+                        <span class="text-blue-600">$${montoTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 p-4 rounded-xl text-sm text-yellow-800">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    Tu pago está protegido. No lo liberamos hasta que confirmes que el servicio está completo.
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">
+                        Pagar ahora
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        async function procesarPago(servicioId, monto) {
+            showLoading();
+            
+            try {
+                // Aquí iría la integración real con Stripe/PayPal
+                // Simulamos un pago exitoso
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Actualizar servicio a 'publicado'
+                const { error } = await supabase
+                    .from('servicios')
+                    .update({ 
+                        status: 'publicado',
+                        pago_status: 'completado',
+                        updated_at: new Date()
+                    })
+                    .eq('id', servicioId);
+
+                if (error) throw error;
+
+                // Crear registro de pago
+                await supabase
+                    .from('pagos')
+                    .insert([{
+                        servicio_id: servicioId,
+                        cliente_id: currentUser.id,
+                        monto_total: monto,
+                        comision_taskers: monto * 0.15,
+                        monto_tasker: monto * 0.85,
+                        status: 'completado',
+                        fecha_pago: new Date()
+                    }]);
+
+                alert('¡Pago procesado exitosamente! Tu servicio está publicado.');
+                cerrarPagoModal();
+                showSection('mis-servicios');
+                cargarMisServicios();
+                
+            } catch (error) {
+                alert('Error al procesar el pago: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function cerrarPagoModal() {
+            document.getElementById('pagoModal').classList.add('hidden');
+            document.getElementById('pagoModal').classList.remove('flex');
+            document.getElementById('btnPublicar').disabled = false;
+            document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud';
+        }
+
+        // =============================================
+        // MIS SERVICIOS
+        // =============================================
+        async function cargarMisServicios() {
+            const filtro = document.getElementById('filtroStatus').value;
+            const container = document.getElementById('serviciosContainer');
+
+            try {
+                let query = supabase
+                    .from('servicios')
+                    .select(`
+                        *,
+                        tasker:tasker_id (
+                            full_name,
+                            photo_url,
+                            calificacion_promedio
+                        )
+                    `)
+                    .eq('cliente_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (filtro !== 'todos') {
+                    query = query.eq('status', filtro);
+                }
+
+                const { data: servicios, error } = await query;
+
+                if (error) throw error;
+
+                if (!servicios || servicios.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay servicios</p>';
+                    return;
+                }
+
+                container.innerHTML = servicios.map(s => `
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-gray-600 mt-1">${s.descripcion}</p>
+                            </div>
+                            <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">Presupuesto</p>
+                                <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Ubicación</p>
+                                <p>${s.ubicacion || 'No especificada'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Fecha</p>
+                                <p>${new Date(s.created_at).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+
+                        ${s.tasker_id ? `
+                            <div class="border-t pt-4 mt-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${s.tasker?.photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                                        <div>
+                                            <p class="font-medium">${s.tasker?.full_name || 'Tasker asignado'}</p>
+                                            <p class="text-xs text-gray-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="abrirChat('${s.id}', '${s.tasker_id}')" 
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                        <i class="fas fa-comment mr-2"></i>Chat con tasker
+                                    </button>
+                                </div>
+                            </div>
+                        ` : s.status === 'publicado' ? `
+                            <div class="border-t pt-4 mt-4 text-center text-gray-500">
+                                <i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...
+                            </div>
+                        ` : ''}
+
+                        ${s.status === 'en_progreso' ? `
+                            <div class="border-t pt-4 mt-4">
+                                <button onclick="confirmarFinalizacion('${s.id}')" 
+                                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
+                                    Confirmar que el servicio está COMPLETADO
+                                </button>
+                                <p class="text-xs text-center text-gray-500 mt-2">
+                                    Al confirmar, autorizas la liberación del pago al tasker (reteniendo el 15% de comisión)
+                                </p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
+            }
+        }
+
+        async function confirmarFinalizacion(servicioId) {
+            if (!confirm('¿Confirmas que el servicio ha sido completado satisfactoriamente? Esto liberará el pago al tasker.')) return;
+
+            showLoading();
+            try {
+                // Actualizar servicio
+                const { error } = await supabase
+                    .from('servicios')
+                    .update({ 
+                        status: 'completado',
+                        fecha_completado: new Date()
+                    })
+                    .eq('id', servicioId);
+
+                if (error) throw error;
+
+                // Crear notificación para el tasker
+                const { data: servicio } = await supabase
+                    .from('servicios')
+                    .select('tasker_id')
+                    .eq('id', servicioId)
+                    .single();
+
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.tasker_id,
+                        tipo: 'pago',
+                        titulo: '¡Servicio completado!',
+                        mensaje: 'El cliente confirmó la finalización. El pago será procesado en 24-48 hrs.'
+                    }]);
+
+                alert('¡Gracias por confirmar! El pago será liberado al tasker en 24-48 horas hábiles.');
+                cargarMisServicios();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // =============================================
+        // CHAT INTERMEDIADO
+        // =============================================
+        async function cargarConversaciones() {
+            const container = document.getElementById('conversacionesLista');
+
+            try {
+                // Buscar chats donde el usuario es participante
+                const { data: chats, error } = await supabase
+                    .from('chats')
+                    .select(`
+                        *,
+                        usuario1:usuario1_id (full_name, photo_url),
+                        usuario2:usuario2_id (full_name, photo_url),
+                        servicio:servicio_id (subcategoria)
+                    `)
+                    .or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`)
+                    .order('ultimo_mensaje_time', { ascending: false });
+
+                if (error) throw error;
+
+                if (!chats || chats.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center p-4">No hay conversaciones</p>';
+                    return;
+                }
+
+                container.innerHTML = chats.map(chat => {
+                    const otroUsuario = chat.usuario1_id === currentUser.id ? chat.usuario2 : chat.usuario1;
+                    const tieneMsjNoLeido = chat.ultimo_mensaje && !chat.ultimo_mensaje_leido;
+                    
+                    return `
+                        <div class="p-4 border-b hover:bg-gray-50 cursor-pointer ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
+                             onclick="seleccionarChat('${chat.id}', '${otroUsuario.id}', '${otroUsuario.full_name}', '${otroUsuario.photo_url}', '${chat.servicio?.subcategoria || ''}')">
+                            <div class="flex items-center gap-3">
+                                <img src="${otroUsuario.photo_url || 'https://via.placeholder.com/40'}" 
+                                     class="w-10 h-10 rounded-full object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-bold truncate">${otroUsuario.full_name || 'Tasker'}</p>
+                                    <p class="text-xs text-gray-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
+                                    ${chat.ultimo_mensaje ? `
+                                        <p class="text-xs text-gray-400 truncate">${chat.ultimo_mensaje}</p>
+                                    ` : ''}
+                                </div>
+                                ${tieneMsjNoLeido ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading chats:', error);
+                container.innerHTML = '<p class="text-red-400 text-center p-4">Error al cargar</p>';
+            }
+        }
+
+        async function seleccionarChat(chatId, otroUserId, otroNombre, otroAvatar, servicioInfo) {
+            currentChat = { id: chatId, otroUserId, otroNombre, otroAvatar, servicioInfo };
+
+            // Mostrar header
+            const header = document.getElementById('chatHeader');
+            header.classList.remove('hidden');
+            document.getElementById('chatTaskerNombre').textContent = otroNombre;
+            document.getElementById('chatTaskerAvatar').src = otroAvatar || 'https://via.placeholder.com/40';
+            document.getElementById('chatServicioInfo').textContent = servicioInfo;
+
+            // Mostrar input
+            document.getElementById('chatInput').classList.remove('hidden');
+
+            // Cargar mensajes
+            await cargarMensajes(chatId);
+
+            // Suscribirse a nuevos mensajes
+            if (chatSubscription) {
+                chatSubscription.unsubscribe();
+            }
+
+            chatSubscription = supabase
+                .channel(`chat-${chatId}`)
+                .on('postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${chatId}` },
+                    (payload) => {
+                        agregarMensajeAlChat(payload.new);
+                    }
+                )
+                .subscribe();
+        }
+
+        async function cargarMensajes(chatId) {
+            const container = document.getElementById('chatMessages');
+
+            try {
+                const { data: mensajes, error } = await supabase
+                    .from('mensajes')
+                    .select('*')
+                    .eq('chat_id', chatId)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                if (!mensajes || mensajes.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay mensajes aún</p>';
+                    return;
+                }
+
+                container.innerHTML = mensajes.map(m => crearMensajeHTML(m)).join('');
+                container.scrollTop = container.scrollHeight;
+
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar mensajes</p>';
+            }
+        }
+
+        function crearMensajeHTML(mensaje) {
+            const esMio = mensaje.remitente_id === currentUser.id;
+            return `
+                <div class="flex ${esMio ? 'justify-end' : 'justify-start'}">
+                    <div class="chat-message ${esMio ? 'chat-client' : 'chat-tasker'} rounded-2xl p-3">
+                        <p class="text-sm ${esMio ? 'text-white' : 'text-gray-800'}">${mensaje.mensaje}</p>
+                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-gray-400'} mt-1">
+                            ${new Date(mensaje.created_at).toLocaleTimeString()}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function agregarMensajeAlChat(mensaje) {
+            const container = document.getElementById('chatMessages');
+            
+            // Si es el primer mensaje, limpiar placeholder
+            if (container.children.length === 1 && container.children[0].tagName === 'P') {
+                container.innerHTML = '';
+            }
+
+            container.innerHTML += crearMensajeHTML(mensaje);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('mensajeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentChat) {
+                alert('Selecciona una conversación');
+                return;
+            }
+
+            const texto = document.getElementById('mensajeTexto').value.trim();
+            if (!texto) return;
+
+            try {
+                const mensaje = {
+                    chat_id: currentChat.id,
+                    remitente_id: currentUser.id,
+                    mensaje: texto,
+                    created_at: new Date()
+                };
+
+                const { error } = await supabase
+                    .from('mensajes')
+                    .insert([mensaje]);
+
+                if (error) throw error;
+
+                // Actualizar último mensaje del chat
+                await supabase
+                    .from('chats')
+                    .update({ 
+                        ultimo_mensaje: texto,
+                        ultimo_mensaje_time: new Date(),
+                        ultimo_mensaje_leido: false
+                    })
+                    .eq('id', currentChat.id);
+
+                document.getElementById('mensajeTexto').value = '';
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error al enviar mensaje');
+            }
+        });
+
+        async function abrirChat(servicioId, taskerId) {
+            // Buscar o crear chat
+            try {
+                const { data: existingChat, error: searchError } = await supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('servicio_id', servicioId)
+                    .or(`and(usuario1_id.eq.${currentUser.id},usuario2_id.eq.${taskerId}),and(usuario1_id.eq.${taskerId},usuario2_id.eq.${currentUser.id})`)
+                    .maybeSingle();
+
+                if (searchError) throw searchError;
+
+                let chatId;
+                if (existingChat) {
+                    chatId = existingChat.id;
+                } else {
+                    // Crear nuevo chat
+                    const { data: newChat, error: createError } = await supabase
+                        .from('chats')
+                        .insert([{
+                            servicio_id: servicioId,
+                            usuario1_id: currentUser.id,
+                            usuario2_id: taskerId
+                        }])
+                        .select()
+                        .single();
+
+                    if (createError) throw createError;
+                    chatId = newChat.id;
+                }
+
+                // Obtener datos del tasker
+                const { data: tasker } = await supabase
+                    .from('profiles')
+                    .select('full_name, photo_url')
+                    .eq('id', taskerId)
+                    .single();
+
+                showSection('chat');
+                await cargarConversaciones();
+                await seleccionarChat(chatId, taskerId, tasker.full_name, tasker.photo_url, 'Servicio');
+
+            } catch (error) {
+                console.error('Error opening chat:', error);
+                alert('Error al abrir chat');
+            }
+        }
+
+        // =============================================
+        // PAGOS
+        // =============================================
+        async function cargarPagos() {
+            const tbody = document.getElementById('pagosTableBody');
+
+            try {
+                const { data: pagos, error } = await supabase
+                    .from('pagos')
+                    .select(`
+                        *,
+                        servicio:servicio_id (subcategoria)
+                    `)
+                    .eq('cliente_id', currentUser.id)
+                    .order('fecha_pago', { ascending: false });
+
+                if (error) throw error;
+
+                if (!pagos || pagos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-400">No hay pagos registrados</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = pagos.map(p => `
+                    <tr class="border-b">
+                        <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
+                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-4 text-gray-600">$${p.comision_taskers?.toFixed(2)}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                Completado
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading pagos:', error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
+            }
+        }
+
+        // =============================================
+        // PERFIL
+        // =============================================
+        document.getElementById('perfilForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const updates = {
+                    full_name: document.getElementById('perfilNombre').value,
+                    phone: document.getElementById('perfilTelefono').value,
+                    updated_at: new Date()
+                };
+
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(updates)
+                    .eq('id', currentUser.id);
+
+                if (error) throw error;
+
+                alert('Perfil actualizado exitosamente');
+                await loadUserData();
+                
+            } catch (error) {
+                alert('Error al actualizar perfil: ' + error.message);
+            }
+        });
+
+        async function subirFotoPerfil() {
+            const input = document.getElementById('fotoPerfil');
+            if (!input.files || !input.files[0]) return;
+
+            try {
+                showLoading();
+                const file = input.files[0];
+                const fileName = `profiles/${currentUser.id}/${Date.now()}_${file.name}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('profiles-photos')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('profiles-photos')
+                    .getPublicUrl(fileName);
+
+                await supabase
+                    .from('profiles')
+                    .update({ photo_url: publicUrl })
+                    .eq('id', currentUser.id);
+
+                document.getElementById('headerAvatar').src = publicUrl;
+                document.getElementById('profileAvatar').src = publicUrl;
+                alert('Foto actualizada exitosamente');
+                
+            } catch (error) {
+                alert('Error al subir foto: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // =============================================
+        // UTILIDADES
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'pendiente_pago': 'status-pendiente',
+                'publicado': 'status-pendiente',
+                'asignado': 'status-asignado',
+                'en_progreso': 'status-progreso',
+                'completado': 'status-completado',
+                'cancelado': 'status-cancelado'
+            };
+            return classes[status] || 'status-pendiente';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'pendiente_pago': 'Pendiente de pago',
+                'publicado': 'Buscando tasker',
+                'asignado': 'Asignado',
+                'en_progreso': 'En progreso',
+                'completado': 'Completado',
+                'cancelado': 'Cancelado'
+            };
+            return texts[status] || status;
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('aside nav a').forEach(l => {
+                l.classList.remove('active-link', 'bg-blue-600', 'text-white');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            const link = document.getElementById('link-' + sectionId);
+            if (link) {
+                link.classList.add('active-link', 'bg-blue-600', 'text-white');
+            }
+
+            const titles = {
+                'inicio': 'Inicio',
+                'nuevo-servicio': 'Solicitar Servicio',
+                'mis-servicios': 'Mis Servicios',
+                'chat': 'Mensajes',
+                'pagos': 'Mis Pagos',
+                'perfil': 'Mi Perfil'
+            };
+            
+            document.getElementById('section-title').textContent = titles[sectionId] || 'Tasker\'s';
+            
+            // Cargar datos según sección
+            switch(sectionId) {
+                case 'mis-servicios':
+                    cargarMisServicios();
+                    break;
+                case 'chat':
+                    cargarConversaciones();
+                    break;
+                case 'pagos':
+                    cargarPagos();
+                    break;
+            }
+        }
+
+        async function verServicio(servicioId) {
+            showSection('mis-servicios');
+            // Podrías implementar un scroll hasta el servicio específico
+        }
+
+        function setupRealtimeSubscriptions() {
+            // Suscripción a nuevos mensajes
+            const mensajesSubscription = supabase
+                .channel('mensajes-cliente')
+                .on('postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'mensajes' },
+                    (payload) => {
+                        if (payload.new.remitente_id !== currentUser?.id) {
+                            // Actualizar badge de chats
+                            updateChatBadge();
+                            
+                            // Si estamos en el chat correcto, mostrar mensaje
+                            if (currentChat && payload.new.chat_id === currentChat.id) {
+                                agregarMensajeAlChat(payload.new);
+                            } else {
+                                showNotification('Nuevo mensaje recibido');
+                            }
+                        }
+                    }
+                )
+                .subscribe();
+
+            // Suscripción a cambios en servicios
+            const serviciosSubscription = supabase
+                .channel('servicios-cliente')
+                .on('postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'servicios' },
+                    (payload) => {
+                        if (payload.new.cliente_id === currentUser?.id) {
+                            if (payload.new.status === 'asignado') {
+                                showNotification('¡Un tasker ha aceptado tu servicio!');
+                            } else if (payload.new.status === 'en_progreso') {
+                                showNotification('Tu servicio ha comenzado');
+                            } else if (payload.new.status === 'completado') {
+                                showNotification('Servicio completado');
+                            }
+                            
+                            if (document.getElementById('mis-servicios').classList.contains('active')) {
+                                cargarMisServicios();
+                            }
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        async function updateChatBadge() {
+            try {
+                const { count, error } = await supabase
+                    .from('chats')
+                    .select('*', { count: 'exact', head: true })
+                    .or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`)
+                    .eq('ultimo_mensaje_leido', false);
+
+                if (error) throw error;
+
+                if (count > 0) {
+                    document.getElementById('chatCount').textContent = count;
+                    document.getElementById('chatCount').classList.remove('hidden');
+                    document.getElementById('headerChatBadge').textContent = count;
+                    document.getElementById('headerChatBadge').classList.remove('hidden');
+                    document.getElementById('headerChatBadge').style.display = 'flex';
+                } else {
+                    document.getElementById('chatCount').classList.add('hidden');
+                    document.getElementById('headerChatBadge').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error updating chat badge:', error);
+            }
+        }
+
+        // Función para cerrar sesión
+        async function cerrarSesion() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
