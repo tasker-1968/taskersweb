@@ -63,58 +63,82 @@
         </p>
     </div>
 
-    <script src="config.js"></script>
     <script>
-        // Función mejorada de login con redirección según rol
-        document.getElementById('loginForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
+        // =============================================
+        // LOGIN CORREGIDO
+        // =============================================
+        window.addEventListener('load', function() {
+            iniciarLogin();
+        });
 
+        function iniciarLogin() {
             try {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email, password
-                });
-
-                if (error) throw error;
-
-                // Obtener el perfil para saber el rol
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', data.user.id)
-                    .single();
-
-                if (profileError) throw profileError;
-
-                // Redirigir según el rol
-                switch(profile?.role) {
-                    case 'admin':
-                        window.location.href = 'admin.html';
-                        break;
-                    case 'tasker':
-                        window.location.href = 'dashboard-tasker.html';
-                        break;
-                    case 'client':
-                    default:
-                        window.location.href = 'dashboard-cliente.html';
-                        break;
+                if (typeof supabase === 'undefined') {
+                    alert('Error: No se pudo cargar Supabase');
+                    return;
                 }
 
+                const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                window.taskerSupabase = supabaseClient;
+
+                document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const btn = document.getElementById('loginBtn');
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
+
+                    try {
+                        const email = document.getElementById('email').value;
+                        const password = document.getElementById('password').value;
+
+                        const { data, error } = await supabaseClient.auth.signInWithPassword({
+                            email, password
+                        });
+
+                        if (error) throw error;
+
+                        // Obtener el perfil
+                        const { data: profile, error: profileError } = await supabaseClient
+                            .from('profiles')
+                            .select('role')
+                            .eq('id', data.user.id)
+                            .single();
+
+                        if (profileError) throw profileError;
+
+                        // Redirigir según rol
+                        switch(profile?.role) {
+                            case 'admin':
+                                window.location.href = 'admin.html';
+                                break;
+                            case 'tasker':
+                                window.location.href = 'dashboard-tasker.html';
+                                break;
+                            case 'client':
+                            default:
+                                window.location.href = 'dashboard-cliente.html';
+                                break;
+                        }
+
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Iniciar sesión';
+                    }
+                });
+
             } catch (error) {
-                alert('Error al iniciar sesión: ' + error.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Iniciar sesión';
+                console.error('Error:', error);
             }
-        };
+        }
 
         async function loginWithProvider(provider) {
             try {
-                const { error } = await supabase.auth.signInWithOAuth({
+                const { error } = await window.taskerSupabase.auth.signInWithOAuth({
                     provider: provider,
                     options: {
                         redirectTo: window.location.origin + '/dashboard-redirect.html'
@@ -122,7 +146,7 @@
                 });
                 if (error) throw error;
             } catch (error) {
-                alert('Error al conectar con ' + provider + ': ' + error.message);
+                alert('Error: ' + error.message);
             }
         }
     </script>
