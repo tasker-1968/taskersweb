@@ -11,6 +11,7 @@
         .file-upload {
             border: 2px dashed #e2e8f0;
             transition: all 0.3s;
+            cursor: pointer;
         }
         .file-upload:hover {
             border-color: #3b82f6;
@@ -20,9 +21,24 @@
             border-color: #22c55e;
             background-color: #f0fdf4;
         }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-slate-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 to-slate-50 min-h-screen font-sans">
+
+    <!-- Modal de carga -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600">Procesando registro...</p>
+        </div>
+    </div>
 
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -74,6 +90,7 @@
                         <input type="password" id="password" required minlength="6"
                             class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                             placeholder="Mínimo 6 caracteres">
+                        <p class="text-xs text-gray-500 mt-1">La contraseña debe tener al menos 6 caracteres</p>
                     </div>
                 </div>
 
@@ -84,7 +101,7 @@
 
                     <div class="grid md:grid-cols-3 gap-4">
                         <!-- Foto -->
-                        <div class="file-upload p-4 rounded-xl text-center cursor-pointer" onclick="document.getElementById('file_photo').click()">
+                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_photo').click()">
                             <i class="fas fa-camera text-2xl text-slate-400 mb-2"></i>
                             <p class="text-sm font-medium text-slate-600">Foto de perfil</p>
                             <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx 5MB</p>
@@ -93,7 +110,7 @@
                         </div>
 
                         <!-- INE -->
-                        <div class="file-upload p-4 rounded-xl text-center cursor-pointer" onclick="document.getElementById('file_ine').click()">
+                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_ine').click()">
                             <i class="fas fa-id-card text-2xl text-slate-400 mb-2"></i>
                             <p class="text-sm font-medium text-slate-600">INE/Identificación</p>
                             <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
@@ -102,7 +119,7 @@
                         </div>
 
                         <!-- Antecedentes -->
-                        <div class="file-upload p-4 rounded-xl text-center cursor-pointer" onclick="document.getElementById('file_penal').click()">
+                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_penal').click()">
                             <i class="fas fa-gavel text-2xl text-slate-400 mb-2"></i>
                             <p class="text-sm font-medium text-slate-600">Carta antecedentes</p>
                             <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
@@ -125,40 +142,95 @@
 
                 <!-- Botón -->
                 <button type="submit" id="btnSubmit" 
-                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Completar registro
+                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <span>Completar registro</span>
                 </button>
             </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-sm text-slate-500">
+                    ¿Ya tienes cuenta? 
+                    <a href="login.html" class="text-blue-600 hover:underline font-medium">Inicia sesión aquí</a>
+                </p>
+            </div>
         </div>
     </main>
 
-    <script src="config.js"></script>
     <script>
-        // Manejo de archivos - mostrar nombres
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        console.log('✅ Supabase inicializado en registro-taskers');
+
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function showError(message) {
+            alert('❌ Error: ' + message);
+            console.error('Error:', message);
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        // =============================================
+        // MANEJO DE ARCHIVOS
+        // =============================================
+        // Mostrar nombres de archivos seleccionados
         ['photo', 'ine', 'penal'].forEach(id => {
-            document.getElementById(`file_${id}`).addEventListener('change', function(e) {
-                const div = this.closest('.file-upload');
-                const nameSpan = document.getElementById(`${id}_name`);
-                
-                if (this.files && this.files[0]) {
-                    div.classList.add('has-file');
-                    nameSpan.textContent = this.files[0].name;
-                    nameSpan.classList.remove('hidden');
-                } else {
-                    div.classList.remove('has-file');
-                    nameSpan.classList.add('hidden');
-                }
-            });
+            const input = document.getElementById(`file_${id}`);
+            if (input) {
+                input.addEventListener('change', function(e) {
+                    const div = this.closest('.file-upload');
+                    const nameSpan = document.getElementById(`${id}_name`);
+                    
+                    if (this.files && this.files[0]) {
+                        div.classList.add('has-file');
+                        nameSpan.textContent = '✓ ' + this.files[0].name.substring(0, 20) + (this.files[0].name.length > 20 ? '...' : '');
+                        nameSpan.classList.remove('hidden');
+                    } else {
+                        div.classList.remove('has-file');
+                        nameSpan.classList.add('hidden');
+                    }
+                });
+            }
         });
 
-        // Registro
-        document.getElementById('registroForm').onsubmit = async (e) => {
+        // =============================================
+        // REGISTRO DE TASKER
+        // =============================================
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const btn = document.getElementById('btnSubmit');
+            const originalText = btn.innerHTML;
+            
+            // Deshabilitar botón
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando registro...';
 
             try {
+                // Validar términos
+                if (!document.getElementById('terminos').checked) {
+                    throw new Error('Debes aceptar los términos y condiciones');
+                }
+
                 // Validar archivos
                 const files = {
                     photo: document.getElementById('file_photo').files[0],
@@ -166,70 +238,97 @@
                     penal: document.getElementById('file_penal').files[0]
                 };
 
+                // Verificar que todos los archivos estén presentes
                 for (let [key, file] of Object.entries(files)) {
-                    if (!file) throw new Error(`Falta el archivo: ${key}`);
+                    if (!file) {
+                        throw new Error(`Falta el archivo: ${key === 'photo' ? 'Foto' : key === 'ine' ? 'INE' : 'Antecedentes'}`);
+                    }
+                    
+                    // Validar tamaño (máximo 5MB)
                     if (file.size > 5 * 1024 * 1024) {
                         throw new Error(`El archivo ${key} no debe exceder 5MB`);
                     }
                 }
 
-                // 1. Registrar usuario en Auth
+                showLoading();
+
+                // 1. REGISTRAR USUARIO EN AUTH
+                console.log('📝 Registrando usuario en Auth...');
                 const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: document.getElementById('email').value,
+                    email: document.getElementById('email').value.trim(),
                     password: document.getElementById('password').value,
                     options: {
                         data: {
-                            full_name: document.getElementById('full_name').value,
-                            phone: document.getElementById('phone').value,
+                            full_name: document.getElementById('full_name').value.trim(),
+                            phone: document.getElementById('phone').value.trim(),
                             role: 'tasker'
                         }
                     }
                 });
 
-                if (authError) throw authError;
-                if (!authData.user) throw new Error('Error al crear usuario');
-
-                const userId = authData.user.id;
-
-                // 2. Subir archivos a Storage
-                const uploadPromises = [];
-                const fileUrls = {};
-
-                for (let [key, file] of Object.entries(files)) {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
-                    
-                    const uploadPromise = supabase.storage
-                        .from('taskers-documents')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        })
-                        .then(async ({ error }) => {
-                            if (error) throw error;
-                            
-                            const { data: { publicUrl } } = supabase.storage
-                                .from('taskers-documents')
-                                .getPublicUrl(fileName);
-                            
-                            fileUrls[key] = publicUrl;
-                        });
-
-                    uploadPromises.push(uploadPromise);
+                if (authError) {
+                    console.error('Error Auth:', authError);
+                    throw new Error(authError.message);
                 }
 
-                await Promise.all(uploadPromises);
+                if (!authData || !authData.user) {
+                    throw new Error('No se pudo crear el usuario');
+                }
 
-                // 3. Crear perfil en la tabla profiles
+                console.log('✅ Usuario creado:', authData.user.id);
+                const userId = authData.user.id;
+
+                // 2. SUBIR ARCHIVOS A STORAGE
+                console.log('📤 Subiendo archivos...');
+                const fileUrls = {};
+
+                // Subir cada archivo
+                for (let [key, file] of Object.entries(files)) {
+                    try {
+                        // Crear nombre único para el archivo
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
+                        
+                        console.log(`Subiendo ${key}...`);
+                        
+                        // Subir archivo
+                        const { error: uploadError } = await supabase.storage
+                            .from('taskers-documents')
+                            .upload(fileName, file, {
+                                cacheControl: '3600',
+                                upsert: false
+                            });
+
+                        if (uploadError) {
+                            console.error(`Error subiendo ${key}:`, uploadError);
+                            throw new Error(`Error al subir ${key}: ${uploadError.message}`);
+                        }
+
+                        // Obtener URL pública
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('taskers-documents')
+                            .getPublicUrl(fileName);
+
+                        fileUrls[key] = publicUrl;
+                        console.log(`✅ ${key} subido:`, publicUrl);
+                        
+                    } catch (uploadError) {
+                        console.error(`Error en subida de ${key}:`, uploadError);
+                        throw uploadError;
+                    }
+                }
+
+                // 3. CREAR PERFIL EN LA TABLA PROFILES
+                console.log('📝 Creando perfil...');
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([{
                         id: userId,
-                        email: document.getElementById('email').value,
-                        full_name: document.getElementById('full_name').value,
-                        phone: document.getElementById('phone').value,
+                        email: document.getElementById('email').value.trim(),
+                        full_name: document.getElementById('full_name').value.trim(),
+                        phone: document.getElementById('phone').value.trim(),
                         role: 'tasker',
-                        status: 'pending',
+                        status: 'pending', // Pendiente de verificación por admin
                         photo_url: fileUrls.photo,
                         document_ine_url: fileUrls.ine,
                         document_penal_url: fileUrls.penal,
@@ -237,19 +336,51 @@
                         updated_at: new Date()
                     }]);
 
-                if (profileError) throw profileError;
+                if (profileError) {
+                    console.error('Error creando perfil:', profileError);
+                    // Intentar limpiar el usuario creado
+                    throw new Error('Error al crear perfil: ' + profileError.message);
+                }
 
-                // 4. Éxito - redirigir
-                alert('¡Registro exitoso! Tu cuenta está pendiente de verificación por el administrador.');
-                window.location.href = 'login.html?registered=tasker';
+                console.log('✅ Perfil creado exitosamente');
+
+                // 4. REGISTRO EXITOSO - REDIRIGIR
+                showSuccess('¡Registro exitoso! Tu cuenta está pendiente de verificación por el administrador. Te redirigiremos al login.');
+
+                // Esperar 2 segundos y redirigir
+                setTimeout(() => {
+                    window.location.href = 'login.html?registered=tasker';
+                }, 2000);
 
             } catch (error) {
-                console.error('Error en registro:', error);
-                alert('Error: ' + error.message);
+                console.error('🔥 Error en registro:', error);
+                showError(error.message || 'Error desconocido en el registro');
+                
+                // Restaurar botón
                 btn.disabled = false;
-                btn.innerHTML = 'Completar registro';
+                btn.innerHTML = originalText;
+            } finally {
+                hideLoading();
             }
-        };
+        });
+
+        // =============================================
+        // VERIFICAR CONEXIÓN CON SUPABASE AL CARGAR
+        // =============================================
+        (async function checkConnection() {
+            try {
+                console.log('🔍 Verificando conexión con Supabase...');
+                const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+                if (error) {
+                    console.warn('⚠️ No se pudo conectar con Supabase:', error.message);
+                } else {
+                    console.log('✅ Conexión con Supabase establecida');
+                }
+            } catch (e) {
+                console.warn('⚠️ Error verificando conexión:', e);
+            }
+        })();
+
     </script>
 </body>
 </html>
