@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Profesional | Tasker's México</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Cargar Supabase de forma directa -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -87,8 +86,6 @@
                 <h1 class="text-3xl font-bold text-slate-800 mb-2">Conviértete en Tasker</h1>
                 <p class="text-slate-500">Completa tu registro y comienza a ofrecer tus servicios profesionales</p>
             </div>
-
-            <div id="statusMessage" class="mb-6 p-4 rounded-xl hidden"></div>
 
             <form id="registroForm" class="space-y-6">
                 <!-- Datos personales -->
@@ -189,40 +186,33 @@
 
     <script>
         // =============================================
-        // VERSIÓN CORREGIDA - REGISTRO TASKER
+        // CONFIGURACIÓN DIRECTA - SIN CONFIG.JS
         // =============================================
         
-        // Variables globales
-        let supabaseClient = null;
-        
-        // Configuración
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
+        let supabaseClient = null;
+
         // Inicializar inmediatamente
         (function init() {
-            console.log('🚀 Iniciando registro tasker...');
+            console.log('🚀 Inicializando registro...');
             
             try {
-                // Verificar que Supabase esté disponible
                 if (typeof window.supabase === 'undefined') {
                     console.error('❌ Supabase no está disponible');
-                    mostrarError('Error cargando Supabase. Verifica tu conexión.');
+                    mostrarError('Error: No se pudo cargar Supabase');
                     return;
                 }
 
-                // Crear cliente
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Supabase cliente creado');
+                console.log('✅ Supabase listo');
 
-                // Configurar event listeners
+                // Configurar eventos
                 configurarEventListeners();
                 
-                // Verificar conexión
-                verificarConexion();
-                
             } catch (error) {
-                console.error('🔥 Error de inicialización:', error);
+                console.error('🔥 Error:', error);
                 mostrarError('Error al inicializar: ' + error.message);
             }
         })();
@@ -249,28 +239,7 @@
             });
 
             // Formulario
-            const form = document.getElementById('registroForm');
-            if (form) {
-                form.addEventListener('submit', handleRegistro);
-            }
-        }
-
-        async function verificarConexion() {
-            try {
-                if (!supabaseClient) {
-                    console.warn('⚠️ Supabase no inicializado');
-                    return;
-                }
-                
-                const { error } = await supabaseClient.from('profiles').select('count', { count: 'exact', head: true });
-                if (error) {
-                    console.warn('⚠️ Error de conexión:', error.message);
-                } else {
-                    console.log('✅ Conexión a Supabase OK');
-                }
-            } catch (e) {
-                console.warn('⚠️ Error verificando:', e);
-            }
+            document.getElementById('registroForm').addEventListener('submit', handleRegistro);
         }
 
         async function handleRegistro(e) {
@@ -282,7 +251,7 @@
             try {
                 // Validar Supabase
                 if (!supabaseClient) {
-                    throw new Error('Supabase no está inicializado. Recarga la página.');
+                    throw new Error('Supabase no está inicializado');
                 }
 
                 // Validar términos
@@ -306,18 +275,6 @@
                     }
                 }
 
-                // Validar email
-                const email = document.getElementById('email').value.trim();
-                if (!email.includes('@')) {
-                    throw new Error('Correo electrónico inválido');
-                }
-
-                // Validar contraseña
-                const password = document.getElementById('password').value;
-                if (password.length < 6) {
-                    throw new Error('La contraseña debe tener al menos 6 caracteres');
-                }
-
                 // Deshabilitar botón
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
@@ -326,8 +283,8 @@
                 // 1. REGISTRO EN AUTH
                 console.log('📝 Registrando en Auth...');
                 const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
+                    email: document.getElementById('email').value.trim(),
+                    password: document.getElementById('password').value,
                     options: {
                         data: {
                             full_name: document.getElementById('full_name').value.trim(),
@@ -337,17 +294,11 @@
                     }
                 });
 
-                if (authError) {
-                    console.error('Error Auth:', authError);
-                    throw new Error(authError.message);
-                }
+                if (authError) throw new Error(authError.message);
+                if (!authData || !authData.user) throw new Error('No se pudo crear el usuario');
 
-                if (!authData || !authData.user) {
-                    throw new Error('No se pudo crear el usuario');
-                }
-
-                console.log('✅ Usuario creado:', authData.user.id);
                 const userId = authData.user.id;
+                console.log('✅ Usuario creado:', userId);
 
                 // 2. SUBIR ARCHIVOS
                 console.log('📤 Subiendo archivos...');
@@ -357,26 +308,17 @@
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
                     
-                    console.log(`Subiendo ${key}...`);
-                    
                     const { error: uploadError } = await supabaseClient.storage
                         .from('taskers-documents')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        });
+                        .upload(fileName, file);
 
-                    if (uploadError) {
-                        console.error(`Error subiendo ${key}:`, uploadError);
-                        throw new Error(`Error al subir ${key}: ${uploadError.message}`);
-                    }
+                    if (uploadError) throw new Error(`Error al subir ${key}: ${uploadError.message}`);
 
                     const { data: { publicUrl } } = supabaseClient.storage
                         .from('taskers-documents')
                         .getPublicUrl(fileName);
 
                     fileUrls[key] = publicUrl;
-                    console.log(`✅ ${key} subido`);
                 }
 
                 // 3. CREAR PERFIL
@@ -385,7 +327,7 @@
                     .from('profiles')
                     .insert([{
                         id: userId,
-                        email: email,
+                        email: document.getElementById('email').value.trim(),
                         full_name: document.getElementById('full_name').value.trim(),
                         phone: document.getElementById('phone').value.trim(),
                         role: 'tasker',
@@ -393,18 +335,14 @@
                         photo_url: fileUrls.photo,
                         document_ine_url: fileUrls.ine,
                         document_penal_url: fileUrls.penal,
-                        created_at: new Date(),
-                        updated_at: new Date()
+                        created_at: new Date()
                     }]);
 
-                if (profileError) {
-                    console.error('Error perfil:', profileError);
-                    throw new Error('Error al crear perfil: ' + profileError.message);
-                }
+                if (profileError) throw new Error('Error al crear perfil: ' + profileError.message);
 
                 // 4. ÉXITO
                 console.log('✅ Registro completado');
-                mostrarExito('¡Registro exitoso! Redirigiendo al login...');
+                mostrarExito('¡Registro exitoso! Redirigiendo...');
                 
                 setTimeout(() => {
                     window.location.href = 'login.html?registered=tasker';
@@ -413,56 +351,35 @@
             } catch (error) {
                 console.error('🔥 Error:', error);
                 mostrarError(error.message);
-                
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 hideLoading();
             }
         }
 
-        // Funciones de utilidad
+        // Utilidades
         function showLoading() {
-            const modal = document.getElementById('loadingModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
         }
 
         function hideLoading() {
-            const modal = document.getElementById('loadingModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
         }
 
         function mostrarError(mensaje) {
             const errorDiv = document.getElementById('globalError');
-            const errorText = document.getElementById('errorText');
-            if (errorDiv && errorText) {
-                errorText.textContent = mensaje;
-                errorDiv.classList.add('show');
-                
-                setTimeout(() => {
-                    errorDiv.classList.remove('show');
-                }, 5000);
-            } else {
-                alert('Error: ' + mensaje);
-            }
+            document.getElementById('errorText').textContent = mensaje;
+            errorDiv.classList.add('show');
+            setTimeout(() => errorDiv.classList.remove('show'), 5000);
         }
 
         function mostrarExito(mensaje) {
             const successDiv = document.getElementById('globalSuccess');
-            const successText = document.getElementById('successText');
-            if (successDiv && successText) {
-                successText.textContent = mensaje;
-                successDiv.classList.add('show');
-                
-                setTimeout(() => {
-                    successDiv.classList.remove('show');
-                }, 3000);
-            }
+            document.getElementById('successText').textContent = mensaje;
+            successDiv.classList.add('show');
+            setTimeout(() => successDiv.classList.remove('show'), 3000);
         }
     </script>
 </body>
