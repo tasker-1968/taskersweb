@@ -4,159 +4,908 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración | Tasker's México</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Sidebar admin */
+        .admin-sidebar {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Tabla responsive */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Badges */
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        
+        .badge-verified {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        /* Mobile menu */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 50;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                transition: left 0.3s ease;
+            }
+            
+            .admin-sidebar.open {
+                left: 0;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-100 font-sans">
+<body class="bg-slate-100">
 
-    <nav class="bg-slate-900 text-white p-6 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg"><i class="fas fa-user-shield text-xl"></i></div>
-                <h1 class="text-xl font-black italic tracking-tighter">ADMIN <span class="text-blue-500">TASKERS</span></h1>
-            </div>
-            <button onclick="cerrarSesion()" class="text-sm font-bold bg-slate-800 px-4 py-2 rounded-lg hover:bg-red-600 transition">Cerrar Sesión</button>
+    <!-- Mobile menu button -->
+    <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <!-- Overlay for mobile -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
+
+    <!-- Modal de carga -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600 font-medium">Cargando...</p>
         </div>
-    </nav>
+    </div>
 
-    <main class="container mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-slate-500 text-sm">Pendientes</p>
-                <h2 id="count_pending" class="text-3xl font-bold">0</h2>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="admin-sidebar w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
+            <!-- Logo -->
+            <div class="p-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-crown text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-xl font-bold text-white">Tasker's</div>
+                        <div class="text-xs text-blue-400">Administrador</div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-slate-500 text-sm">Verificados</p>
-                <h2 id="count_verified" class="text-3xl font-bold">0</h2>
+            
+            <!-- Admin Info -->
+            <div class="p-4 border-b border-white/10">
+                <div id="adminInfo" class="text-sm text-white/80">
+                    <!-- Se llena dinámicamente -->
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-slate-500 text-sm">Total Usuarios</p>
-                <h2 id="count_total" class="text-3xl font-bold">0</h2>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 mt-6 px-3">
+                <a href="#" onclick="showSection('dashboard')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all active" id="link-dashboard">
+                    <i class="fas fa-chart-pie w-6"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('taskers')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-taskers">
+                    <i class="fas fa-users w-6"></i>
+                    <span>Taskers Pendientes</span>
+                    <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                </a>
+                <a href="#" onclick="showSection('servicios')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-servicios">
+                    <i class="fas fa-briefcase w-6"></i>
+                    <span>Servicios</span>
+                </a>
+                <a href="#" onclick="showSection('pagos')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-pagos">
+                    <i class="fas fa-credit-card w-6"></i>
+                    <span>Pagos</span>
+                </a>
+                <a href="#" onclick="showSection('ganancias')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-ganancias">
+                    <i class="fas fa-chart-line w-6"></i>
+                    <span>Mis Ganancias</span>
+                </a>
+            </nav>
+            
+            <!-- Logout -->
+            <div class="p-4 border-t border-white/10">
+                <button onclick="cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
+                </button>
             </div>
-        </div>
+        </aside>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                            <th class="p-4 text-sm font-bold text-slate-600">Nombre</th>
-                            <th class="p-4 text-sm font-bold text-slate-600">Email</th>
-                            <th class="p-4 text-sm font-bold text-slate-600">Estado</th>
-                            <th class="p-4 text-sm font-bold text-slate-600">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="taskers_table">
-                        <tr><td colspan="4" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
+                <div class="flex justify-between items-center">
+                    <div class="ml-12 md:ml-0">
+                        <h2 id="section-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
+                        <p id="section-subtitle" class="text-sm text-slate-500">Panel de control administrativo</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover">
+                    </div>
+                </div>
+            </header>
 
-    <script src="config.js"></script>
+            <!-- Content -->
+            <div class="p-4 md:p-6">
+                <!-- SECCIÓN: DASHBOARD -->
+                <section id="dashboard" class="section-content active">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-slate-500 text-sm">Total Usuarios</p>
+                            <p id="totalUsuarios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-slate-500 text-sm">Taskers Pendientes</p>
+                            <p id="totalPendientes" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-slate-500 text-sm">Servicios Activos</p>
+                            <p id="totalServicios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-slate-500 text-sm">Ganancias Totales</p>
+                            <p id="totalGanancias" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
+                        </div>
+                    </div>
+
+                    <!-- Gráfica simple -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Actividad Reciente</h3>
+                        <canvas id="activityChart" height="100"></canvas>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: TASKERS PENDIENTES -->
+                <section id="taskers" class="section-content">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-users"></i>
+                                Taskers Pendientes de Verificación
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Nombre</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Email</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Teléfono</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Documentos</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskersTable">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: SERVICIOS -->
+                <section id="servicios" class="section-content">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-briefcase"></i>
+                                Todos los Servicios
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="serviciosTable">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: PAGOS -->
+                <section id="pagos" class="section-content">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-green-600 to-green-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-credit-card"></i>
+                                Historial de Pagos
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagosTable">
+                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN: GANANCIAS (TUS GANANCIAS DEL 15%) -->
+                <section id="ganancias" class="section-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Resumen de ganancias -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-blue-600"></i>
+                                Resumen de Ganancias
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Ganancias Totales (15%)</span>
+                                    <span id="gananciasTotales" class="text-xl font-bold text-blue-600">$0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Este mes</span>
+                                    <span id="gananciasMes" class="text-lg font-bold text-green-600">$0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Hoy</span>
+                                    <span id="gananciasHoy" class="text-lg font-bold text-purple-600">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráfica de ganancias -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Proyección Mensual</h3>
+                            <canvas id="gananciasChart" height="200"></canvas>
+                        </div>
+
+                        <!-- Tabla detallada -->
+                        <div class="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Detalle de Comisiones</h3>
+                            <div class="table-container">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Monto Total</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tu Comisión (15%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="gananciasTable">
+                                        <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Verificar que el usuario es admin
-        async function verificarAdmin() {
-            const session = await checkAuth('login.html');
-            if (!session) return;
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            if (error || profile?.role !== 'admin') {
-                alert('Acceso no autorizado');
-                window.location.href = 'index.html';
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
+        let currentUser = null;
+        let activityChart = null;
+        let gananciasChart = null;
+
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } text-white max-w-md`;
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN Y ROL
+        // =============================================
+        async function checkAdminAuth() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return null;
+                }
+
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profileError || profile?.role !== 'admin') {
+                    alert('Acceso no autorizado');
+                    window.location.href = 'index.html';
+                    return null;
+                }
+
+                currentUser = profile;
+                document.getElementById('adminInfo').innerHTML = `
+                    <p class="font-bold">${profile.full_name || 'Administrador'}</p>
+                    <p class="text-xs text-blue-300">${profile.email}</p>
+                `;
+                
+                if (profile.photo_url) {
+                    document.getElementById('headerAvatar').src = profile.photo_url;
+                }
+
+                return session;
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = 'login.html';
+                return null;
             }
         }
 
-        async function cargarTaskers() {
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            const session = await checkAdminAuth();
+            if (session) {
+                await loadDashboardData();
+                await loadTaskersPendientes();
+                await loadServicios();
+                await loadPagos();
+                await loadGanancias();
+                setupMobileMenu();
+                initCharts();
+            }
+        });
+
+        function setupMobileMenu() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('hidden');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.add('hidden');
+                });
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+        }
+
+        // =============================================
+        // DASHBOARD
+        // =============================================
+        async function loadDashboardData() {
+            try {
+                // Total usuarios
+                const { count: totalUsuarios } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+
+                // Taskers pendientes
+                const { count: totalPendientes } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'tasker')
+                    .eq('status', 'pending');
+
+                // Servicios activos
+                const { count: totalServicios } = await supabase
+                    .from('servicios')
+                    .select('*', { count: 'exact', head: true })
+                    .in('status', ['publicado', 'asignado', 'en_progreso']);
+
+                // Ganancias totales (tu 15%)
+                const { data: pagos } = await supabase
+                    .from('pagos')
+                    .select('comision_taskers')
+                    .eq('status', 'completado');
+
+                const totalGanancias = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
+                document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
+                document.getElementById('totalPendientes').textContent = totalPendientes || 0;
+                document.getElementById('totalServicios').textContent = totalServicios || 0;
+                document.getElementById('totalGanancias').textContent = `$${totalGanancias.toFixed(2)}`;
+                document.getElementById('pendingCount').textContent = totalPendientes || 0;
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // =============================================
+        // TASKERS PENDIENTES
+        // =============================================
+        async function loadTaskersPendientes() {
+            const tbody = document.getElementById('taskersTable');
+
             try {
                 const { data: taskers, error } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('role', 'tasker')
+                    .eq('status', 'pending')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                const table = document.getElementById('taskers_table');
                 if (!taskers || taskers.length === 0) {
-                    table.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400">No hay taskers registrados</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>';
                     return;
                 }
 
-                table.innerHTML = '';
-                let pending = 0, verified = 0;
+                tbody.innerHTML = taskers.map(t => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td>
+                        <td class="p-4">${t.email || 'No especificado'}</td>
+                        <td class="p-4">${t.phone || 'No especificado'}</td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                ${t.photo_url ? `<a href="${t.photo_url}" target="_blank" class="text-blue-600 hover:underline text-sm">Foto</a>` : ''}
+                                ${t.document_ine_url ? `<a href="${t.document_ine_url}" target="_blank" class="text-blue-600 hover:underline text-sm">INE</a>` : ''}
+                                ${t.document_penal_url ? `<a href="${t.document_penal_url}" target="_blank" class="text-blue-600 hover:underline text-sm">Antecedentes</a>` : ''}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-check mr-1"></i>Aprobar
+                                </button>
+                                <button onclick="rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                    <i class="fas fa-times mr-1"></i>Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
 
-                taskers.forEach(t => {
-                    if(t.status === 'pending') pending++;
-                    if(t.status === 'verified') verified++;
-                    
-                    table.innerHTML += `
-                        <tr class="border-b border-slate-50 hover:bg-slate-50">
-                            <td class="p-4 font-bold">${t.full_name || 'Sin nombre'}</td>
-                            <td class="p-4 text-slate-600">${t.email || 'No especificado'}</td>
-                            <td class="p-4">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold 
-                                    ${t.status === 'verified' ? 'bg-green-100 text-green-700' : 
-                                      t.status === 'pending' ? 'bg-amber-100 text-amber-700' : 
-                                      'bg-red-100 text-red-700'}">
-                                    ${t.status || 'pending'}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                ${t.status === 'pending' ? 
-                                    `<button onclick="verificarTasker('${t.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition">
-                                        <i class="fas fa-check mr-1"></i>Aprobar
-                                    </button>` : 
-                                    t.status === 'verified' ?
-                                    `<span class="text-green-600 text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Verificado</span>` :
-                                    `<span class="text-red-400 text-xs">Rechazado</span>`
-                                }
-                            </td>
-                        </tr>`;
-                });
-
-                document.getElementById('count_pending').innerText = pending;
-                document.getElementById('count_verified').innerText = verified;
-                document.getElementById('count_total').innerText = taskers.length;
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('taskers_table').innerHTML = 
-                    '<tr><td colspan="4" class="text-center p-8 text-red-400">Error al cargar datos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar datos</td></tr>';
             }
         }
 
-        async function verificarTasker(id) {
+        async function aprobarTasker(id) {
             if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
-            
+
             try {
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ status: 'verified', updated_at: new Date() })
+                    .update({ 
+                        status: 'verified', 
+                        updated_at: new Date() 
+                    })
                     .eq('id', id);
 
                 if (error) throw error;
+
+                showNotification('Tasker aprobado exitosamente', 'success');
+                await loadTaskersPendientes();
+                await loadDashboardData();
                 
-                alert('Tasker verificado exitosamente');
-                cargarTaskers();
             } catch (error) {
-                alert("Error: " + error.message);
+                alert('Error: ' + error.message);
             }
         }
 
-        async function cerrarSesion() {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
+        async function rechazarTasker(id) {
+            if (!confirm('¿Estás seguro de rechazar este tasker?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ 
+                        status: 'rejected', 
+                        updated_at: new Date() 
+                    })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showNotification('Tasker rechazado', 'info');
+                await loadTaskersPendientes();
+                await loadDashboardData();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
 
-        // Inicializar
-        verificarAdmin().then(() => cargarTaskers());
+        // =============================================
+        // SERVICIOS
+        // =============================================
+        async function loadServicios() {
+            const tbody = document.getElementById('serviciosTable');
+
+            try {
+                const { data: servicios, error } = await supabase
+                    .from('servicios')
+                    .select(`
+                        *,
+                        cliente:cliente_id (full_name, email),
+                        tasker:tasker_id (full_name)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                if (!servicios || servicios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay servicios</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = servicios.map(s => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">${s.cliente?.full_name || 'Cliente'}</td>
+                        <td class="p-4">${s.subcategoria || 'Servicio'}</td>
+                        <td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td>
+                        <td class="p-4 font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${
+                                s.status === 'completado' ? 'bg-green-100 text-green-700' :
+                                s.status === 'en_progreso' ? 'bg-purple-100 text-purple-700' :
+                                s.status === 'asignado' ? 'bg-blue-100 text-blue-700' :
+                                'bg-yellow-100 text-yellow-700'
+                            }">
+                                ${s.status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error:', error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar</td></tr>';
+            }
+        }
+
+        // =============================================
+        // PAGOS
+        // =============================================
+        async function loadPagos() {
+            const tbody = document.getElementById('pagosTable');
+
+            try {
+                const { data: pagos, error } = await supabase
+                    .from('pagos')
+                    .select(`
+                        *,
+                        servicio:servicio_id (subcategoria),
+                        cliente:cliente_id (full_name),
+                        tasker:tasker_id (full_name)
+                    `)
+                    .eq('status', 'completado')
+                    .order('fecha_pago', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                if (!pagos || pagos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = pagos.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
+                        <td class="p-4">${p.cliente?.full_name || 'Cliente'}</td>
+                        <td class="p-4">${p.tasker?.full_name || 'Tasker'}</td>
+                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error:', error);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar</td></tr>';
+            }
+        }
+
+        // =============================================
+        // GANANCIAS (TUS GANANCIAS DEL 15%)
+        // =============================================
+        async function loadGanancias() {
+            try {
+                const { data: pagos, error } = await supabase
+                    .from('pagos')
+                    .select(`
+                        *,
+                        servicio:servicio_id (subcategoria),
+                        cliente:cliente_id (full_name),
+                        tasker:tasker_id (full_name)
+                    `)
+                    .eq('status', 'completado')
+                    .order('fecha_pago', { ascending: false });
+
+                if (error) throw error;
+
+                // Calcular totales
+                const gananciasTotales = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                
+                // Ganancias del mes
+                const hoy = new Date();
+                const mesActual = hoy.getMonth();
+                const anioActual = hoy.getFullYear();
+                
+                const gananciasMes = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
+                // Ganancias de hoy
+                const gananciasHoy = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.toDateString() === hoy.toDateString();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
+                document.getElementById('gananciasTotales').textContent = `$${gananciasTotales.toFixed(2)}`;
+                document.getElementById('gananciasMes').textContent = `$${gananciasMes.toFixed(2)}`;
+                document.getElementById('gananciasHoy').textContent = `$${gananciasHoy.toFixed(2)}`;
+
+                // Tabla detallada
+                const tbody = document.getElementById('gananciasTable');
+                
+                if (!pagos || pagos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = pagos.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-3">${p.servicio?.subcategoria || 'Servicio'}</td>
+                        <td class="p-3">${p.cliente?.full_name || 'Cliente'}</td>
+                        <td class="p-3">${p.tasker?.full_name || 'Tasker'}</td>
+                        <td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                // Actualizar gráfica
+                updateGananciasChart(pagos);
+
+            } catch (error) {
+                console.error('Error loading ganancias:', error);
+            }
+        }
+
+        // =============================================
+        // GRÁFICAS
+        // =============================================
+        function initCharts() {
+            // Gráfica de actividad
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Servicios',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Gráfica de ganancias
+            const ctx2 = document.getElementById('gananciasChart').getContext('2d');
+            gananciasChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Tus Ganancias (15%)',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function updateGananciasChart(pagos) {
+            if (!gananciasChart) return;
+
+            // Agrupar por mes (últimos 6 meses)
+            const meses = [];
+            const gananciasPorMes = [];
+            
+            for (let i = 5; i >= 0; i--) {
+                const fecha = new Date();
+                fecha.setMonth(fecha.getMonth() - i);
+                const mes = fecha.toLocaleDateString('es', { month: 'short' });
+                meses.push(mes);
+                
+                const gananciasMes = pagos?.filter(p => {
+                    const pFecha = new Date(p.fecha_pago);
+                    return pFecha.getMonth() === fecha.getMonth() && 
+                           pFecha.getFullYear() === fecha.getFullYear();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                
+                gananciasPorMes.push(gananciasMes);
+            }
+
+            gananciasChart.data.labels = meses;
+            gananciasChart.data.datasets[0].data = gananciasPorMes;
+            gananciasChart.update();
+        }
+
+        // =============================================
+        // NAVEGACIÓN
+        // =============================================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav a').forEach(l => l.classList.remove('active', 'bg-white/10'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            const link = document.getElementById('link-' + sectionId);
+            if (link) {
+                link.classList.add('active', 'bg-white/10');
+            }
+
+            const titles = {
+                'dashboard': 'Dashboard',
+                'taskers': 'Taskers Pendientes',
+                'servicios': 'Servicios',
+                'pagos': 'Pagos',
+                'ganancias': 'Mis Ganancias'
+            };
+            
+            document.getElementById('section-title').textContent = titles[sectionId] || 'Admin';
+            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${titles[sectionId].toLowerCase()}`;
+
+            if (window.innerWidth < 768) {
+                toggleMobileMenu();
+            }
+        }
+
+        // =============================================
+        // CERRAR SESIÓN
+        // =============================================
+        async function cerrarSesion() {
+            if (confirm('¿Cerrar sesión?')) {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
+        }
     </script>
+
+    <style>
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </body>
 </html>
