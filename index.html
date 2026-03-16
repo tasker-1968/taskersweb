@@ -4,126 +4,374 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasker's México | Servicios Profesionales</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .category-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-        .category-card:hover { transform: translateY(-12px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        .subcat-panel { display: none; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .hero-bg { background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            scroll-behavior: smooth; 
+        }
+        
+        /* Glassmorphism */
+        .glass { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Categorías */
+        .category-card { 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; 
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        .category-card:hover { 
+            transform: translateY(-12px); 
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2); 
+            border-color: #3b82f6;
+        }
+        
+        /* Subcategorías */
+        .subcat-panel { 
+            display: none; 
+            animation: fadeIn 0.4s ease-out; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Hero Section con overlay */
+        .hero-bg { 
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+            url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed;
+        }
+        
+        /* Botón de categoría en subpanel */
+        .subcat-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .subcat-btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        /* Footer */
+        .footer-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* Logo styling */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-image {
+            height: 45px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .logo-image {
+                height: 35px;
+            }
+            .hero-bg {
+                background-attachment: scroll;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 
+    <!-- Navbar Modernizado con Logo -->
     <nav class="fixed w-full z-50 glass border-b border-slate-200">
-        <div class="container mx-auto px-3 md:px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center">
-               <img src="logo-taskers.png" alt="Tasker's Logo" class="h-10 w-auto">
+        <div class="container mx-auto px-4 md:px-6 h-20 flex justify-between items-center">
+            <!-- Logo con imagen -->
+            <div class="logo-container">
+                <img src="logo-taskers.png" alt="Tasker's México" class="logo-image">
+                <span class="text-sm font-semibold text-slate-400 hidden sm:inline">MÉXICO</span>
             </div>
 
+            <!-- Botones de navegación -->
             <div id="nav-buttons" class="flex items-center space-x-2 md:space-x-4">
+                <!-- Se llena dinámicamente con JS -->
             </div>
         </div>
     </nav>
 
-    <section class="hero-bg min-h-[70vh] md:h-[80vh] flex items-center justify-center text-center px-6 pt-24 pb-12">
-        <div class="max-w-4xl">
-            <span class="bg-blue-600/20 text-blue-400 border border-blue-400/30 px-4 py-1.5 rounded-full text-[10px] md:text-sm font-bold uppercase tracking-wider mb-6 inline-block">TASKERS MÉXICO</span>
-            <h1 class="text-3xl md:text-7xl font-extrabold text-white mb-6 leading-tight">Soluciones reales por manos expertas</h1>
-            <p class="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto">La red más grande de profesionales capacitados para el hogar y la industria.</p>
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <button onclick="document.getElementById('categorias').scrollIntoView()" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl shadow-blue-900/20">Explorar Servicios</button>
+    <!-- Hero Section Modernizado -->
+    <section class="hero-bg min-h-[80vh] flex items-center justify-center text-center px-4 pt-24 pb-12">
+        <div class="max-w-4xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-sm border border-blue-400/30 px-4 sm:px-6 py-2 rounded-full text-blue-400 text-xs sm:text-sm font-bold uppercase tracking-wider mb-6 sm:mb-8">
+                <i class="fas fa-crown text-yellow-400"></i>
+                TASKERS MÉXICO
+                <i class="fas fa-crown text-yellow-400"></i>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 sm:mb-6 leading-tight px-2">
+                Soluciones reales por 
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200">manos expertas</span>
+            </h1>
+            
+            <p class="text-base sm:text-lg md:text-xl text-slate-200 mb-8 sm:mb-10 max-w-2xl mx-auto px-4">
+                La red más grande de profesionales capacitados para el hogar, la industria y servicios especializados.
+                Conectamos talento con necesidades.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+                <button onclick="document.getElementById('categorias').scrollIntoView({ behavior: 'smooth' })" 
+                        class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all shadow-xl shadow-blue-900/30 flex items-center justify-center gap-2">
+                    <i class="fas fa-search"></i>
+                    Explorar Servicios
+                </button>
+            </div>
+
+            <!-- Stats flotantes - responsive grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-12 sm:mt-16 px-2">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">+5,000</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Profesionales</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">+10,000</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Servicios</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">98%</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Satisfacción</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">24/7</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Soporte</div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="categorias" class="py-16 md:py-24 container mx-auto px-6">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">¿En qué podemos ayudarte hoy?</h2>
-            <p class="text-slate-500 max-w-xl mx-auto">Selecciona una categoría para ver todos los servicios especializados disponibles.</p>
+    <!-- Sección de Categorías (MANTENIDA IGUAL) -->
+    <section id="categorias" class="py-12 sm:py-16 md:py-24 container mx-auto px-4 sm:px-6">
+        <div class="text-center mb-12 sm:mb-16">
+            <span class="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wider">NUESTROS SERVICIOS</span>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 sm:mb-4 px-2">¿En qué podemos ayudarte hoy?</h2>
+            <p class="text-sm sm:text-base text-slate-500 max-w-xl mx-auto px-4">Selecciona una categoría para ver todos los servicios especializados disponibles.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
-            <div onclick="showSubcats('mantenimiento')" class="category-card bg-white p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                <div class="w-14 h-14 md:w-16 md:h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600"><i data-lucide="wrench"></i></div>
-                <h3 class="font-bold text-lg">Mantenimiento</h3>
-                <p class="text-sm text-slate-400 mt-2">Hogar e Industria</p>
+        <!-- Grid de Categorías (EXACTAMENTE IGUAL) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-8 mb-12 sm:mb-16">
+            <!-- Mantenimiento -->
+            <div onclick="showSubcats('mantenimiento')" class="category-card bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-blue-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-blue-600">
+                    <i data-lucide="wrench" class="w-5 h-5 sm:w-8 sm:h-8"></i>
+                </div>
+                <h3 class="font-bold text-sm sm:text-base md:text-lg">Mantenimiento</h3>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 sm:mt-2">Hogar e Industria</p>
             </div>
 
-            <div onclick="showSubcats('limpieza')" class="category-card bg-white p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                <div class="w-14 h-14 md:w-16 md:h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600"><i data-lucide="sparkles"></i></div>
-                <h3 class="font-bold text-lg">Limpieza</h3>
-                <p class="text-sm text-slate-400 mt-2">Residencial y Comercial</p>
+            <!-- Limpieza -->
+            <div onclick="showSubcats('limpieza')" class="category-card bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-emerald-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-emerald-600">
+                    <i data-lucide="sparkles" class="w-5 h-5 sm:w-8 sm:h-8"></i>
+                </div>
+                <h3 class="font-bold text-sm sm:text-base md:text-lg">Limpieza</h3>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 sm:mt-2">Residencial y Comercial</p>
             </div>
 
-            <div onclick="showSubcats('cuidados')" class="category-card bg-white p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                <div class="w-14 h-14 md:w-16 md:h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 text-rose-600"><i data-lucide="heart"></i></div>
-                <h3 class="font-bold text-lg">Cuidados</h3>
-                <p class="text-sm text-slate-400 mt-2">Personas y Mascotas</p>
+            <!-- Cuidados -->
+            <div onclick="showSubcats('cuidados')" class="category-card bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-rose-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-rose-600">
+                    <i data-lucide="heart" class="w-5 h-5 sm:w-8 sm:h-8"></i>
+                </div>
+                <h3 class="font-bold text-sm sm:text-base md:text-lg">Cuidados</h3>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 sm:mt-2">Personas y Mascotas</p>
             </div>
 
-            <div onclick="showSubcats('especializados')" class="category-card bg-white p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                <div class="w-14 h-14 md:w-16 md:h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-6 text-amber-600"><i data-lucide="settings"></i></div>
-                <h3 class="font-bold text-lg">Especializados</h3>
-                <p class="text-sm text-slate-400 mt-2">Técnicos Certificados</p>
+            <!-- Especializados -->
+            <div onclick="showSubcats('especializados')" class="category-card bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-amber-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-amber-600">
+                    <i data-lucide="settings" class="w-5 h-5 sm:w-8 sm:h-8"></i>
+                </div>
+                <h3 class="font-bold text-sm sm:text-base md:text-lg">Especializados</h3>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 sm:mt-2">Técnicos Certificados</p>
             </div>
 
-            <div onclick="showSubcats('belleza')" class="category-card bg-white p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                <div class="w-14 h-14 md:w-16 md:h-16 bg-purple-50 rounded-2xl flex items-center justify-center mb-6 text-purple-600"><i data-lucide="scissors"></i></div>
-                <h3 class="font-bold text-lg">Belleza</h3>
-                <p class="text-sm text-slate-400 mt-2">Cuidado Personal</p>
+            <!-- Belleza -->
+            <div onclick="showSubcats('belleza')" class="category-card bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-purple-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-purple-600">
+                    <i data-lucide="scissors" class="w-5 h-5 sm:w-8 sm:h-8"></i>
+                </div>
+                <h3 class="font-bold text-sm sm:text-base md:text-lg">Belleza</h3>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 sm:mt-2">Cuidado Personal</p>
             </div>
         </div>
 
-        <div id="subcat-container" class="subcat-panel bg-white rounded-[2rem] p-6 md:p-10 border border-slate-200 shadow-2xl">
-            <div class="flex justify-between items-center mb-8">
-                <h4 id="subcat-title" class="text-xl md:text-2xl font-bold text-blue-600 text-left">Subcategorías</h4>
-                <button onclick="closeSubcats()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x"></i></button>
+        <!-- Panel de Subcategorías (MANTENIDO IGUAL) -->
+        <div id="subcat-container" class="subcat-panel bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-10 border border-slate-200 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 sm:mb-8">
+                <h4 id="subcat-title" class="text-lg sm:text-xl md:text-2xl font-bold text-blue-600 text-left">Subcategorías</h4>
+                <button onclick="closeSubcats()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                    <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-600"></i>
+                </button>
             </div>
-            <div id="subcat-list" class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4"></div>
+            <div id="subcat-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4"></div>
         </div>
     </section>
 
-    <footer class="bg-slate-900 text-slate-400 py-16 px-6">
-        <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-slate-800 pb-12 mb-12">
-            <div class="col-span-1 md:col-span-2">
-                <img src="logo-taskers.png" alt="Tasker's Logo" class="h-10 w-auto mb-4">
-                <p class="max-w-sm text-sm">La plataforma líder en México para conectar profesionales con clientes.</p>
-            </div>
-            <div>
-                <h5 class="text-white font-bold mb-4">Contacto</h5>
-                <p class="mb-1 text-xs md:text-sm"><span class="text-white">Email:</span> soporte@taskers.mx</p>
+    <!-- Sección de Confianza -->
+    <section class="py-12 sm:py-16 bg-white border-t border-slate-100">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8 text-center">
+                <div class="p-4 sm:p-6">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <i class="fas fa-shield-alt text-xl sm:text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2">Pago 100% Seguro</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Tu dinero está protegido hasta que confirmes la finalización</p>
+                </div>
+                <div class="p-4 sm:p-6">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <i class="fas fa-check-circle text-xl sm:text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2">Profesionales Verificados</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Todos pasan por verificación de identidad</p>
+                </div>
+                <div class="p-4 sm:p-6 sm:col-span-2 md:col-span-1">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <i class="fas fa-clock text-xl sm:text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2">Garantía de 7 días</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Soporte post-servicio garantizado</p>
+                </div>
             </div>
         </div>
-        <p class="text-center text-xs md:text-sm">&copy; 2026 Tasker's México.</p>
+    </section>
+
+    <!-- Footer Modernizado -->
+    <footer class="footer-gradient text-slate-400 py-12 sm:py-16 px-4 sm:px-6">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 border-b border-slate-700/50 pb-8 sm:pb-12 mb-8 sm:mb-12">
+                <div class="col-span-1 sm:col-span-2 md:col-span-2">
+                    <div class="logo-container mb-4">
+                        <img src="logo-taskers.png" alt="Tasker's México" class="logo-image">
+                    </div>
+                    <p class="max-w-sm text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        La plataforma líder en México para conectar profesionales capacitados con clientes que necesitan servicios de calidad.
+                    </p>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-3 sm:mb-4 text-sm sm:text-base">Enlaces rápidos</h5>
+                    <ul class="space-y-2 text-xs sm:text-sm">
+                        <li><a href="#" class="hover:text-blue-400 transition">Sobre nosotros</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Cómo funciona</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Preguntas frecuentes</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-3 sm:mb-4 text-sm sm:text-base">Contacto</h5>
+                    <ul class="space-y-2 text-xs sm:text-sm">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-envelope text-blue-400 text-xs sm:text-sm"></i>
+                            <span>taskersmexico@gmail.com</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-phone text-blue-400 text-xs sm:text-sm"></i>
+                            <span>2201756702</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-blue-400 text-xs sm:text-sm"></i>
+                            <span>Cozumel,Puebla,</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-between items-center text-xs">
+                <p>&copy; 2026 Tasker's México. Todos los derechos reservados.</p>
+                <div class="flex gap-4 mt-4 sm:mt-0">
+                    <a href="#" class="hover:text-blue-400 transition">Términos</a>
+                    <a href="#" class="hover:text-blue-400 transition">Privacidad</a>
+                    <a href="#" class="hover:text-blue-400 transition">Cookies</a>
+                </div>
+            </div>
+        </div>
     </footer>
 
     <script>
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE (COMPLETA)
+        // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Inicializar iconos de Lucide
         lucide.createIcons();
 
+        // =============================================
+        // VERIFICAR SESIÓN Y ACTUALIZAR NAVBAR
+        // =============================================
         async function checkUser() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const nav = document.getElementById('nav-buttons');
-            if (session) {
-                nav.innerHTML = `
-                    <a href="dashboard.html" class="text-xs md:text-sm font-bold text-slate-700 hover:text-blue-600 transition">Mi Panel</a>
-                    <button onclick="logout()" class="text-xs md:text-sm font-bold text-red-600 hover:text-red-800 transition">Cerrar Sesión</button>
-                `;
-            } else {
-                nav.innerHTML = `
-                    <a href="login.html" class="text-[10px] md:text-sm font-bold text-blue-600 transition">Ingresar</a>
-                    <a href="registro-clientes.html" class="text-[10px] md:text-sm font-bold text-slate-600 border border-slate-300 px-3 py-2 rounded-xl hover:bg-slate-50 transition">Soy Cliente</a>
-                    <a href="registro-taskers.html" class="text-[10px] md:text-sm bg-blue-600 text-white px-3 py-2 rounded-xl hover:bg-blue-700 font-bold transition">Registro Tasker</a>
-                `;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const nav = document.getElementById('nav-buttons');
+                
+                if (session) {
+                    // Usuario logueado
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    let dashboardLink = 'dashboard-cliente.html';
+                    if (profile?.role === 'tasker') dashboardLink = 'dashboard-tasker.html';
+                    if (profile?.role === 'admin') dashboardLink = 'admin.html';
+
+                    nav.innerHTML = `
+                        <a href="${dashboardLink}" class="text-xs md:text-sm font-bold text-slate-700 hover:text-blue-600 transition flex items-center gap-1">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Mi Panel
+                        </a>
+                        <button onclick="logout()" class="text-xs md:text-sm font-bold text-red-600 hover:text-red-800 transition flex items-center gap-1">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Cerrar Sesión
+                        </button>
+                    `;
+                } else {
+                    // Usuario no logueado
+                    nav.innerHTML = `
+                        <a href="login.html" class="text-xs md:text-sm font-bold text-blue-600 hover:text-blue-800 transition flex items-center gap-1">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Ingresar
+                        </a>
+                        <a href="registro-clientes.html" class="text-xs md:text-sm font-bold text-slate-600 border border-slate-300 px-3 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-slate-50 transition flex items-center gap-1">
+                            <i class="fas fa-user"></i>
+                            Soy Cliente
+                        </a>
+                        <a href="registro-taskers.html" class="text-xs md:text-sm bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-blue-700 font-bold transition flex items-center gap-1 shadow-lg shadow-blue-200">
+                            <i class="fas fa-briefcase"></i>
+                            Registro Tasker
+                        </a>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error verificando usuario:', error);
             }
         }
 
@@ -131,30 +379,53 @@
             await supabaseClient.auth.signOut();
             window.location.reload();
         }
-        checkUser();
 
+        // =============================================
+        // DATOS DE CATEGORÍAS (MANTENIDOS IGUAL)
+        // =============================================
         const data = {
-            mantenimiento: { title: 'Mantenimiento del Hogar e Industria', items: ['Plomería', 'Carpintería', 'Albañilería', 'Pintura', 'Electricidad', 'Impermeabilización', 'Cerrajería', 'Herrería', 'Aluminio y Vidrio'] },
-            limpieza: { title: 'Servicios de Limpieza', items: ['Limpieza de Hogar', 'Limpieza de Oficinas', 'Lavado de Salas/Alfombras', 'Limpieza Post-Obra', 'Sanitización', 'Limpieza de Vidrios', 'Limpieza Profunda'] },
-            cuidados: { title: 'Cuidados y Asistencia', items: ['Cuidado de Niños', 'Cuidado de Enfermos', 'Cuidado de Adultos Mayores', 'Paseo de Mascotas', 'Entrenamiento Canino', 'Enfermería a domicilio'] },
-            especializados: { title: 'Servicios Especializados', items: ['Mecánica Automotriz', 'Reparación de llantas', 'Pipas de Agua', 'Renta de maquinaria', 'Clases Particulares', 'Mudanzas', 'Reparación de línea blanca', 'Lavado de cisternas', 'Instalación de Gas', 'Fiestas y Eventos', 'Soporte Técnico', 'Fumigación', 'Grúas', 'Andamios', 'Renta de Mesas y Sillas', 'Seguridad y Vigilancia', 'Ponchaduras', 'Chefs'] },
-            belleza: { title: 'Belleza y Cuidado Personal', items: ['Barbería', 'Manicura y Pedicura', 'Maquillaje Profesional', 'Estilismo y Tintes', 'Masajes Relajantes', 'Depilación', 'Microblading', 'Tratamientos faciales'] }
+            mantenimiento: { 
+                title: 'Mantenimiento del Hogar e Industria', 
+                items: ['Plomería', 'Carpintería', 'Albañilería', 'Pintura', 'Electricidad', 'Impermeabilización', 'Cerrajería', 'Herrería', 'Aluminio y Vidrio'] 
+            },
+            limpieza: { 
+                title: 'Servicios de Limpieza', 
+                items: ['Limpieza de Hogar', 'Limpieza de Oficinas', 'Lavado de Salas/Alfombras', 'Limpieza Post-Obra', 'Sanitización', 'Limpieza de Vidrios', 'Limpieza Profunda'] 
+            },
+            cuidados: { 
+                title: 'Cuidados y Asistencia', 
+                items: ['Cuidado de Niños', 'Cuidado de Enfermos', 'Cuidado de Adultos Mayores', 'Paseo de Mascotas', 'Entrenamiento Canino', 'Enfermería a domicilio'] 
+            },
+            especializados: { 
+                title: 'Servicios Especializados', 
+                items: ['Mecánica Automotriz', 'Reparación de llantas', 'Pipas de Agua', 'Renta de maquinaria', 'Clases Particulares', 'Mudanzas', 'Reparación de línea blanca', 'Lavado de cisternas', 'Instalación de Gas', 'Fiestas y Eventos', 'Soporte Técnico', 'Fumigación', 'Grúas', 'Andamios', 'Renta de Mesas y Sillas', 'Seguridad y Vigilancia', 'Ponchaduras', 'Chefs'] 
+            },
+            belleza: { 
+                title: 'Belleza y Cuidado Personal', 
+                items: ['Barbería', 'Manicura y Pedicura', 'Maquillaje Profesional', 'Estilismo y Tintes', 'Masajes Relajantes', 'Depilación', 'Microblading', 'Tratamientos faciales'] 
+            }
         };
 
+        // =============================================
+        // FUNCIONES DE CATEGORÍAS (MANTENIDAS IGUAL)
+        // =============================================
         function showSubcats(catKey) {
             const container = document.getElementById('subcat-container');
             const title = document.getElementById('subcat-title');
             const list = document.getElementById('subcat-list');
             const catForURL = catKey.charAt(0).toUpperCase() + catKey.slice(1);
+            
             title.innerText = data[catKey].title;
             list.innerHTML = '';
+            
             data[catKey].items.forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all group font-medium text-left text-sm md:text-base';
-                btn.innerHTML = `${item} <i data-lucide="chevron-right" class="w-4 h-4 opacity-0 group-hover:opacity-100"></i>`;
+                btn.className = 'subcat-btn flex justify-between items-center p-3 sm:p-4 bg-slate-50 rounded-lg sm:rounded-xl hover:bg-blue-600 hover:text-white transition-all group font-medium text-left text-xs sm:text-sm md:text-base';
+                btn.innerHTML = `${item} <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 opacity-0 group-hover:opacity-100"></i>`;
                 btn.onclick = () => window.location.href = `servicios.html?cat=${catForURL}&sub=${encodeURIComponent(item)}`;
                 list.appendChild(btn);
             });
+            
             container.style.display = 'block';
             container.scrollIntoView({ behavior: 'smooth', block: 'center' });
             lucide.createIcons();
@@ -163,6 +434,11 @@
         function closeSubcats() {
             document.getElementById('subcat-container').style.display = 'none';
         }
+
+        // =============================================
+        // INICIALIZAR
+        // =============================================
+        checkUser();
     </script>
 </body>
 </html>
