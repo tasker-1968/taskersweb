@@ -4,211 +4,392 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Profesional | Tasker's México</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ÚNICA línea necesaria para Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
     <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Fondo con gradiente animado */
+        .bg-animated {
+            background: linear-gradient(-45deg, #0f172a, #1e3a8a, #3b82f6, #2563eb);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Tarjeta de registro con efecto glass */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Animación de entrada */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slideUp {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        /* Input focus effects */
+        .input-focus {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .input-focus:focus {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* File upload styles */
         .file-upload {
             border: 2px dashed #e2e8f0;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             cursor: pointer;
+            background: #f8fafc;
         }
+        
         .file-upload:hover {
             border-color: #3b82f6;
-            background-color: #eff6ff;
+            background: #eff6ff;
+            transform: translateY(-2px);
         }
+        
         .file-upload.has-file {
-            border-color: #22c55e;
-            background-color: #f0fdf4;
+            border-color: #10b981;
+            background: #f0fdf4;
         }
-        .error-message {
-            color: #dc2626;
-            padding: 0.75rem;
-            background-color: #fee2e2;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: none;
+        
+        /* Botón con efecto de onda */
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
-        .error-message.show {
-            display: block;
+        
+        .btn-ripple::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
         }
-        .success-message {
-            color: #059669;
-            padding: 0.75rem;
-            background-color: #d1fae5;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: none;
+        
+        .btn-ripple:hover::after {
+            animation: ripple 0.6s ease-out;
         }
-        .success-message.show {
-            display: block;
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Progress steps */
+        .step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .step.completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .glass-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .step {
+                width: 30px;
+                height: 30px;
+                font-size: 0.875rem;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-slate-50 min-h-screen font-sans">
+<body class="bg-animated min-h-screen flex items-center justify-center p-4">
+
+    <!-- Fondo con partículas (decorativo) -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Navbar simplificado -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center gap-2 sm:gap-3">
+                    <img src="logo-taskers.png" alt="Tasker's México" class="h-8 sm:h-10 w-auto">
+                    <span class="text-white font-bold text-lg sm:text-xl hidden sm:inline">Tasker's</span>
+                </a>
+                
+                <!-- Botón volver -->
+                <a href="index.html" class="flex items-center gap-2 text-white/80 hover:text-white transition bg-white/10 px-3 sm:px-4 py-2 rounded-xl">
+                    <i class="fas fa-arrow-left text-sm sm:text-base"></i>
+                    <span class="text-sm sm:text-base hidden sm:inline">Volver al inicio</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="container mx-auto max-w-3xl pt-20 sm:pt-24 pb-8">
+        <!-- Steps indicator -->
+        <div class="flex justify-center items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+            <div class="step active">1</div>
+            <div class="w-12 sm:w-16 h-0.5 bg-white/30"></div>
+            <div class="step">2</div>
+            <div class="w-12 sm:w-16 h-0.5 bg-white/30"></div>
+            <div class="step">3</div>
+        </div>
+
+        <!-- Tarjeta de Registro -->
+        <div class="glass-card rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 animate-slideUp">
+            
+            <!-- Header -->
+            <div class="text-center mb-6 sm:mb-8">
+                <div class="inline-block p-3 bg-blue-100 rounded-2xl mb-4">
+                    <i class="fas fa-briefcase text-2xl sm:text-3xl text-blue-600"></i>
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">Conviértete en Tasker</h1>
+                <p class="text-sm sm:text-base text-slate-500">Completa tu registro y comienza a ofrecer tus servicios profesionales</p>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <form id="registroForm" class="space-y-6 sm:space-y-8">
+                <!-- Sección 1: Datos personales -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 border-b pb-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-700">Datos personales</h2>
+                    </div>
+                    
+                    <!-- Nombre completo -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                            <i class="fas fa-user mr-2"></i>
+                            Nombre completo *
+                        </label>
+                        <input type="text" id="full_name" required 
+                            class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
+                            placeholder="Ej: Juan Carlos Pérez García">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                            <i class="fas fa-envelope mr-2"></i>
+                            Correo electrónico *
+                        </label>
+                        <input type="email" id="email" required 
+                            class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
+                            placeholder="tucorreo@ejemplo.com">
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                            <i class="fas fa-phone mr-2"></i>
+                            Teléfono de contacto *
+                        </label>
+                        <input type="tel" id="phone" required 
+                            class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
+                            placeholder="5512345678">
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                            <i class="fas fa-lock mr-2"></i>
+                            Contraseña *
+                        </label>
+                        <input type="password" id="password" required minlength="6"
+                            class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
+                            placeholder="Mínimo 6 caracteres">
+                        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                            <i class="fas fa-info-circle"></i>
+                            La contraseña debe tener al menos 6 caracteres
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Documentación -->
+                <div class="space-y-4 pt-4">
+                    <div class="flex items-center gap-2 border-b pb-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-alt text-blue-600"></i>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-700">Documentación requerida</h2>
+                    </div>
+                    
+                    <p class="text-sm text-slate-500 bg-blue-50 p-3 rounded-lg">
+                        <i class="fas fa-shield-alt mr-2 text-blue-600"></i>
+                        Todos los documentos son necesarios para verificar tu identidad y garantizar la seguridad de la plataforma.
+                    </p>
+
+                    <!-- Grid de documentos -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <!-- Foto -->
+                        <div class="file-upload p-4 sm:p-6 rounded-xl text-center" onclick="document.getElementById('file_photo').click()">
+                            <i class="fas fa-camera text-2xl sm:text-3xl text-slate-400 mb-2"></i>
+                            <p class="text-sm font-medium text-slate-600">Foto de perfil</p>
+                            <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx 5MB</p>
+                            <input type="file" id="file_photo" accept="image/*" class="hidden" required>
+                            <div id="photo_name" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                        </div>
+
+                        <!-- INE -->
+                        <div class="file-upload p-4 sm:p-6 rounded-xl text-center" onclick="document.getElementById('file_ine').click()">
+                            <i class="fas fa-id-card text-2xl sm:text-3xl text-slate-400 mb-2"></i>
+                            <p class="text-sm font-medium text-slate-600">INE/Identificación</p>
+                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
+                            <input type="file" id="file_ine" accept=".pdf,image/*" class="hidden" required>
+                            <div id="ine_name" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                        </div>
+
+                        <!-- Antecedentes -->
+                        <div class="file-upload p-4 sm:p-6 rounded-xl text-center" onclick="document.getElementById('file_penal').click()">
+                            <i class="fas fa-gavel text-2xl sm:text-3xl text-slate-400 mb-2"></i>
+                            <p class="text-sm font-medium text-slate-600">Carta antecedentes</p>
+                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
+                            <input type="file" id="file_penal" accept=".pdf,image/*" class="hidden" required>
+                            <div id="penal_name" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Términos -->
+                <div class="pt-4">
+                    <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+                        <input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                        <label class="text-sm text-slate-600 leading-relaxed">
+                            Acepto los 
+                            <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Términos y condiciones</a> 
+                            y la 
+                            <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Política de privacidad</a>. 
+                            Confirmo que la información proporcionada es verídica y que los documentos adjuntos son auténticos.
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Botón de Registro -->
+                <button type="submit" id="btnSubmit" 
+                    class="btn-ripple w-full text-white py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                    <i class="fas fa-briefcase"></i>
+                    Completar registro profesional
+                </button>
+            </form>
+
+            <!-- Enlace a login -->
+            <div class="mt-6 sm:mt-8 text-center">
+                <p class="text-xs sm:text-sm text-slate-500">
+                    ¿Ya tienes cuenta? 
+                    <a href="login.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                        Inicia sesión aquí
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
             <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="text-gray-600">Procesando registro...</p>
+            <p class="text-gray-600 font-medium">Procesando registro...</p>
+            <p class="text-xs text-gray-400 mt-2">Esto puede tomar unos segundos</p>
         </div>
     </div>
 
     <!-- Mensajes flotantes -->
-    <div id="globalError" class="error-message fixed top-4 right-4 z-50 max-w-md shadow-lg">
+    <div id="globalError" class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden animate-slideIn">
         <i class="fas fa-exclamation-triangle mr-2"></i>
         <span id="errorText"></span>
     </div>
     
-    <div id="globalSuccess" class="success-message fixed top-4 right-4 z-50 max-w-md shadow-lg">
+    <div id="globalSuccess" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden animate-slideIn">
         <i class="fas fa-check-circle mr-2"></i>
         <span id="successText"></span>
     </div>
 
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold text-blue-600">Tasker's <span class="text-slate-800">Profesional</span></a>
-            <a href="index.html" class="text-slate-600 hover:text-blue-600 transition">
-                <i class="fas fa-arrow-left mr-2"></i>Volver al inicio
-            </a>
-        </div>
-    </nav>
-
-    <main class="container mx-auto px-6 py-12 max-w-3xl">
-        <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12">
-            <div class="text-center mb-10">
-                <div class="bg-blue-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-briefcase text-4xl text-blue-600"></i>
-                </div>
-                <h1 class="text-3xl font-bold text-slate-800 mb-2">Conviértete en Tasker</h1>
-                <p class="text-slate-500">Completa tu registro y comienza a ofrecer tus servicios profesionales</p>
-            </div>
-
-            <form id="registroForm" class="space-y-6">
-                <!-- Datos personales -->
-                <div class="space-y-4">
-                    <h2 class="text-lg font-bold text-slate-700 border-b pb-2">Datos personales</h2>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Nombre completo *</label>
-                        <input type="text" id="full_name" required 
-                            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="Ej: Juan Carlos Pérez García">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Correo electrónico *</label>
-                        <input type="email" id="email" required 
-                            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="tucorreo@ejemplo.com">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Teléfono de contacto *</label>
-                        <input type="tel" id="phone" required 
-                            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="5512345678">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Contraseña *</label>
-                        <input type="password" id="password" required minlength="6"
-                            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            placeholder="Mínimo 6 caracteres">
-                        <p class="text-xs text-gray-500 mt-1">La contraseña debe tener al menos 6 caracteres</p>
-                    </div>
-                </div>
-
-                <!-- Documentación -->
-                <div class="space-y-4 pt-4">
-                    <h2 class="text-lg font-bold text-slate-700 border-b pb-2">Documentación requerida</h2>
-                    <p class="text-sm text-slate-500 mb-4">Todos los documentos son necesarios para verificar tu identidad</p>
-
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <!-- Foto -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_photo').click()">
-                            <i class="fas fa-camera text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">Foto de perfil</p>
-                            <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx 5MB</p>
-                            <input type="file" id="file_photo" accept="image/*" class="hidden" required>
-                            <div id="photo_name" class="text-xs text-green-600 mt-2 hidden"></div>
-                        </div>
-
-                        <!-- INE -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_ine').click()">
-                            <i class="fas fa-id-card text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">INE/Identificación</p>
-                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
-                            <input type="file" id="file_ine" accept=".pdf,image/*" class="hidden" required>
-                            <div id="ine_name" class="text-xs text-green-600 mt-2 hidden"></div>
-                        </div>
-
-                        <!-- Antecedentes -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('file_penal').click()">
-                            <i class="fas fa-gavel text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">Carta antecedentes</p>
-                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
-                            <input type="file" id="file_penal" accept=".pdf,image/*" class="hidden" required>
-                            <div id="penal_name" class="text-xs text-green-600 mt-2 hidden"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Términos -->
-                <div class="pt-4">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="terminos" required class="mt-1">
-                        <span class="text-sm text-slate-600">
-                            Acepto los <a href="#" class="text-blue-600 hover:underline">Términos y condiciones</a> y la 
-                            <a href="#" class="text-blue-600 hover:underline">Política de privacidad</a>. Confirmo que la información proporcionada es verídica.
-                        </span>
-                    </label>
-                </div>
-
-                <!-- Botón -->
-                <button type="submit" id="btnSubmit" 
-                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    <span>Completar registro</span>
-                </button>
-            </form>
-
-            <div class="mt-8 text-center">
-                <p class="text-sm text-slate-500">
-                    ¿Ya tienes cuenta? 
-                    <a href="login.html" class="text-blue-600 hover:underline font-medium">Inicia sesión aquí</a>
-                </p>
-            </div>
-        </div>
-    </main>
-
     <script>
         // =============================================
-        // CONFIGURACIÓN DIRECTA - SIN ARCHIVOS EXTERNOS
+        // CONFIGURACIÓN DE SUPABASE
         // =============================================
-        
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
         // Variable global de Supabase
         let supabaseClient = null;
 
-        // Inicializar cuando cargue la página
+        // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Inicializando registro...');
-            
             try {
-                // Verificar que Supabase esté disponible
                 if (typeof window.supabase === 'undefined') {
                     throw new Error('La biblioteca de Supabase no se cargó correctamente');
                 }
 
-                // Crear el cliente
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Supabase inicializado correctamente');
-
-                // Configurar los event listeners
+                console.log('✅ Supabase inicializado');
                 configurarEventListeners();
                 
             } catch (error) {
@@ -218,7 +399,7 @@
         });
 
         function configurarEventListeners() {
-            // Mostrar nombres de archivos seleccionados
+            // Manejo de archivos
             ['photo', 'ine', 'penal'].forEach(id => {
                 const input = document.getElementById(`file_${id}`);
                 if (input) {
@@ -227,8 +408,18 @@
                         const nameSpan = document.getElementById(`${id}_name`);
                         
                         if (this.files && this.files[0]) {
+                            const file = this.files[0];
+                            // Validar tamaño
+                            if (file.size > 5 * 1024 * 1024) {
+                                mostrarError(`El archivo ${id} no debe exceder 5MB`);
+                                this.value = '';
+                                div.classList.remove('has-file');
+                                nameSpan.classList.add('hidden');
+                                return;
+                            }
+                            
                             div.classList.add('has-file');
-                            nameSpan.textContent = '✓ ' + this.files[0].name;
+                            nameSpan.textContent = '✓ ' + file.name.substring(0, 30) + (file.name.length > 30 ? '...' : '');
                             nameSpan.classList.remove('hidden');
                         } else {
                             div.classList.remove('has-file');
@@ -239,16 +430,12 @@
             });
 
             // Manejar envío del formulario
-            const form = document.getElementById('registroForm');
-            if (form) {
-                form.addEventListener('submit', handleRegistro);
-            }
+            document.getElementById('registroForm').addEventListener('submit', handleRegistro);
         }
 
         async function handleRegistro(e) {
             e.preventDefault();
             
-            // Verificar que Supabase esté listo
             if (!supabaseClient) {
                 mostrarError('Supabase no está inicializado. Recarga la página.');
                 return;
@@ -274,14 +461,11 @@
                     if (!file) {
                         throw new Error(`Falta el archivo: ${key === 'photo' ? 'Foto' : key === 'ine' ? 'INE' : 'Antecedentes'}`);
                     }
-                    if (file.size > 5 * 1024 * 1024) {
-                        throw new Error(`El archivo ${key} no debe exceder 5MB`);
-                    }
                 }
 
                 // Validar email
                 const email = document.getElementById('email').value.trim();
-                if (!email.includes('@')) {
+                if (!email.includes('@') || !email.includes('.')) {
                     throw new Error('Correo electrónico inválido');
                 }
 
@@ -304,13 +488,8 @@
                     }
                 });
 
-                if (authError) {
-                    throw new Error(authError.message);
-                }
-
-                if (!authData || !authData.user) {
-                    throw new Error('No se pudo crear el usuario');
-                }
+                if (authError) throw new Error(authError.message);
+                if (!authData || !authData.user) throw new Error('No se pudo crear el usuario');
 
                 const userId = authData.user.id;
                 console.log('✅ Usuario creado:', userId);
@@ -365,7 +544,15 @@
 
                 if (profileError) {
                     console.error('Error perfil:', profileError);
-                    throw new Error('Error al crear perfil: ' + profileError.message);
+                    
+                    // Si falla el perfil, intentar limpiar el usuario de auth
+                    await supabaseClient.auth.admin.deleteUser(userId);
+                    
+                    if (profileError.message.includes('duplicate key')) {
+                        throw new Error('Este correo electrónico ya está registrado');
+                    } else {
+                        throw new Error('Error al crear perfil: ' + profileError.message);
+                    }
                 }
 
                 // 4. ÉXITO
@@ -380,7 +567,6 @@
                 console.error('🔥 Error:', error);
                 mostrarError(error.message);
                 
-                // Restaurar botón
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 hideLoading();
@@ -391,48 +577,73 @@
         // FUNCIONES DE UTILIDAD
         // =============================================
         function showLoading() {
-            const modal = document.getElementById('loadingModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
         }
 
         function hideLoading() {
-            const modal = document.getElementById('loadingModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
         }
 
         function mostrarError(mensaje) {
             const errorDiv = document.getElementById('globalError');
             const errorText = document.getElementById('errorText');
-            if (errorDiv && errorText) {
-                errorText.textContent = mensaje;
-                errorDiv.classList.add('show');
-                
-                setTimeout(() => {
-                    errorDiv.classList.remove('show');
-                }, 5000);
-            } else {
-                alert('Error: ' + mensaje);
-            }
+            errorText.textContent = mensaje;
+            errorDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
         }
 
         function mostrarExito(mensaje) {
             const successDiv = document.getElementById('globalSuccess');
             const successText = document.getElementById('successText');
-            if (successDiv && successText) {
-                successText.textContent = mensaje;
-                successDiv.classList.add('show');
-                
-                setTimeout(() => {
-                    successDiv.classList.remove('show');
-                }, 3000);
-            }
+            successText.textContent = mensaje;
+            successDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                successDiv.classList.add('hidden');
+            }, 3000);
         }
     </script>
+
+    <!-- Estilos adicionales -->
+    <style>
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
 </body>
 </html>
