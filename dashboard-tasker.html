@@ -4,62 +4,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Tasker | Tasker's Profesional</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        .active-link { @apply bg-blue-700 text-white; }
-        .section-content { display: none; }
-        .section-content.active { display: block; }
-        .chat-message { max-width: 70%; }
-        .chat-tasker { @apply bg-blue-600 text-white ml-auto; }
-        .chat-client { @apply bg-gray-100 text-gray-800; }
-        .status-badge { @apply px-3 py-1 rounded-full text-xs font-bold; }
-        .status-disponible { @apply bg-green-100 text-green-700; }
-        .status-asignado { @apply bg-blue-100 text-blue-700; }
-        .status-progreso { @apply bg-purple-100 text-purple-700; }
-        .status-completado { @apply bg-gray-100 text-gray-700; }
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #fbbf24;
+        }
+        
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #fbbf24;
+            color: white;
+        }
+        
+        /* Section transitions */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Chat styles */
+        .chat-message {
+            max-width: 70%;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .chat-tasker {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .chat-client {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            @apply px-3 py-1 rounded-full text-xs font-bold;
+            transition: all 0.3s ease;
+        }
+        
+        .status-disponible { 
+            background: #d1fae5; 
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .status-asignado { 
+            background: #dbeafe; 
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        .status-progreso { 
+            background: #ede9fe; 
+            color: #5b21b6;
+            border: 1px solid #c4b5fd;
+        }
+        .status-completado { 
+            background: #f1f5f9; 
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        
+        /* Cards */
+        .stat-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+        }
+        
+        /* Modal */
+        .modal {
+            transition: all 0.3s ease;
+        }
+        
+        /* File upload */
+        .file-upload {
+            border: 2px dashed #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .file-upload.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 50;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .chat-message {
+                max-width: 85%;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-slate-50">
+
+    <!-- Mobile menu button -->
+    <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <!-- Overlay for mobile -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
 
     <!-- Modal de carga -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
             <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="text-gray-600">Cargando...</p>
+            <p class="text-gray-600 font-medium">Cargando...</p>
         </div>
     </div>
 
     <!-- Modal de propuesta -->
-    <div id="propuestaModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <div id="propuestaModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Enviar Propuesta</h3>
-                <button onclick="cerrarPropuestaModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
+                <h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3>
+                <button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <form id="propuestaForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tu presupuesto ($MXN)</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label>
                     <input type="number" id="propuestaMonto" required min="100" step="100"
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-gray-500 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <i class="fas fa-info-circle text-blue-600"></i>
                         Recibirás el 85% (comisión Tasker's: 15%)
                     </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje para el cliente</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label>
                     <textarea id="propuestaMensaje" rows="3" 
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                         placeholder="Describe por qué eres la mejor opción..."></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tiempo estimado</label>
-                    <select id="propuestaTiempo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label>
+                    <select id="propuestaTiempo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         <option value="60">1 hora</option>
                         <option value="120">2 horas</option>
                         <option value="180">3 horas</option>
@@ -68,7 +242,7 @@
                         <option value="360">6+ horas</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                     Enviar Propuesta
                 </button>
             </form>
@@ -76,34 +250,34 @@
     </div>
 
     <!-- Modal de retiro -->
-    <div id="retiroModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <div id="retiroModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Solicitar Retiro</h3>
-                <button onclick="cerrarRetiroModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
+                <h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3>
+                <button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <form id="retiroForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Monto a retirar</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label>
                     <input type="number" id="retiroMonto" required min="100" step="100"
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
-                    <p id="saldoDisponible" class="text-xs text-gray-500 mt-2">Saldo disponible: $0.00</p>
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Método de pago</label>
-                    <select id="retiroMetodo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label>
+                    <select id="retiroMetodo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         <option value="transferencia">Transferencia bancaria</option>
                         <option value="paypal">PayPal</option>
                     </select>
                 </div>
                 <div id="datosBancarios">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">CLABE (18 dígitos)</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label>
                     <input type="text" id="retiroClabe" maxlength="18" 
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
                     Solicitar Retiro
                 </button>
             </form>
@@ -112,121 +286,144 @@
 
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-blue-900 to-blue-800 text-white hidden md:flex flex-col">
-            <div class="p-6">
-                <div class="text-2xl font-bold text-white">Tasker's <span class="text-blue-300">Hub</span></div>
-                <div id="userInfo" class="mt-6 text-sm text-blue-100"></div>
+        <aside id="sidebar" class="sidebar w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
+            <!-- Logo -->
+            <div class="p-6 border-b border-white/20">
+                <div class="flex items-center gap-3">
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
+                    <div>
+                        <div class="text-xl font-bold text-white">Tasker's</div>
+                        <div class="text-xs text-yellow-400">Panel Profesional</div>
+                    </div>
+                </div>
+                <div id="userInfo" class="mt-4 text-sm text-blue-100 bg-white/10 p-3 rounded-lg">
+                    <!-- Se llena dinámicamente -->
+                </div>
             </div>
             
-            <nav class="flex-1 mt-2">
-                <a href="#" onclick="showSection('inicio')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-all active-link" id="link-inicio">
-                    <i class="fas fa-home w-6"></i> Inicio
+            <!-- Navigation -->
+            <nav class="flex-1 mt-6 space-y-1 px-3">
+                <a href="#" onclick="showSection('inicio')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio">
+                    <i class="fas fa-home w-6"></i>
+                    <span>Inicio</span>
                 </a>
-                <a href="#" onclick="showSection('disponibles')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-disponibles">
-                    <i class="fas fa-search w-6"></i> Servicios Disponibles
+                <a href="#" onclick="showSection('disponibles')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles">
+                    <i class="fas fa-search w-6"></i>
+                    <span>Servicios Disponibles</span>
                 </a>
-                <a href="#" onclick="showSection('mis-trabajos')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-mis-trabajos">
-                    <i class="fas fa-briefcase w-6"></i> Mis Trabajos
+                <a href="#" onclick="showSection('mis-trabajos')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos">
+                    <i class="fas fa-briefcase w-6"></i>
+                    <span>Mis Trabajos</span>
                 </a>
-                <a href="#" onclick="showSection('chat')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-chat">
-                    <i class="fas fa-comments w-6"></i> Mensajes
-                    <span id="chatCount" class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full hidden">0</span>
+                <a href="#" onclick="showSection('chat')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat">
+                    <i class="fas fa-comments w-6"></i>
+                    <span>Mensajes</span>
+                    <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
                 </a>
-                <a href="#" onclick="showSection('finanzas')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-finanzas">
-                    <i class="fas fa-wallet w-6"></i> Finanzas
+                <a href="#" onclick="showSection('finanzas')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas">
+                    <i class="fas fa-wallet w-6"></i>
+                    <span>Finanzas</span>
                 </a>
-                <a href="#" onclick="showSection('perfil')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-perfil">
-                    <i class="fas fa-user w-6"></i> Mi Perfil
+                <a href="#" onclick="showSection('perfil')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil">
+                    <i class="fas fa-user w-6"></i>
+                    <span>Mi Perfil</span>
                 </a>
-                <a href="#" onclick="showSection('documentos')" class="flex items-center px-6 py-3 hover:bg-blue-700 transition" id="link-documentos">
-                    <i class="fas fa-file-upload w-6"></i> Documentación
+                <a href="#" onclick="showSection('documentos')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-documentos">
+                    <i class="fas fa-file-upload w-6"></i>
+                    <span>Documentación</span>
                 </a>
             </nav>
             
-            <div class="p-4 border-t border-blue-700">
-                <button onclick="cerrarSesion()" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            <!-- Logout button -->
+            <div class="p-4 border-t border-white/20">
+                <button onclick="cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-y-auto">
+        <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
+            <!-- Header -->
             <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
-                <div>
-                    <h2 id="section-title" class="text-xl font-bold text-gray-800">Inicio</h2>
-                    <p id="section-subtitle" class="text-sm text-gray-500">Bienvenido a tu panel profesional</p>
+                <div class="ml-12 md:ml-0">
+                    <h2 id="section-title" class="text-xl font-bold text-slate-800">Inicio</h2>
+                    <p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel profesional</p>
                 </div>
                 <div class="flex items-center gap-4">
                     <span id="verificationBadge" class="hidden px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
                         <i class="fas fa-clock mr-1"></i> Pendiente verificación
                     </span>
                     <button onclick="showSection('chat')" class="relative">
-                        <i class="fas fa-comments text-gray-600 text-xl"></i>
+                        <i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i>
                         <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
                     </button>
-                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer" onclick="showSection('perfil')">
+                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer hover:border-blue-600 transition" onclick="showSection('perfil')">
                 </div>
             </header>
 
-            <div class="p-6">
+            <!-- Content -->
+            <div class="p-4 md:p-6">
                 <!-- SECCIÓN: INICIO -->
                 <section id="inicio" class="section-content active">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                            <p class="text-gray-500 text-sm">Ganancias del mes</p>
-                            <p id="statsGanancias" class="text-3xl font-bold mt-2">$0</p>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-slate-500 text-sm">Ganancias del mes</p>
+                            <p id="statsGanancias" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                            <p class="text-gray-500 text-sm">Trabajos completados</p>
-                            <p id="statsCompletados" class="text-3xl font-bold mt-2">0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-slate-500 text-sm">Trabajos completados</p>
+                            <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-                            <p class="text-gray-500 text-sm">En progreso</p>
-                            <p id="statsProgreso" class="text-3xl font-bold mt-2">0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-slate-500 text-sm">En progreso</p>
+                            <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                            <p class="text-gray-500 text-sm">Calificación</p>
-                            <p id="statsCalificacion" class="text-3xl font-bold mt-2">0.0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-slate-500 text-sm">Calificación</p>
+                            <p id="statsCalificacion" class="text-3xl font-bold text-slate-800 mt-2">0.0</p>
                         </div>
                     </div>
 
                     <!-- Próximos trabajos -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg mb-4">Próximos trabajos</h3>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-calendar-alt text-blue-600"></i>
+                            Próximos trabajos
+                        </h3>
                         <div id="proximosTrabajos" class="space-y-3">
-                            <p class="text-gray-400 text-center py-4">Cargando...</p>
+                            <p class="text-slate-400 text-center py-4">Cargando...</p>
                         </div>
                     </div>
                 </section>
 
                 <!-- SECCIÓN: SERVICIOS DISPONIBLES -->
                 <section id="disponibles" class="section-content">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Servicios Disponibles</h3>
-                        <div class="flex gap-2">
-                            <select id="filtroCategoria" onchange="cargarDisponibles()" class="p-2 border rounded-lg text-sm">
-                                <option value="">Todas las categorías</option>
-                            </select>
-                        </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">Servicios Disponibles</h3>
+                        <select id="filtroCategoria" onchange="cargarDisponibles()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option value="">Todas las categorías</option>
+                        </select>
                     </div>
-                    <div id="disponiblesContainer" class="space-y-4">
+                    <div id="disponiblesContainer" class="grid grid-cols-1 gap-4">
                         <!-- Se llena dinámicamente -->
                     </div>
                 </section>
 
                 <!-- SECCIÓN: MIS TRABAJOS -->
                 <section id="mis-trabajos" class="section-content">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Mis Trabajos</h3>
-                        <select id="filtroMisTrabajos" onchange="cargarMisTrabajos()" class="p-2 border rounded-lg text-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">Mis Trabajos</h3>
+                        <select id="filtroMisTrabajos" onchange="cargarMisTrabajos()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                             <option value="todos">Todos</option>
                             <option value="asignado">Asignados</option>
                             <option value="en_progreso">En progreso</option>
                             <option value="completado">Completados</option>
                         </select>
                     </div>
-                    <div id="misTrabajosContainer" class="space-y-4">
+                    <div id="misTrabajosContainer" class="grid grid-cols-1 gap-4">
                         <!-- Se llena dinámicamente -->
                     </div>
                 </section>
@@ -236,40 +433,44 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
                         <!-- Lista de conversaciones -->
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4 border-b bg-gray-50">
-                                <h3 class="font-bold">Conversaciones</h3>
+                            <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                                <h3 class="font-bold flex items-center gap-2">
+                                    <i class="fas fa-comments"></i>
+                                    Conversaciones
+                                </h3>
                             </div>
                             <div id="conversacionesLista" class="overflow-y-auto h-full">
-                                <p class="text-gray-400 text-center p-4">Cargando...</p>
+                                <p class="text-slate-400 text-center p-4">Cargando...</p>
                             </div>
                         </div>
 
                         <!-- Área de chat -->
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
-                            <div id="chatHeader" class="p-4 border-b bg-gray-50 hidden">
+                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
                                 <div class="flex items-center gap-3">
-                                    <img id="chatClienteAvatar" src="" class="w-10 h-10 rounded-full object-cover">
+                                    <img id="chatClienteAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
                                     <div>
-                                        <h4 id="chatClienteNombre" class="font-bold">Cliente</h4>
-                                        <p id="chatServicioInfo" class="text-xs text-gray-500"></p>
+                                        <h4 id="chatClienteNombre" class="font-bold text-slate-800"></h4>
+                                        <p id="chatServicioInfo" class="text-xs text-slate-500"></p>
                                     </div>
                                 </div>
                             </div>
 
                             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-                                <p class="text-gray-400 text-center py-8">Selecciona una conversación</p>
+                                <p class="text-slate-400 text-center py-8">Selecciona una conversación</p>
                             </div>
 
-                            <div id="chatInput" class="p-4 border-t hidden">
+                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
                                 <form id="mensajeForm" class="flex gap-2">
                                     <input type="text" id="mensajeTexto" 
-                                        class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                         placeholder="Escribe tu mensaje...">
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </form>
-                                <p class="text-xs text-gray-400 mt-2 text-center">
+                                <p class="text-xs text-slate-400 mt-2 text-center">
+                                    <i class="fas fa-shield-alt mr-1 text-blue-600"></i>
                                     Todos los mensajes son monitoreados. No compartas datos de contacto.
                                 </p>
                             </div>
@@ -279,41 +480,42 @@
 
                 <!-- SECCIÓN: FINANZAS -->
                 <section id="finanzas" class="section-content">
+                    <!-- Resumen de finanzas -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                         <div class="bg-white p-6 rounded-xl shadow-sm">
-                            <p class="text-gray-500 text-sm">Saldo disponible</p>
+                            <p class="text-slate-500 text-sm">Saldo disponible</p>
                             <p id="saldoActual" class="text-3xl font-bold text-green-600 mt-2">$0.00</p>
-                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                 <i class="fas fa-money-bill-wave mr-2"></i>Retirar
                             </button>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm">
-                            <p class="text-gray-500 text-sm">Ganancias totales</p>
-                            <p id="gananciasTotales" class="text-3xl font-bold mt-2">$0.00</p>
+                            <p class="text-slate-500 text-sm">Ganancias totales</p>
+                            <p id="gananciasTotales" class="text-3xl font-bold text-slate-800 mt-2">$0.00</p>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm">
-                            <p class="text-gray-500 text-sm">Comisiones pagadas</p>
-                            <p id="comisionesTotales" class="text-3xl font-bold mt-2">$0.00</p>
+                            <p class="text-slate-500 text-sm">Comisiones pagadas</p>
+                            <p id="comisionesTotales" class="text-3xl font-bold text-slate-800 mt-2">$0.00</p>
                         </div>
                     </div>
 
                     <!-- Historial de pagos -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg mb-4">Historial de pagos</h3>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Historial de pagos</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full">
-                                <thead class="bg-gray-50">
+                                <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Fecha</th>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Servicio</th>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Monto</th>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Comisión</th>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Neto</th>
-                                        <th class="p-3 text-left text-sm font-bold text-gray-600">Estado</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Comisión</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Neto</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pagosTableBody">
-                                    <tr><td colspan="6" class="text-center p-8 text-gray-400">Cargando...</td></tr>
+                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -322,97 +524,137 @@
 
                 <!-- SECCIÓN: PERFIL -->
                 <section id="perfil" class="section-content">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold mb-6">Mi Perfil Profesional</h3>
-                        
-                        <div class="flex flex-col items-center mb-8">
-                            <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 mb-4">
-                            <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
-                            <button onclick="document.getElementById('fotoPerfil').click()" class="text-blue-600 hover:underline">
-                                <i class="fas fa-camera mr-2"></i>Cambiar foto
-                            </button>
-                        </div>
+                    <div class="max-w-2xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                            <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <i class="fas fa-user-circle text-blue-600"></i>
+                                Mi Perfil Profesional
+                            </h3>
+                            
+                            <!-- Foto de perfil -->
+                            <div class="flex flex-col items-center mb-8">
+                                <div class="relative">
+                                    <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100">
+                                    <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                </div>
+                                <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
+                                <p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
+                            </div>
 
-                        <form id="perfilForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Nombre completo</label>
-                                <input type="text" id="perfilNombre" required class="mt-1 w-full p-3 border rounded-xl">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                                <input type="email" id="perfilEmail" readonly class="mt-1 w-full p-3 border rounded-xl bg-gray-50">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                                <input type="tel" id="perfilTelefono" required class="mt-1 w-full p-3 border rounded-xl">
-                                <p class="text-xs text-gray-500 mt-1">No compartimos tu teléfono con los clientes</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Descripción profesional</label>
-                                <textarea id="perfilDescripcion" rows="3" class="mt-1 w-full p-3 border rounded-xl"
-                                    placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Años de experiencia</label>
-                                <input type="number" id="perfilExperiencia" min="0" class="mt-1 w-full p-3 border rounded-xl">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
-                                Guardar Cambios
-                            </button>
-                        </form>
+                            <!-- Formulario -->
+                            <form id="perfilForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                                        Nombre completo
+                                    </label>
+                                    <input type="text" id="perfilNombre" required 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-envelope mr-2 text-blue-600"></i>
+                                        Correo electrónico
+                                    </label>
+                                    <input type="email" id="perfilEmail" readonly 
+                                        class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-phone mr-2 text-blue-600"></i>
+                                        Teléfono
+                                    </label>
+                                    <input type="tel" id="perfilTelefono" required 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        No compartimos tu teléfono con los clientes
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-align-left mr-2 text-blue-600"></i>
+                                        Descripción profesional
+                                    </label>
+                                    <textarea id="perfilDescripcion" rows="3" 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                        placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                                        Años de experiencia
+                                    </label>
+                                    <input type="number" id="perfilExperiencia" min="0" 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                </div>
+                                <button type="submit" 
+                                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                                    <i class="fas fa-save"></i>
+                                    Guardar Cambios
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </section>
 
                 <!-- SECCIÓN: DOCUMENTOS -->
                 <section id="documentos" class="section-content">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold mb-2">Documentación</h3>
-                        <p class="text-gray-500 text-sm mb-6">Sube tus documentos para verificar tu identidad</p>
+                    <div class="max-w-2xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-file-alt text-blue-600"></i>
+                                Documentación
+                            </h3>
+                            <p class="text-slate-500 text-sm mb-6">Sube tus documentos para verificar tu identidad</p>
 
-                        <div class="space-y-6">
-                            <!-- INE -->
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold">Identificación oficial</h4>
-                                        <p class="text-xs text-gray-500">INE, pasaporte o cédula profesional</p>
+                            <div class="space-y-6">
+                                <!-- INE -->
+                                <div class="border rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h4 class="font-bold text-slate-800">Identificación oficial</h4>
+                                            <p class="text-xs text-slate-500">INE, pasaporte o cédula profesional</p>
+                                        </div>
+                                        <span id="ineStatus" class="text-sm text-yellow-600 font-medium">Pendiente</span>
                                     </div>
-                                    <span id="ineStatus" class="text-sm text-yellow-600">Pendiente</span>
+                                    <input type="file" id="docINE" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
                                 </div>
-                                <input type="file" id="docINE" accept="image/*,.pdf" class="w-full p-2 border rounded">
-                            </div>
 
-                            <!-- Comprobante de domicilio -->
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold">Comprobante de domicilio</h4>
-                                        <p class="text-xs text-gray-500">Luz, agua, teléfono (últimos 3 meses)</p>
+                                <!-- Comprobante de domicilio -->
+                                <div class="border rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h4 class="font-bold text-slate-800">Comprobante de domicilio</h4>
+                                            <p class="text-xs text-slate-500">Luz, agua, teléfono (últimos 3 meses)</p>
+                                        </div>
+                                        <span id="domicilioStatus" class="text-sm text-yellow-600 font-medium">Pendiente</span>
                                     </div>
-                                    <span id="domicilioStatus" class="text-sm text-yellow-600">Pendiente</span>
+                                    <input type="file" id="docDomicilio" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
                                 </div>
-                                <input type="file" id="docDomicilio" accept="image/*,.pdf" class="w-full p-2 border rounded">
-                            </div>
 
-                            <!-- Antecedentes penales -->
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold">Carta de antecedentes no penales</h4>
-                                        <p class="text-xs text-gray-500">Opcional pero recomendado</p>
+                                <!-- Antecedentes penales -->
+                                <div class="border rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h4 class="font-bold text-slate-800">Carta de antecedentes no penales</h4>
+                                            <p class="text-xs text-slate-500">Opcional pero recomendado</p>
+                                        </div>
+                                        <span id="penalesStatus" class="text-sm text-slate-400 font-medium">No subido</span>
                                     </div>
-                                    <span id="penalesStatus" class="text-sm text-gray-500">No subido</span>
+                                    <input type="file" id="docPenales" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
                                 </div>
-                                <input type="file" id="docPenales" accept="image/*,.pdf" class="w-full p-2 border rounded">
-                            </div>
 
-                            <button onclick="subirDocumentos()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
-                                Enviar documentos para verificación
-                            </button>
+                                <button onclick="subirDocumentos()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                    Enviar documentos para verificación
+                                </button>
 
-                            <div class="bg-blue-50 p-4 rounded-xl text-sm text-blue-800">
-                                <i class="fas fa-shield-alt mr-2"></i>
-                                Tus documentos están seguros. Solo los usa el equipo de verificación de Tasker's.
+                                <div class="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 border border-blue-200">
+                                    <i class="fas fa-shield-alt mr-2"></i>
+                                    Tus documentos están seguros. Solo los usa el equipo de verificación de Tasker's.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -421,13 +663,68 @@
         </main>
     </div>
 
-    <script src="config.js"></script>
     <script>
-        // Variables globales
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
         let currentUser = null;
         let currentChat = null;
         let chatSubscription = null;
         let servicioSeleccionado = null;
+
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } text-white max-w-md`;
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN
+        // =============================================
+        async function checkAuth(redirectUrl = 'login.html') {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (!session) {
+                    window.location.href = redirectUrl;
+                    return null;
+                }
+                return session;
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = redirectUrl;
+                return null;
+            }
+        }
 
         // =============================================
         // INICIALIZACIÓN
@@ -438,7 +735,35 @@
             await loadDashboardData();
             await loadFinanzas();
             setupRealtimeSubscriptions();
+            setupMobileMenu();
         });
+
+        function setupMobileMenu() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('hidden');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.add('hidden');
+                });
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+        }
 
         async function loadUserData() {
             showLoading();
@@ -464,7 +789,7 @@
                 
             } catch (error) {
                 console.error('Error loading user:', error);
-                showError('Error al cargar datos del usuario');
+                showNotification('Error al cargar datos del usuario', 'error');
             } finally {
                 hideLoading();
             }
@@ -518,7 +843,7 @@
                     if (t.status === 'completado') {
                         const fecha = new Date(t.fecha_completado || t.created_at);
                         if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
-                            stats.ganancias += (t.monto_final || 0) * 0.85; // 85% para el tasker
+                            stats.ganancias += (t.monto_final || 0) * 0.85;
                         }
                     }
                 });
@@ -533,14 +858,14 @@
                 const container = document.getElementById('proximosTrabajos');
 
                 if (proximos.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-4">No tienes trabajos próximos</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>';
                 } else {
                     container.innerHTML = proximos.map(t => `
-                        <div class="border rounded-lg p-4">
+                        <div class="border rounded-lg p-4 hover:bg-slate-50 transition">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4>
-                                    <p class="text-sm text-gray-600">${t.ubicacion || 'Ubicación no especificada'}</p>
+                                    <h4 class="font-bold text-slate-800">${t.subcategoria || 'Servicio'}</h4>
+                                    <p class="text-sm text-slate-600">${t.ubicacion || 'Ubicación no especificada'}</p>
                                 </div>
                                 <span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">
                                     ${t.status === 'asignado' ? 'Asignado' : 'En progreso'}
@@ -568,6 +893,7 @@
                 if (error) throw error;
 
                 const select = document.getElementById('filtroCategoria');
+                select.innerHTML = '<option value="">Todas las categorías</option>';
                 categorias.forEach(cat => {
                     select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
                 });
@@ -602,16 +928,16 @@
                 if (error) throw error;
 
                 if (!servicios || servicios.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay servicios disponibles</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>';
                     return;
                 }
 
                 container.innerHTML = servicios.map(s => `
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-gray-600 mt-1">${s.descripcion}</p>
+                                <h4 class="font-bold text-lg text-slate-800">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600 mt-1">${s.descripcion}</p>
                             </div>
                             <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
                                 Disponible
@@ -620,24 +946,25 @@
 
                         <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
                             <div>
-                                <p class="text-gray-500">Presupuesto</p>
+                                <p class="text-slate-500">Presupuesto</p>
                                 <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
-                                <p class="text-xs text-gray-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p>
+                                <p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">Ubicación</p>
+                                <p class="text-slate-500">Ubicación</p>
                                 <p>${s.ubicacion || 'No especificada'}</p>
-                                <p class="text-xs text-gray-400">CP: ${s.cp || 'N/A'}</p>
+                                <p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">Publicado</p>
+                                <p class="text-slate-500">Publicado</p>
                                 <p>${new Date(s.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
 
                         <div class="border-t pt-4 flex justify-end">
                             <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" 
-                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                <i class="fas fa-paper-plane mr-2"></i>
                                 Enviar propuesta
                             </button>
                         </div>
@@ -655,7 +982,7 @@
         // =============================================
         function abrirPropuestaModal(servicioId, presupuestoMaximo) {
             servicioSeleccionado = { id: servicioId, maximo: presupuestoMaximo };
-            document.getElementById('propuestaMonto').value = presupuestoMaximo * 0.85; // Sugerencia: 85% del presupuesto
+            document.getElementById('propuestaMonto').value = presupuestoMaximo * 0.85;
             document.getElementById('propuestaModal').classList.remove('hidden');
             document.getElementById('propuestaModal').classList.add('flex');
         }
@@ -711,17 +1038,26 @@
 
                 if (error) throw error;
 
+                // Obtener el cliente_id del servicio
+                const { data: servicio } = await supabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioSeleccionado.id)
+                    .single();
+
                 // Crear notificación para el cliente
                 await supabase
                     .from('notificaciones')
                     .insert([{
-                        usuario_id: servicioSeleccionado.cliente_id,
+                        usuario_id: servicio.cliente_id,
                         tipo: 'propuesta',
                         titulo: '¡Nueva propuesta recibida!',
-                        mensaje: 'Un tasker ha enviado una propuesta para tu servicio'
+                        mensaje: 'Un tasker ha enviado una propuesta para tu servicio',
+                        data: { servicio_id: servicioSeleccionado.id }
                     }]);
 
                 alert('¡Propuesta enviada exitosamente!');
+                showNotification('Propuesta enviada al cliente', 'success');
                 cerrarPropuestaModal();
                 
             } catch (error) {
@@ -755,49 +1091,52 @@
                 if (error) throw error;
 
                 if (!trabajos || trabajos.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay trabajos</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>';
                     return;
                 }
 
                 container.innerHTML = trabajos.map(t => `
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h4 class="font-bold text-lg">${t.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-gray-600 mt-1">${t.descripcion}</p>
+                                <h4 class="font-bold text-lg text-slate-800">${t.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600 mt-1">${t.descripcion}</p>
                             </div>
                             <span class="status-badge ${getStatusClass(t.status)}">${getStatusText(t.status)}</span>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
                             <div>
-                                <p class="text-gray-500">Presupuesto</p>
+                                <p class="text-slate-500">Presupuesto</p>
                                 <p class="font-bold text-blue-600">$${t.monto_final?.toFixed(2) || t.monto_ofertado?.toFixed(2)}</p>
-                                <p class="text-xs text-gray-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p>
+                                <p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">Ubicación</p>
+                                <p class="text-slate-500">Ubicación</p>
                                 <p>${t.ubicacion || 'No especificada'}</p>
-                                <p class="text-xs text-gray-400">CP: ${t.cp || 'N/A'}</p>
+                                <p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p>
                             </div>
                         </div>
 
                         ${t.status === 'asignado' ? `
                             <div class="border-t pt-4 flex gap-3">
                                 <button onclick="iniciarTrabajo('${t.id}')" 
-                                    class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                                    class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200">
                                     <i class="fas fa-play mr-2"></i>Iniciar trabajo
                                 </button>
                                 <button onclick="abrirChat('${t.id}', '${t.cliente_id}')" 
-                                    class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                    class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                     <i class="fas fa-comment mr-2"></i>Contactar cliente
                                 </button>
                             </div>
                         ` : t.status === 'en_progreso' ? `
                             <div class="border-t pt-4">
-                                <p class="text-sm text-gray-600 mb-3">Esperando confirmación del cliente para finalizar</p>
+                                <p class="text-sm text-slate-600 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-blue-600"></i>
+                                    Esperando confirmación del cliente para finalizar
+                                </p>
                                 <button onclick="solicitarFinalizacion('${t.id}')" 
-                                    class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700">
+                                    class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 transition shadow-lg shadow-yellow-200">
                                     <i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización
                                 </button>
                             </div>
@@ -825,7 +1164,24 @@
 
                 if (error) throw error;
 
+                // Notificar al cliente
+                const { data: servicio } = await supabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioId)
+                    .single();
+
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Trabajo iniciado!',
+                        mensaje: 'El tasker ha comenzado a trabajar en tu servicio'
+                    }]);
+
                 alert('Trabajo iniciado');
+                showNotification('Trabajo iniciado correctamente', 'success');
                 cargarMisTrabajos();
                 
             } catch (error) {
@@ -854,6 +1210,7 @@
                     }]);
 
                 alert('Notificación enviada al cliente. Ellos confirmarán la finalización.');
+                showNotification('Solicitud enviada al cliente', 'success');
                 
             } catch (error) {
                 alert('Error: ' + error.message);
@@ -886,7 +1243,7 @@
                     if (p.status === 'completado') {
                         gananciasTotales += p.monto_tasker || 0;
                         comisionesTotales += p.comision_taskers || 0;
-                        // Solo contar como disponible si ya pasó el período de garantía (ej: 7 días)
+                        // Solo contar como disponible si ya pasó el período de garantía (7 días)
                         const fechaPago = new Date(p.fecha_pago);
                         const diasTranscurridos = Math.floor((new Date() - fechaPago) / (1000 * 60 * 60 * 24));
                         if (diasTranscurridos >= 7) {
@@ -904,12 +1261,12 @@
                 const tbody = document.getElementById('pagosTableBody');
                 
                 if (!pagos || pagos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">No hay pagos registrados</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos registrados</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b">
+                    <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
                         <td class="p-3">${p.servicio?.subcategoria || 'Servicio'}</td>
                         <td class="p-3">$${p.monto_total?.toFixed(2)}</td>
@@ -956,6 +1313,7 @@
                 // Por ahora, simulamos la solicitud
                 
                 alert('Solicitud de retiro enviada. El pago se procesará en 3-5 días hábiles.');
+                showNotification('Solicitud de retiro enviada', 'success');
                 cerrarRetiroModal();
                 
             } catch (error) {
@@ -986,7 +1344,7 @@
                 if (error) throw error;
 
                 if (!chats || chats.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center p-4">No hay conversaciones</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
                     return;
                 }
 
@@ -995,16 +1353,16 @@
                     const tieneMsjNoLeido = chat.ultimo_mensaje && !chat.ultimo_mensaje_leido;
                     
                     return `
-                        <div class="p-4 border-b hover:bg-gray-50 cursor-pointer ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
+                        <div class="p-4 border-b hover:bg-slate-50 cursor-pointer transition ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
                              onclick="seleccionarChat('${chat.id}', '${otroUsuario.id}', '${otroUsuario.full_name}', '${otroUsuario.photo_url}', '${chat.servicio?.subcategoria || ''}')">
                             <div class="flex items-center gap-3">
                                 <img src="${otroUsuario.photo_url || 'https://via.placeholder.com/40'}" 
                                      class="w-10 h-10 rounded-full object-cover">
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold truncate">${otroUsuario.full_name || 'Cliente'}</p>
-                                    <p class="text-xs text-gray-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
+                                    <p class="font-bold text-slate-800 truncate">${otroUsuario.full_name || 'Cliente'}</p>
+                                    <p class="text-xs text-slate-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
                                     ${chat.ultimo_mensaje ? `
-                                        <p class="text-xs text-gray-400 truncate">${chat.ultimo_mensaje}</p>
+                                        <p class="text-xs text-slate-400 truncate">${chat.ultimo_mensaje}</p>
                                     ` : ''}
                                 </div>
                                 ${tieneMsjNoLeido ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
@@ -1058,7 +1416,7 @@
                 if (error) throw error;
 
                 if (!mensajes || mensajes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay mensajes aún</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes aún</p>';
                     return;
                 }
 
@@ -1076,8 +1434,8 @@
             return `
                 <div class="flex ${esMio ? 'justify-end' : 'justify-start'}">
                     <div class="chat-message ${esMio ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3">
-                        <p class="text-sm ${esMio ? 'text-white' : 'text-gray-800'}">${mensaje.mensaje}</p>
-                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-gray-400'} mt-1">
+                        <p class="text-sm ${esMio ? 'text-white' : 'text-slate-800'}">${mensaje.mensaje}</p>
+                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-slate-400'} mt-1">
                             ${new Date(mensaje.created_at).toLocaleTimeString()}
                         </p>
                     </div>
@@ -1206,6 +1564,7 @@
                 if (error) throw error;
 
                 alert('Perfil actualizado exitosamente');
+                showNotification('Perfil actualizado correctamente', 'success');
                 await loadUserData();
                 
             } catch (error) {
@@ -1220,6 +1579,12 @@
             try {
                 showLoading();
                 const file = input.files[0];
+                
+                // Validar tamaño (máx 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    throw new Error('La imagen no debe exceder 2MB');
+                }
+
                 const fileName = `profiles/${currentUser.id}/${Date.now()}_${file.name}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -1239,7 +1604,7 @@
 
                 document.getElementById('headerAvatar').src = publicUrl;
                 document.getElementById('profileAvatar').src = publicUrl;
-                alert('Foto actualizada exitosamente');
+                showNotification('Foto actualizada exitosamente', 'success');
                 
             } catch (error) {
                 alert('Error al subir foto: ' + error.message);
@@ -1271,7 +1636,14 @@
 
                 for (let [key, file] of Object.entries(files)) {
                     if (file) {
-                        const fileName = `documentos/${currentUser.id}/${key}_${Date.now()}.pdf`;
+                        // Validar tamaño
+                        if (file.size > 5 * 1024 * 1024) {
+                            throw new Error(`El archivo ${key} no debe exceder 5MB`);
+                        }
+
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `documentos/${currentUser.id}/${key}_${Date.now()}.${fileExt}`;
+                        
                         const uploadPromise = supabase.storage
                             .from('taskers-documents')
                             .upload(fileName, file)
@@ -1295,11 +1667,20 @@
                         document_ine_url: documentUrls.ine,
                         document_domicilio_url: documentUrls.domicilio,
                         document_penal_url: documentUrls.penales,
-                        status: 'pending'
+                        status: 'pending',
+                        updated_at: new Date()
                     })
                     .eq('id', currentUser.id);
 
                 alert('Documentos enviados para verificación');
+                showNotification('Documentos enviados correctamente', 'success');
+                
+                // Actualizar badges
+                document.getElementById('ineStatus').textContent = 'En revisión';
+                document.getElementById('domicilioStatus').textContent = 'En revisión';
+                if (documentUrls.penales) {
+                    document.getElementById('penalesStatus').textContent = 'En revisión';
+                }
                 
             } catch (error) {
                 alert('Error al subir documentos: ' + error.message);
@@ -1311,27 +1692,13 @@
         // =============================================
         // UTILIDADES
         // =============================================
-        function showLoading() {
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingModal').classList.add('hidden');
-            document.getElementById('loadingModal').classList.remove('flex');
-        }
-
-        function showError(message) {
-            alert(message);
-        }
-
         function getStatusClass(status) {
             const classes = {
                 'asignado': 'status-asignado',
                 'en_progreso': 'status-progreso',
                 'completado': 'status-completado'
             };
-            return classes[status] || 'bg-gray-100 text-gray-700';
+            return classes[status] || 'bg-slate-100 text-slate-700';
         }
 
         function getStatusText(status) {
@@ -1345,14 +1712,14 @@
 
         function showSection(sectionId) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('aside nav a').forEach(l => {
-                l.classList.remove('active-link');
+            document.querySelectorAll('.sidebar-link').forEach(l => {
+                l.classList.remove('active');
             });
             
             document.getElementById(sectionId).classList.add('active');
             const link = document.getElementById('link-' + sectionId);
             if (link) {
-                link.classList.add('active-link');
+                link.classList.add('active');
             }
 
             const titles = {
@@ -1366,7 +1733,9 @@
             };
             
             document.getElementById('section-title').textContent = titles[sectionId] || 'Tasker\'s';
+            document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${titles[sectionId].toLowerCase()}`;
             
+            // Cargar datos según sección
             switch(sectionId) {
                 case 'disponibles':
                     cargarDisponibles();
@@ -1380,6 +1749,11 @@
                 case 'finanzas':
                     loadFinanzas();
                     break;
+            }
+
+            // Cerrar menú móvil si está abierto
+            if (window.innerWidth < 768) {
+                toggleMobileMenu();
             }
         }
 
@@ -1417,23 +1791,46 @@
                 .subscribe();
         }
 
-        function showNotification(message) {
-            const notif = document.createElement('div');
-            notif.className = 'fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 animate-slideIn';
-            notif.innerHTML = message;
-            document.body.appendChild(notif);
-            
-            setTimeout(() => notif.remove(), 3000);
-        }
-
         async function updateChatBadge() {
-            // Actualizar badge de chats no leídos
+            try {
+                const { count, error } = await supabase
+                    .from('chats')
+                    .select('*', { count: 'exact', head: true })
+                    .or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`)
+                    .eq('ultimo_mensaje_leido', false);
+
+                if (error) throw error;
+
+                if (count > 0) {
+                    document.getElementById('chatCount').textContent = count;
+                    document.getElementById('chatCount').classList.remove('hidden');
+                    document.getElementById('headerChatBadge').textContent = count;
+                    document.getElementById('headerChatBadge').classList.remove('hidden');
+                    document.getElementById('headerChatBadge').style.display = 'flex';
+                } else {
+                    document.getElementById('chatCount').classList.add('hidden');
+                    document.getElementById('headerChatBadge').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error updating chat badge:', error);
+            }
         }
 
+        // Función para cerrar sesión
         async function cerrarSesion() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
         }
+
+        // Cerrar modales con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarPropuestaModal();
+                cerrarRetiroModal();
+            }
+        });
     </script>
 
     <style>
