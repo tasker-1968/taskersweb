@@ -13,167 +13,37 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        * {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        /* Sidebar styles */
-        .sidebar {
-            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-link {
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-        
-        .sidebar-link:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-left-color: #3b82f6;
-        }
-        
-        .sidebar-link.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-left-color: #3b82f6;
-            color: white;
-        }
-        
-        /* Section transitions */
-        .section-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-        
-        .section-content.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Chat styles */
-        .chat-message {
-            max-width: 70%;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .chat-client {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .chat-tasker {
-            background: #f1f5f9;
-            color: #1e293b;
-            border-bottom-left-radius: 4px;
-        }
-        
-        /* Status badges */
-        .status-badge {
-            @apply px-3 py-1 rounded-full text-xs font-bold;
-            transition: all 0.3s ease;
-        }
-        
-        .status-pendiente { 
-            background: #fef3c7; 
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-        .status-asignado { 
-            background: #dbeafe; 
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-        .status-progreso { 
-            background: #ede9fe; 
-            color: #5b21b6;
-            border: 1px solid #c4b5fd;
-        }
-        .status-completado { 
-            background: #d1fae5; 
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-        .status-cancelado { 
-            background: #fee2e2; 
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        
-        /* Cards */
-        .stat-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .service-card {
-            transition: all 0.3s ease;
-        }
-        
-        .service-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
-        }
-        
-        /* Modal */
-        .modal {
-            transition: all 0.3s ease;
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-        
-        /* Responsive */
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .sidebar { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); transition: all 0.3s ease; }
+        .sidebar-link { transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .sidebar-link:hover { background: rgba(59, 130, 246, 0.1); border-left-color: #3b82f6; }
+        .sidebar-link.active { background: rgba(59, 130, 246, 0.2); border-left-color: #3b82f6; color: white; }
+        .section-content { display: none; animation: fadeIn 0.4s ease-out; }
+        .section-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-message { max-width: 70%; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .chat-client { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+        .chat-tasker { background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px; }
+        .status-badge { @apply px-3 py-1 rounded-full text-xs font-bold; }
+        .status-pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .status-asignado { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .status-progreso { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+        .status-completado { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .status-cancelado { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .stat-card { transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .service-card { transition: all 0.3s ease; }
+        .service-card:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1); }
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                z-index: 50;
-                width: 80%;
-                max-width: 300px;
-                height: 100vh;
-            }
-            
-            .sidebar.open {
-                left: 0;
-            }
-            
-            .chat-message {
-                max-width: 85%;
-            }
+            .sidebar { position: fixed; left: -100%; z-index: 50; width: 80%; max-width: 300px; height: 100vh; }
+            .sidebar.open { left: 0; }
+            .chat-message { max-width: 85%; }
         }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .placeholder-color { background-color: #e2e8f0; border-radius: 50%; width: 40px; height: 40px; display: inline-block; }
+        .placeholder-color-large { background-color: #e2e8f0; border-radius: 50%; width: 120px; height: 120px; display: inline-block; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -184,10 +54,10 @@
     </button>
 
     <!-- Overlay for mobile -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMenuMovil()"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
 
     <!-- Modal de carga -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
             <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
             <p class="text-gray-600 font-medium">Cargando...</p>
@@ -195,7 +65,7 @@
     </div>
 
     <!-- Modal de pago -->
-    <div id="pagoModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+    <div id="pagoModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-slate-800">Confirmar Pago</h3>
@@ -203,14 +73,12 @@
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <div id="pagoModalContent" class="space-y-4">
-                <!-- Contenido dinámico -->
-            </div>
+            <div id="pagoModalContent" class="space-y-4"></div>
         </div>
     </div>
 
     <!-- Modal de servicio -->
-    <div id="servicioModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+    <div id="servicioModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
                 <h3 class="text-xl font-bold text-slate-800">Detalles del Servicio</h3>
@@ -218,402 +86,115 @@
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <div id="modalContent" class="space-y-4">
-                <!-- Contenido dinámico -->
-            </div>
+            <div id="modalContent" class="space-y-4"></div>
         </div>
     </div>
 
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside id="sidebar" class="sidebar w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
-            <!-- Logo -->
             <div class="p-6 border-b border-slate-700/50">
                 <div class="flex items-center gap-3">
                     <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
-                    <div>
-                        <div class="text-xl font-bold text-white">Tasker's</div>
-                        <div class="text-xs text-blue-400">Panel Cliente</div>
-                    </div>
+                    <div><div class="text-xl font-bold text-white">Tasker's</div><div class="text-xs text-blue-400">Panel Cliente</div></div>
                 </div>
-                <div id="userInfo" class="mt-4 text-sm text-slate-300 bg-slate-800/50 p-3 rounded-lg">
-                    <!-- Se llena dinámicamente -->
-                </div>
+                <div id="userInfo" class="mt-4 text-sm text-slate-300 bg-slate-800/50 p-3 rounded-lg"></div>
             </div>
-            
-            <!-- Navigation -->
             <nav class="flex-1 mt-6 space-y-1 px-3">
-                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all active" id="link-inicio">
-                    <i class="fas fa-home w-6"></i>
-                    <span>Inicio</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('nuevo-servicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-nuevo-servicio">
-                    <i class="fas fa-plus-circle w-6"></i>
-                    <span>Solicitar Servicio</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('mis-servicios'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-mis-servicios">
-                    <i class="fas fa-list w-6"></i>
-                    <span>Mis Servicios</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all relative" id="link-chat">
-                    <i class="fas fa-comments w-6"></i>
-                    <span>Mensajes</span>
-                    <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('pagos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-pagos">
-                    <i class="fas fa-credit-card w-6"></i>
-                    <span>Mis Pagos</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-perfil">
-                    <i class="fas fa-user w-6"></i>
-                    <span>Mi Perfil</span>
-                </a>
+                <a href="#" onclick="window.showSection('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all active" id="link-inicio"><i class="fas fa-home w-6"></i><span>Inicio</span></a>
+                <a href="#" onclick="window.showSection('nuevo-servicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-nuevo-servicio"><i class="fas fa-plus-circle w-6"></i><span>Solicitar Servicio</span></a>
+                <a href="#" onclick="window.showSection('mis-servicios'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-mis-servicios"><i class="fas fa-list w-6"></i><span>Mis Servicios</span></a>
+                <a href="#" onclick="window.showSection('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all relative" id="link-chat"><i class="fas fa-comments w-6"></i><span>Mensajes</span><span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span></a>
+                <a href="#" onclick="window.showSection('pagos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-pagos"><i class="fas fa-credit-card w-6"></i><span>Mis Pagos</span></a>
+                <a href="#" onclick="window.showSection('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-perfil"><i class="fas fa-user w-6"></i><span>Mi Perfil</span></a>
             </nav>
-            
-            <!-- Logout button -->
             <div class="p-4 border-t border-slate-700/50">
-                <button onclick="window.cerrarSesionCliente()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Cerrar Sesión
-                </button>
+                <button onclick="window.cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i>Cerrar Sesión</button>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
-            <!-- Header -->
             <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
-                <div class="ml-12 md:ml-0">
-                    <h2 id="section-title" class="text-xl font-bold text-slate-800">Inicio</h2>
-                    <p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel de control</p>
-                </div>
+                <div class="ml-12 md:ml-0"><h2 id="section-title" class="text-xl font-bold text-slate-800">Inicio</h2><p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel de control</p></div>
                 <div class="flex items-center gap-4">
-                    <button onclick="window.mostrarSeccion('chat')" class="relative">
-                        <i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i>
-                        <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
-                    </button>
-                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer hover:border-blue-600 transition" onclick="window.mostrarSeccion('perfil')">
+                    <button onclick="window.showSection('chat')" class="relative"><i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i><span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span></button>
+                    <div id="headerAvatar" class="w-10 h-10 rounded-full border-2 border-blue-500 bg-slate-200 cursor-pointer" onclick="window.showSection('perfil')"></div>
                 </div>
             </header>
 
-            <!-- Content -->
             <div class="p-4 md:p-6">
-                <!-- SECCIÓN: INICIO -->
+                <!-- INICIO -->
                 <section id="inicio" class="section-content active">
-                    <!-- Stats Cards -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                            <p class="text-slate-500 text-sm">Servicios Activos</p>
-                            <p id="statsActivos" class="text-3xl font-bold text-slate-800 mt-2">0</p>
-                        </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                            <p class="text-slate-500 text-sm">Completados</p>
-                            <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-2">0</p>
-                        </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-                            <p class="text-slate-500 text-sm">En Progreso</p>
-                            <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-2">0</p>
-                        </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                            <p class="text-slate-500 text-sm">Total Pagado</p>
-                            <p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
-                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500"><p class="text-slate-500 text-sm">Servicios Activos</p><p id="statsActivos" class="text-3xl font-bold text-slate-800 mt-2">0</p></div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500"><p class="text-slate-500 text-sm">Completados</p><p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-2">0</p></div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500"><p class="text-slate-500 text-sm">En Progreso</p><p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-2">0</p></div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500"><p class="text-slate-500 text-sm">Total Pagado</p><p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-2">$0</p></div>
                     </div>
-
-                    <!-- Servicios Recientes -->
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-history text-blue-600"></i>
-                            Servicios Recientes
-                        </h3>
-                        <div id="recientesLista" class="space-y-3">
-                            <p class="text-slate-400 text-center py-4">Cargando...</p>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6"><h3 class="font-bold text-lg text-slate-800 mb-4"><i class="fas fa-history text-blue-600"></i>Servicios Recientes</h3><div id="recientesLista" class="space-y-3"><p class="text-slate-400 text-center py-4">Cargando...</p></div></div>
                 </section>
 
-                <!-- SECCIÓN: NUEVO SERVICIO -->
+                <!-- NUEVO SERVICIO -->
                 <section id="nuevo-servicio" class="section-content">
-                    <div class="max-w-3xl mx-auto">
-                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
-                            <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
-                            <p class="text-slate-500 text-sm mb-6">Completa el formulario y recibe propuestas de profesionales verificados</p>
-                            
-                            <form id="nuevoServicioForm" class="space-y-6">
-                                <!-- Categoría y Subcategoría -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                                            <i class="fas fa-tag mr-2 text-blue-600"></i>
-                                            Categoría *
-                                        </label>
-                                        <select id="categoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                                            <option value="">Selecciona una categoría</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                                            <i class="fas fa-list mr-2 text-blue-600"></i>
-                                            Subcategoría *
-                                        </label>
-                                        <select id="subcategoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" disabled>
-                                            <option value="">Primero selecciona categoría</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Descripción -->
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-align-left mr-2 text-blue-600"></i>
-                                        Descripción detallada *
-                                    </label>
-                                    <textarea id="descripcion" required rows="4" 
-                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                        placeholder="Describe exactamente qué necesitas..."></textarea>
-                                </div>
-
-                                <!-- Ubicación -->
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                                            <i class="fas fa-map-pin mr-2 text-blue-600"></i>
-                                            Código Postal *
-                                        </label>
-                                        <input type="text" id="cp" required maxlength="5"
-                                            class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                            placeholder="Ej: 03100">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                                            <i class="fas fa-city mr-2 text-blue-600"></i>
-                                            Colonia
-                                        </label>
-                                        <input type="text" id="colonia" 
-                                            class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                            placeholder="Ej: Del Valle">
-                                    </div>
-                                </div>
-
-                                <!-- Presupuesto -->
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-dollar-sign mr-2 text-blue-600"></i>
-                                        Presupuesto máximo ($MXN) *
-                                    </label>
-                                    <input type="number" id="monto" required min="100" step="100"
-                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                        placeholder="Ej: 1000">
-                                    <div class="mt-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-center gap-2">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span>El tasker recibirá el 85% (comisión Tasker's: 15%)</span>
-                                    </div>
-                                </div>
-
-                                <!-- Fecha -->
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-calendar mr-2 text-blue-600"></i>
-                                        ¿Cuándo lo necesitas?
-                                    </label>
-                                    <input type="datetime-local" id="fecha" 
-                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                                </div>
-
-                                <!-- Importante -->
-                                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                                    <h4 class="font-bold text-amber-800 mb-2 flex items-center gap-2">
-                                        <i class="fas fa-shield-alt"></i>
-                                        Importante:
-                                    </h4>
-                                    <ul class="text-sm text-amber-700 space-y-2">
-                                        <li class="flex items-start gap-2">
-                                            <i class="fas fa-times-circle text-amber-500 mt-0.5"></i>
-                                            <span>No compartas datos de contacto directo</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <i class="fas fa-check-circle text-amber-500 mt-0.5"></i>
-                                            <span>Toda comunicación debe ser por el chat de la plataforma</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
-                                            <span>No realices pagos fuera de Tasker's</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- Términos -->
-                                <div class="flex items-start gap-3">
-                                    <input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                                    <label class="text-sm text-slate-600">
-                                        Acepto los <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> y entiendo que Tasker's actúa como intermediario en todos los pagos y comunicaciones.
-                                    </label>
-                                </div>
-
-                                <!-- Botón -->
-                                <button type="submit" id="btnPublicar"
-                                    class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-                                    <i class="fas fa-paper-plane"></i>
-                                    Publicar Solicitud
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    <div class="max-w-3xl mx-auto"><div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
+                        <p class="text-slate-500 text-sm mb-6">Completa el formulario y recibe propuestas de profesionales verificados</p>
+                        <form id="nuevoServicioForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-tag mr-2 text-blue-600"></i>Categoría *</label><select id="categoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"><option value="">Selecciona una categoría</option></select></div>
+                                <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-list mr-2 text-blue-600"></i>Subcategoría *</label><select id="subcategoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" disabled><option value="">Primero selecciona categoría</option></select></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-align-left mr-2 text-blue-600"></i>Descripción detallada *</label><textarea id="descripcion" required rows="4" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Describe exactamente qué necesitas..."></textarea></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-map-pin mr-2 text-blue-600"></i>Código Postal *</label><input type="text" id="cp" required maxlength="5" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Ej: 03100"></div>
+                                <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-city mr-2 text-blue-600"></i>Colonia</label><input type="text" id="colonia" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Ej: Del Valle"></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-dollar-sign mr-2 text-blue-600"></i>Presupuesto máximo ($MXN) *</label><input type="number" id="monto" required min="100" step="100" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Ej: 1000"><div class="mt-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>El tasker recibirá el 85% (comisión Tasker's: 15%)</div></div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-calendar mr-2 text-blue-600"></i>¿Cuándo lo necesitas?</label><input type="datetime-local" id="fecha" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></div>
+                            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200"><h4 class="font-bold text-amber-800 mb-2"><i class="fas fa-shield-alt"></i>Importante:</h4><ul class="text-sm text-amber-700 space-y-2"><li class="flex items-start gap-2"><i class="fas fa-times-circle text-amber-500 mt-0.5"></i><span>No compartas datos de contacto directo</span></li><li class="flex items-start gap-2"><i class="fas fa-check-circle text-amber-500 mt-0.5"></i><span>Toda comunicación debe ser por el chat de la plataforma</span></li><li class="flex items-start gap-2"><i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i><span>No realices pagos fuera de Tasker's</span></li></ul></div>
+                            <div class="flex items-start gap-3"><input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"><label class="text-sm text-slate-600">Acepto los <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> y entiendo que Tasker's actúa como intermediario en todos los pagos y comunicaciones.</label></div>
+                            <button type="submit" id="btnPublicar" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"><i class="fas fa-paper-plane"></i>Publicar Solicitud</button>
+                        </form>
+                    </div></div>
                 </section>
 
-                <!-- SECCIÓN: MIS SERVICIOS -->
+                <!-- MIS SERVICIOS -->
                 <section id="mis-servicios" class="section-content">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <h3 class="text-2xl font-bold text-slate-800">Mis Servicios</h3>
-                        <select id="filtroStatus" onchange="cargarMisServicios()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                            <option value="todos">Todos los servicios</option>
-                            <option value="pendiente_pago">Pendientes de pago</option>
-                            <option value="publicado">Buscando tasker</option>
-                            <option value="asignado">Asignados</option>
-                            <option value="en_progreso">En progreso</option>
-                            <option value="completado">Completados</option>
-                        </select>
-                    </div>
-                    <div id="serviciosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Se llena dinámicamente -->
-                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"><h3 class="text-2xl font-bold text-slate-800">Mis Servicios</h3><select id="filtroStatus" onchange="cargarMisServicios()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"><option value="todos">Todos los servicios</option><option value="pendiente_pago">Pendientes de pago</option><option value="publicado">Buscando tasker</option><option value="asignado">Asignados</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
+                    <div id="serviciosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
                 </section>
 
-                <!-- SECCIÓN: CHAT -->
+                <!-- CHAT -->
                 <section id="chat" class="section-content">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                        <!-- Lista de conversaciones -->
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white">
-                                <h3 class="font-bold flex items-center gap-2">
-                                    <i class="fas fa-comments"></i>
-                                    Conversaciones
-                                </h3>
-                            </div>
-                            <div id="conversacionesLista" class="overflow-y-auto h-full">
-                                <p class="text-slate-400 text-center p-4">Cargando...</p>
-                            </div>
-                        </div>
-
-                        <!-- Área de chat -->
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden"><div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white"><h3 class="font-bold"><i class="fas fa-comments"></i> Conversaciones</h3></div><div id="conversacionesLista" class="overflow-y-auto h-full"><p class="text-slate-400 text-center p-4">Cargando...</p></div></div>
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
-                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
-                                <div class="flex items-center gap-3">
-                                    <img id="chatTaskerAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
-                                    <div>
-                                        <h4 id="chatTaskerNombre" class="font-bold text-slate-800"></h4>
-                                        <p id="chatServicioInfo" class="text-xs text-slate-500"></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-                                <p class="text-slate-400 text-center py-8">Selecciona una conversación</p>
-                            </div>
-
-                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
-                                <form id="mensajeForm" class="flex gap-2">
-                                    <input type="text" id="mensajeTexto" 
-                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                        placeholder="Escribe tu mensaje...">
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </form>
-                                <p class="text-xs text-slate-400 mt-2 text-center">
-                                    <i class="fas fa-shield-alt mr-1 text-blue-600"></i>
-                                    Todos los mensajes son monitoreados. No compartas datos de contacto.
-                                </p>
-                            </div>
+                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden"><div class="flex items-center gap-3"><div id="chatTaskerAvatar" class="w-12 h-12 rounded-full bg-slate-300 border-2 border-blue-500"></div><div><h4 id="chatTaskerNombre" class="font-bold text-slate-800"></h4><p id="chatServicioInfo" class="text-xs text-slate-500"></p></div></div></div>
+                            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4"><p class="text-slate-400 text-center py-8">Selecciona una conversación</p></div>
+                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden"><form id="mensajeForm" class="flex gap-2"><input type="text" id="mensajeTexto" class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Escribe tu mensaje..."><button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200"><i class="fas fa-paper-plane"></i></button></form><p class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-shield-alt mr-1 text-blue-600"></i>Todos los mensajes son monitoreados. No compartas datos de contacto.</p></div>
                         </div>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: PAGOS -->
+                <!-- PAGOS -->
                 <section id="pagos" class="section-content">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <i class="fas fa-credit-card text-blue-600"></i>
-                        Historial de Pagos
-                    </h3>
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-slate-50 border-b">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pagosTableBody">
-                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6"><i class="fas fa-credit-card text-blue-600"></i> Historial de Pagos</h3>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50 border-b"><tr><th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th><th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th><th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th><th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th><th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th></tr></thead><tbody id="pagosTableBody"><tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr></tbody></table></div></div>
                 </section>
 
-                <!-- SECCIÓN: PERFIL -->
+                <!-- PERFIL -->
                 <section id="perfil" class="section-content">
-                    <div class="max-w-2xl mx-auto">
-                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
-                            <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <i class="fas fa-user-circle text-blue-600"></i>
-                                Mi Perfil
-                            </h3>
-                            
-                            <!-- Foto de perfil -->
-                            <div class="flex flex-col items-center mb-8">
-                                <div class="relative">
-                                    <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100">
-                                    <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg">
-                                        <i class="fas fa-camera"></i>
-                                    </button>
-                                </div>
-                                <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
-                                <p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
-                            </div>
-
-                            <!-- Formulario -->
-                            <form id="perfilForm" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-user mr-2 text-blue-600"></i>
-                                        Nombre completo
-                                    </label>
-                                    <input type="text" id="perfilNombre" required 
-                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-envelope mr-2 text-blue-600"></i>
-                                        Correo electrónico
-                                    </label>
-                                    <input type="email" id="perfilEmail" readonly 
-                                        class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                                        <i class="fas fa-phone mr-2 text-blue-600"></i>
-                                        Teléfono
-                                    </label>
-                                    <input type="tel" id="perfilTelefono" required 
-                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                                    <p class="text-xs text-slate-400 mt-1">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        No compartimos tu teléfono con los taskers
-                                    </p>
-                                </div>
-                                <button type="submit" 
-                                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-                                    <i class="fas fa-save"></i>
-                                    Guardar Cambios
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    <div class="max-w-2xl mx-auto"><div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-6"><i class="fas fa-user-circle text-blue-600"></i> Mi Perfil</h3>
+                        <div class="flex flex-col items-center mb-8"><div class="relative"><div id="profileAvatar" class="w-32 h-32 rounded-full bg-slate-300 border-4 border-blue-100"></div><button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg"><i class="fas fa-camera"></i></button></div><input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()"><p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p></div>
+                        <form id="perfilForm" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-user mr-2 text-blue-600"></i>Nombre completo</label><input type="text" id="perfilNombre" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-envelope mr-2 text-blue-600"></i>Correo electrónico</label><input type="email" id="perfilEmail" readonly class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"></div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-2"><i class="fas fa-phone mr-2 text-blue-600"></i>Teléfono</label><input type="tel" id="perfilTelefono" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"><p class="text-xs text-slate-400 mt-1"><i class="fas fa-info-circle mr-1"></i>No compartimos tu teléfono con los taskers</p></div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200"><i class="fas fa-save"></i> Guardar Cambios</button>
+                        </form>
+                    </div></div>
                 </section>
             </div>
         </main>
@@ -621,236 +202,117 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE (UNA SOLA VEZ)
+        // CONFIGURACIÓN ÚNICA DE SUPABASE
         // =============================================
-        const CONFIG = {
-            url: 'https://ayhflwricnkptoinabhe.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M'
-        };
-
-        // Variable global de Supabase (UNA SOLA VEZ)
-        const supabase = window.supabase.createClient(CONFIG.url, CONFIG.key);
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================
         // VARIABLES GLOBALES
         // =============================================
-        let usuarioActual = null;
-        let chatActual = null;
-        let subscriptionChat = null;
+        let currentUser = null;
+        let currentChat = null;
+        let chatSubscription = null;
 
         // =============================================
         // FUNCIONES DE UTILIDAD
         // =============================================
-        function mostrarCargando() {
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
-        }
-
-        function ocultarCargando() {
-            document.getElementById('loadingModal').classList.add('hidden');
-            document.getElementById('loadingModal').classList.remove('flex');
-        }
-
-        function notificar(mensaje, tipo = 'info') {
-            const notif = document.createElement('div');
-            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
-                tipo === 'success' ? 'bg-green-500' : 
-                tipo === 'error' ? 'bg-red-500' : 
-                'bg-blue-500'
-            } text-white max-w-md`;
-            notif.innerHTML = mensaje;
-            document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 3000);
-        }
+        function showLoading() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
+        function hideLoading() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
+        function showNotification(message, type = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white max-w-md`; n.innerHTML = message; document.body.appendChild(n); setTimeout(() => n.remove(), 3000); }
 
         // =============================================
         // VERIFICAR AUTENTICACIÓN
         // =============================================
-        async function verificarAuth(redirectUrl = 'login.html') {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                if (!session) {
-                    window.location.href = redirectUrl;
-                    return null;
-                }
-                return session;
-            } catch (error) {
-                console.error('Error:', error);
-                window.location.href = redirectUrl;
-                return null;
-            }
+        async function checkAuth(redirectUrl = 'login.html') {
+            try { const { data: { session }, error } = await supabase.auth.getSession(); if (error) throw error; if (!session) { window.location.href = redirectUrl; return null; } return session; } 
+            catch (error) { console.error(error); window.location.href = redirectUrl; return null; }
         }
 
         // =============================================
         // INICIALIZACIÓN
         // =============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            await cargarUsuario();
-            await cargarCategorias();
-            await cargarDashboard();
-            configurarSuscripciones();
-            configurarMenuMovil();
+            await loadUserData();
+            await loadCategorias();
+            await loadDashboardData();
+            setupRealtimeSubscriptions();
+            setupMobileMenu();
         });
 
-        function configurarMenuMovil() {
+        function setupMobileMenu() {
             const btn = document.getElementById('mobileMenuBtn');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             if (btn) btn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('hidden'); });
             if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.add('hidden'); });
         }
+        function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
 
-        function toggleMenuMovil() {
-            document.getElementById('sidebar')?.classList.remove('open');
-            document.getElementById('sidebarOverlay')?.classList.add('hidden');
-        }
-
-        async function cargarUsuario() {
-            mostrarCargando();
+        async function loadUserData() {
+            showLoading();
             try {
-                const session = await verificarAuth('login.html');
+                const session = await checkAuth('login.html');
                 if (!session) return;
-
-                const { data: perfil, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-
+                const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                 if (error) throw error;
-                
-                usuarioActual = perfil;
-                actualizarInfoUsuario(perfil);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                notificar('Error al cargar datos', 'error');
-            } finally {
-                ocultarCargando();
-            }
-        }
-
-        function actualizarInfoUsuario(perfil) {
-            document.getElementById('userInfo').innerHTML = `
-                <p class="font-bold">${perfil.full_name || 'Usuario'}</p>
-                <p class="text-xs opacity-75">Cliente</p>
-            `;
-            
-            if (perfil.photo_url) {
-                document.getElementById('headerAvatar').src = perfil.photo_url;
-                document.getElementById('profileAvatar').src = perfil.photo_url;
-            }
-            
-            document.getElementById('perfilNombre').value = perfil.full_name || '';
-            document.getElementById('perfilEmail').value = perfil.email || '';
-            document.getElementById('perfilTelefono').value = perfil.phone || '';
+                currentUser = profile;
+                document.getElementById('userInfo').innerHTML = `<p class="font-bold">${profile.full_name || 'Usuario'}</p><p class="text-xs opacity-75">Cliente</p>`;
+                if (profile.photo_url) { document.getElementById('headerAvatar').style.backgroundImage = `url('${profile.photo_url}')`; document.getElementById('profileAvatar').style.backgroundImage = `url('${profile.photo_url}')`; }
+                document.getElementById('perfilNombre').value = profile.full_name || '';
+                document.getElementById('perfilEmail').value = profile.email || '';
+                document.getElementById('perfilTelefono').value = profile.phone || '';
+            } catch (error) { console.error(error); showNotification('Error al cargar usuario', 'error'); } finally { hideLoading(); }
         }
 
         // =============================================
         // CATEGORÍAS
         // =============================================
-        async function cargarCategorias() {
+        async function loadCategorias() {
             try {
-                const { data: categorias, error } = await supabase
-                    .from('categorias')
-                    .select('*')
-                    .eq('activo', true)
-                    .order('orden');
-
+                const { data: categorias, error } = await supabase.from('categorias').select('*').eq('activo', true).order('orden');
                 if (error) throw error;
-
-                const select = document.getElementById('categoria');
-                select.innerHTML = '<option value="">Selecciona una categoría</option>';
-                categorias.forEach(cat => {
-                    select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
-                });
-            } catch (error) {
-                console.error('Error:', error);
-            }
+                const s = document.getElementById('categoria');
+                s.innerHTML = '<option value="">Selecciona una categoría</option>';
+                categorias.forEach(c => s.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+            } catch (error) { console.error(error); }
         }
-
         document.getElementById('categoria').addEventListener('change', async function() {
-            const subcatSelect = document.getElementById('subcategoria');
-            const categoriaId = this.value;
-            
-            if (!categoriaId) {
-                subcatSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
-                subcatSelect.disabled = true;
-                return;
-            }
-
+            const sub = document.getElementById('subcategoria');
+            if (!this.value) { sub.innerHTML = '<option value="">Primero selecciona categoría</option>'; sub.disabled = true; return; }
             try {
-                const { data: subcats, error } = await supabase
-                    .from('subcategorias')
-                    .select('*')
-                    .eq('categoria_id', categoriaId)
-                    .eq('activo', true);
-
+                const { data: subcats, error } = await supabase.from('subcategorias').select('*').eq('categoria_id', this.value).eq('activo', true);
                 if (error) throw error;
-
-                subcatSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-                subcats.forEach(sub => {
-                    subcatSelect.innerHTML += `<option value="${sub.id}">${sub.nombre}</option>`;
-                });
-                
-                subcatSelect.disabled = false;
-            } catch (error) {
-                console.error('Error:', error);
-            }
+                sub.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+                subcats.forEach(s => sub.innerHTML += `<option value="${s.id}">${s.nombre}</option>`);
+                sub.disabled = false;
+            } catch (error) { console.error(error); }
         });
 
         // =============================================
         // DASHBOARD
         // =============================================
-        async function cargarDashboard() {
+        async function loadDashboardData() {
             try {
-                const { data: servicios, error } = await supabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('created_at', false);
-
+                const { data: servicios, error } = await supabase.from('servicios').select('*').eq('cliente_id', currentUser.id).order('created_at', false);
                 if (error) throw error;
-
                 const stats = {
-                    activos: servicios.filter(s => ['pendiente_pago', 'publicado', 'asignado', 'en_progreso'].includes(s.status)).length,
-                    completados: servicios.filter(s => s.status === 'completado').length,
-                    progreso: servicios.filter(s => s.status === 'en_progreso').length,
-                    pagado: servicios.filter(s => s.status === 'completado').reduce((sum, s) => sum + (s.monto_final || 0), 0)
+                    activos: servicios.filter(x => ['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length,
+                    completados: servicios.filter(x => x.status === 'completado').length,
+                    progreso: servicios.filter(x => x.status === 'en_progreso').length,
+                    pagado: servicios.filter(x => x.status === 'completado').reduce((a, b) => a + (b.monto_final || 0), 0)
                 };
-
                 document.getElementById('statsActivos').textContent = stats.activos;
                 document.getElementById('statsCompletados').textContent = stats.completados;
                 document.getElementById('statsProgreso').textContent = stats.progreso;
                 document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
 
-                const recientes = servicios.slice(0, 5);
-                const container = document.getElementById('recientesLista');
-                
-                if (recientes.length === 0) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay servicios aún</p>';
-                } else {
-                    container.innerHTML = recientes.map(s => `
-                        <div class="border rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition" onclick="verServicio('${s.id}')">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-bold text-slate-800">${s.subcategoria || 'Servicio'}</h4>
-                                    <p class="text-sm text-slate-600 mt-1">${s.descripcion.substring(0, 60)}...</p>
-                                </div>
-                                <span class="status-badge ${obtenerClaseStatus(s.status)}">${obtenerTextoStatus(s.status)}</span>
-                            </div>
-                            <div class="flex justify-between items-center mt-3 text-sm">
-                                <span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion || 'No especificada'}</span>
-                                <span class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2) || '0'}</span>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-            }
+                const rec = servicios.slice(0,5);
+                const c = document.getElementById('recientesLista');
+                if (!rec.length) { c.innerHTML = '<p class="text-slate-400 text-center py-4">No hay servicios aún</p>'; return; }
+                c.innerHTML = rec.map(x => `<div class="border rounded-lg p-4 hover:bg-slate-50 cursor-pointer" onclick="window.verServicio('${x.id}')"><div class="flex justify-between"><div><h4 class="font-bold">${x.subcategoria||'Servicio'}</h4><p class="text-sm text-slate-600">${x.descripcion.substring(0,60)}...</p></div><span class="status-badge ${getStatusClass(x.status)}">${getStatusText(x.status)}</span></div><div class="flex justify-between mt-3 text-sm"><span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${x.ubicacion||''}</span><span class="font-bold text-blue-600">$${x.monto_ofertado?.toFixed(2)||'0'}</span></div></div>`).join('');
+            } catch (error) { console.error(error); }
         }
 
         // =============================================
@@ -858,353 +320,153 @@
         // =============================================
         document.getElementById('nuevoServicioForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const btn = document.getElementById('btnPublicar');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
-
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
             try {
                 const cp = document.getElementById('cp').value;
-                const colonia = document.getElementById('colonia').value;
-                const ubicacion = colonia ? `${colonia}, CP ${cp}` : `CP ${cp}`;
-
-                const servicioData = {
-                    cliente_id: usuarioActual.id,
+                const col = document.getElementById('colonia').value;
+                const ubi = col ? `${col}, CP ${cp}` : `CP ${cp}`;
+                const data = {
+                    cliente_id: currentUser.id,
                     categoria: document.getElementById('categoria').value,
                     subcategoria: document.getElementById('subcategoria').value,
                     descripcion: document.getElementById('descripcion').value,
-                    ubicacion: ubicacion,
-                    cp: cp,
+                    ubicacion: ubi, cp: cp,
                     monto_ofertado: parseFloat(document.getElementById('monto').value),
                     fecha_solicitada: document.getElementById('fecha').value || null,
-                    status: 'pendiente_pago',
-                    pago_status: 'pendiente',
-                    created_at: new Date()
+                    status: 'pendiente_pago', pago_status: 'pendiente', created_at: new Date()
                 };
-
-                const { data: servicio, error } = await supabase
-                    .from('servicios')
-                    .insert([servicioData])
-                    .select()
-                    .single();
-
+                const { data: serv, error } = await supabase.from('servicios').insert([data]).select().single();
                 if (error) throw error;
-
-                await mostrarModalPago(servicio);
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Publicar Solicitud';
-            }
+                await mostrarModalPago(serv);
+            } catch (error) { console.error(error); alert('Error: ' + error.message); btn.disabled = false; btn.innerHTML = 'Publicar Solicitud'; }
         });
 
         async function mostrarModalPago(servicio) {
             const modal = document.getElementById('pagoModal');
             const content = document.getElementById('pagoModalContent');
-            
-            const montoTotal = servicio.monto_ofertado;
-            const comision = montoTotal * 0.15;
-            const montoTasker = montoTotal - comision;
-
-            content.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-lock text-4xl text-green-600 mb-4"></i>
-                    <h4 class="font-bold text-lg mb-2">Pago Seguro</h4>
-                    <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago hasta que confirmes la finalización</p>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
-                    <div class="flex justify-between">
-                        <span>Monto del servicio:</span>
-                        <span class="font-bold">$${montoTotal.toFixed(2)}</span>
-                    </div>
-                    <div class="flex justify-between text-gray-500">
-                        <span>Comisión Tasker's (15%):</span>
-                        <span>$${comision.toFixed(2)}</span>
-                    </div>
-                    <div class="border-t pt-3 flex justify-between font-bold text-lg">
-                        <span>Total a pagar:</span>
-                        <span class="text-blue-600">$${montoTotal.toFixed(2)}</span>
-                    </div>
-                </div>
-                <div class="bg-amber-50 p-4 rounded-xl text-sm text-amber-800 border border-amber-200">
-                    <i class="fas fa-shield-alt mr-2"></i>
-                    Tu pago está protegido. No lo liberamos hasta que confirmes que el servicio está completo.
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
-                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition">Pagar ahora</button>
-                </div>
-            `;
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            const total = servicio.monto_ofertado;
+            content.innerHTML = `<div class="text-center"><i class="fas fa-lock text-4xl text-green-600 mb-4"></i><h4 class="font-bold text-lg mb-2">Pago Seguro</h4><p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago hasta que confirmes la finalización</p></div><div class="bg-slate-50 p-4 rounded-xl space-y-3"><div class="flex justify-between"><span>Monto del servicio:</span><span class="font-bold">$${total.toFixed(2)}</span></div><div class="flex justify-between text-gray-500"><span>Comisión Tasker's (15%):</span><span>$${(total*0.15).toFixed(2)}</span></div><div class="border-t pt-3 flex justify-between font-bold text-lg"><span>Total a pagar:</span><span class="text-blue-600">$${total.toFixed(2)}</span></div></div><div class="bg-amber-50 p-4 rounded-xl text-sm text-amber-800"><i class="fas fa-shield-alt mr-2"></i>Tu pago está protegido. No lo liberamos hasta que confirmes la entrega.</div><div class="flex gap-3"><button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50">Cancelar</button><button onclick="procesarPago('${servicio.id}', ${total})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">Pagar ahora</button></div>`;
+            modal.classList.remove('hidden'); modal.classList.add('flex');
         }
 
-        window.procesarPago = async (servicioId, monto) => {
-            mostrarCargando();
+        window.procesarPago = async (id, m) => {
+            showLoading();
             try {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const { error } = await supabase
-                    .from('servicios')
-                    .update({ status: 'publicado', pago_status: 'completado', updated_at: new Date() })
-                    .eq('id', servicioId);
-                if (error) throw error;
-                await supabase.from('pagos').insert([{
-                    servicio_id: servicioId,
-                    cliente_id: usuarioActual.id,
-                    monto_total: monto,
-                    comision_taskers: monto * 0.15,
-                    monto_tasker: monto * 0.85,
-                    status: 'completado',
-                    fecha_pago: new Date()
-                }]);
-                alert('¡Pago exitoso!');
-                cerrarPagoModal();
-                window.mostrarSeccion('mis-servicios');
-                cargarMisServicios();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                ocultarCargando();
-            }
+                await new Promise(r => setTimeout(r,2000));
+                await supabase.from('servicios').update({ status:'publicado', pago_status:'completado', updated_at:new Date() }).eq('id',id);
+                await supabase.from('pagos').insert([{ servicio_id:id, cliente_id:currentUser.id, monto_total:m, comision_taskers:m*0.15, monto_tasker:m*0.85, status:'completado', fecha_pago:new Date() }]);
+                alert('¡Pago exitoso!'); cerrarPagoModal(); window.showSection('mis-servicios'); cargarMisServicios();
+            } catch (error) { alert('Error: ' + error.message); } finally { hideLoading(); }
         };
-
-        function cerrarPagoModal() {
-            document.getElementById('pagoModal').classList.add('hidden');
-            document.getElementById('pagoModal').classList.remove('flex');
-            document.getElementById('btnPublicar').disabled = false;
-            document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud';
-        }
+        function cerrarPagoModal() { document.getElementById('pagoModal').classList.add('hidden'); document.getElementById('pagoModal').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
 
         // =============================================
         // MIS SERVICIOS
         // =============================================
         window.cargarMisServicios = async function() {
-            const filtro = document.getElementById('filtroStatus').value;
-            const container = document.getElementById('serviciosContainer');
-
+            const f = document.getElementById('filtroStatus').value;
+            const c = document.getElementById('serviciosContainer');
             try {
-                let query = supabase
-                    .from('servicios')
-                    .select(`
-                        *,
-                        tasker:tasker_id (full_name, photo_url, calificacion_promedio)
-                    `)
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('created_at', false);
-
-                if (filtro !== 'todos') query = query.eq('status', filtro);
-
-                const { data: servicios, error } = await query;
+                let q = supabase.from('servicios').select('*, tasker:tasker_id(full_name,photo_url,calificacion_promedio)').eq('cliente_id',currentUser.id).order('created_at',false);
+                if (f !== 'todos') q = q.eq('status', f);
+                const { data: s, error } = await q;
                 if (error) throw error;
-
-                if (!servicios?.length) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
-                    return;
-                }
-
-                container.innerHTML = servicios.map(s => `
-                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-bold text-lg text-slate-800">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-slate-600 mt-1">${s.descripcion}</p>
-                            </div>
-                            <span class="status-badge ${obtenerClaseStatus(s.status)}">${obtenerTextoStatus(s.status)}</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || 'No especificada'}</p></div>
-                            <div><p class="text-slate-500">Fecha</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
-                        </div>
-                        ${s.tasker_id ? `
-                            <div class="border-t pt-4 mt-4">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <img src="${s.tasker?.photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-200">
-                                        <div><p class="font-medium text-slate-800">${s.tasker?.full_name || 'Tasker'}</p><p class="text-xs text-slate-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div>
-                                    </div>
-                                    <button onclick="abrirChat('${s.id}', '${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
-                                        <i class="fas fa-comment mr-2"></i>Chat
-                                    </button>
-                                </div>
-                            </div>
-                        ` : s.status === 'publicado' ? `
-                            <div class="border-t pt-4 mt-4 text-center text-slate-500">
-                                <i class="fas fa-clock mr-2"></i>Esperando propuestas...
-                            </div>
-                        ` : ''}
-                        ${s.status === 'en_progreso' ? `
-                            <div class="border-t pt-4 mt-4">
-                                <button onclick="confirmarFinalizacion('${s.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
-                                    <i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>';
-            }
+                if (!s?.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>'; return; }
+                c.innerHTML = s.map(x => `<div class="bg-white rounded-xl shadow-sm p-6 service-card"><div class="flex justify-between items-start mb-4"><div><h4 class="font-bold text-lg text-slate-800">${x.subcategoria||''}</h4><p class="text-sm text-slate-600">${x.descripcion}</p></div><span class="status-badge ${getStatusClass(x.status)}">${getStatusText(x.status)}</span></div><div class="grid grid-cols-3 gap-4 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${(x.monto_ofertado||0).toFixed(2)}</p></div><div><p class="text-slate-500">Ubicación</p><p>${x.ubicacion||''}</p></div><div><p class="text-slate-500">Fecha</p><p>${new Date(x.created_at).toLocaleDateString()}</p></div></div>${x.tasker_id?`<div class="border-t pt-4 mt-4"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300" style="${x.tasker?.photo_url?`background-image:url('${x.tasker.photo_url}')`:''}"></div><div><p class="font-medium text-slate-800">${x.tasker?.full_name||'Tasker'}</p><p class="text-xs text-slate-500">⭐ ${(x.tasker?.calificacion_promedio||0).toFixed(1)||'Nuevo'}</p></div></div><button onclick="abrirChat('${x.id}','${x.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Chat</button></div></div>`:x.status==='publicado'?`<div class="border-t pt-4 mt-4 text-center text-slate-500"><i class="fas fa-clock mr-2"></i>Esperando propuestas...</div>`:''}${x.status==='en_progreso'?`<div class="border-t pt-4 mt-4"><button onclick="confirmarFinalizacion('${x.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700"><i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO</button></div>`:''}</div>`).join('');
+            } catch (error) { console.error(error); c.innerHTML = '<p class="text-red-400 text-center py-8">Error</p>'; }
         };
 
-        window.confirmarFinalizacion = async (servicioId) => {
+        window.confirmarFinalizacion = async (id) => {
             if (!confirm('¿Confirmas que el servicio está completado?')) return;
-            mostrarCargando();
+            showLoading();
             try {
-                await supabase.from('servicios').update({ status: 'completado', fecha_completado: new Date() }).eq('id', servicioId);
-                const { data: servicio } = await supabase.from('servicios').select('tasker_id').eq('id', servicioId).single();
-                await supabase.from('notificaciones').insert([{
-                    usuario_id: servicio.tasker_id,
-                    tipo: 'pago',
-                    titulo: '¡Servicio completado!',
-                    mensaje: 'El cliente confirmó la finalización. El pago será procesado.'
-                }]);
-                alert('¡Gracias por confirmar!');
-                cargarMisServicios();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                ocultarCargando();
-            }
+                await supabase.from('servicios').update({ status:'completado', fecha_completado:new Date() }).eq('id',id);
+                const { data: d } = await supabase.from('servicios').select('tasker_id').eq('id',id).single();
+                await supabase.from('notificaciones').insert([{ usuario_id:d.tasker_id, tipo:'pago', titulo:'¡Servicio completado!', mensaje:'El cliente confirmó la finalización.' }]);
+                alert('¡Gracias!'); cargarMisServicios();
+            } catch (error) { alert('Error: ' + error.message); } finally { hideLoading(); }
         };
 
         // =============================================
         // CHAT
         // =============================================
         window.cargarConversaciones = async function() {
-            const container = document.getElementById('conversacionesLista');
+            const c = document.getElementById('conversacionesLista');
             try {
-                const { data: chats, error } = await supabase
-                    .from('chats')
-                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
-                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
-                    .order('ultimo_mensaje_time', false);
+                const { data: chats, error } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`).order('ultimo_mensaje_time', false);
                 if (error) throw error;
-                if (!chats?.length) {
-                    container.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
-                    return;
-                }
-                container.innerHTML = chats.map(chat => {
-                    const otro = chat.usuario1_id === usuarioActual.id ? chat.usuario2 : chat.usuario1;
-                    return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${chat.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${chat.servicio?.subcategoria||''}')">
-                        <div class="flex items-center gap-3">
-                            <img src="${otro.photo_url||'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
-                            <div class="flex-1"><p class="font-bold text-slate-800">${otro.full_name||'Tasker'}</p><p class="text-xs text-slate-500">${chat.servicio?.subcategoria||''}</p>${chat.ultimo_mensaje?`<p class="text-xs text-slate-400">${chat.ultimo_mensaje}</p>`:''}</div>
-                        </div>
-                    </div>`;
+                if (!chats?.length) { c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>'; return; }
+                c.innerHTML = chats.map(ch => {
+                    const otro = ch.usuario1_id === currentUser.id ? ch.usuario2 : ch.usuario1;
+                    return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300" style="${otro.photo_url?`background-image:url('${otro.photo_url}')`:''}"></div><div class="flex-1"><p class="font-bold text-slate-800">${otro.full_name||'Tasker'}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
                 }).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            } catch (error) { console.error(error); }
         };
 
-        window.seleccionarChat = async (chatId, otroId, otroNombre, otroAvatar, servicioInfo) => {
-            chatActual = { id: chatId, otroId, otroNombre, otroAvatar, servicioInfo };
+        window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
+            currentChat = { id, oid, nombre, avatar, info };
             document.getElementById('chatHeader').classList.remove('hidden');
-            document.getElementById('chatTaskerNombre').textContent = otroNombre;
-            document.getElementById('chatTaskerAvatar').src = otroAvatar || 'https://via.placeholder.com/40';
-            document.getElementById('chatServicioInfo').textContent = servicioInfo;
+            document.getElementById('chatTaskerNombre').textContent = nombre;
+            if (avatar) document.getElementById('chatTaskerAvatar').style.backgroundImage = `url('${avatar}')`;
+            document.getElementById('chatServicioInfo').textContent = info;
             document.getElementById('chatInput').classList.remove('hidden');
-            await cargarMensajes(chatId);
-            if (subscriptionChat) subscriptionChat.unsubscribe();
-            subscriptionChat = supabase.channel(`chat-${chatId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${chatId}` }, payload => agregarMensaje(payload.new)).subscribe();
+            await cargarMensajes(id);
+            if (chatSubscription) chatSubscription.unsubscribe();
+            chatSubscription = supabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
         };
 
-        async function cargarMensajes(chatId) {
-            const container = document.getElementById('chatMessages');
+        async function cargarMensajes(id) {
+            const c = document.getElementById('chatMessages');
             try {
-                const { data: mensajes, error } = await supabase.from('mensajes').select('*').eq('chat_id', chatId).order('created_at');
+                const { data: msgs, error } = await supabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
                 if (error) throw error;
-                if (!mensajes?.length) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes</p>';
-                    return;
-                }
-                container.innerHTML = mensajes.map(m => crearMensajeHTML(m)).join('');
-                container.scrollTop = container.scrollHeight;
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        function crearMensajeHTML(m) {
-            const esMio = m.remitente_id === usuarioActual.id;
-            return `<div class="flex ${esMio?'justify-end':'justify-start'}"><div class="chat-message ${esMio?'chat-client':'chat-tasker'} rounded-2xl p-3"><p class="text-sm ${esMio?'text-white':'text-slate-800'}">${m.mensaje}</p><p class="text-xs ${esMio?'text-blue-200':'text-slate-400'} mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+                if (!msgs?.length) { c.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes</p>'; return; }
+                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===currentUser.id?'justify-end':'justify-start'}"><div class="chat-message ${m.remitente_id===currentUser.id?'chat-client':'chat-tasker'} rounded-2xl p-3"><p class="text-sm ${m.remitente_id===currentUser.id?'text-white':'text-slate-800'}">${m.mensaje}</p><p class="text-xs ${m.remitente_id===currentUser.id?'text-blue-200':'text-slate-400'} mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+                c.scrollTop = c.scrollHeight;
+            } catch (error) { console.error(error); }
         }
 
         function agregarMensaje(m) {
-            const container = document.getElementById('chatMessages');
-            if (container.children.length === 1 && container.children[0].tagName === 'P') container.innerHTML = '';
-            container.innerHTML += crearMensajeHTML(m);
-            container.scrollTop = container.scrollHeight;
+            const c = document.getElementById('chatMessages');
+            if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
+            c.innerHTML += `<div class="flex ${m.remitente_id===currentUser.id?'justify-end':'justify-start'}"><div class="chat-message ${m.remitente_id===currentUser.id?'chat-client':'chat-tasker'} rounded-2xl p-3"><p class="text-sm ${m.remitente_id===currentUser.id?'text-white':'text-slate-800'}">${m.mensaje}</p><p class="text-xs ${m.remitente_id===currentUser.id?'text-blue-200':'text-slate-400'} mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+            c.scrollTop = c.scrollHeight;
         }
 
         document.getElementById('mensajeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!chatActual) { alert('Selecciona un chat'); return; }
-            const texto = document.getElementById('mensajeTexto').value.trim();
-            if (!texto) return;
+            if (!currentChat) { alert('Selecciona un chat'); return; }
+            const txt = document.getElementById('mensajeTexto').value.trim();
+            if (!txt) return;
             try {
-                await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: texto, created_at: new Date() }]);
-                await supabase.from('chats').update({ ultimo_mensaje: texto, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
+                await supabase.from('mensajes').insert([{ chat_id:currentChat.id, remitente_id:currentUser.id, mensaje:txt, created_at:new Date() }]);
+                await supabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date(), ultimo_mensaje_leido:false }).eq('id',currentChat.id);
                 document.getElementById('mensajeTexto').value = '';
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al enviar');
-            }
+            } catch (error) { console.error(error); alert('Error al enviar'); }
         });
 
-        window.abrirChat = async (servicioId, taskerId) => {
+        window.abrirChat = async (sid, tid) => {
             try {
-                const { data: existente } = await supabase.from('chats').select('*').eq('servicio_id', servicioId).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${taskerId}),and(usuario1_id.eq.${taskerId},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
-                let chatId;
-                if (existente) {
-                    chatId = existente.id;
-                } else {
-                    const { data: nuevo } = await supabase.from('chats').insert([{ servicio_id: servicioId, usuario1_id: usuarioActual.id, usuario2_id: taskerId }]).select().single();
-                    chatId = nuevo.id;
-                }
-                const { data: tasker } = await supabase.from('profiles').select('full_name, photo_url').eq('id', taskerId).single();
-                window.mostrarSeccion('chat');
-                await cargarConversaciones();
-                await seleccionarChat(chatId, taskerId, tasker.full_name, tasker.photo_url, 'Servicio');
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al abrir chat');
-            }
+                const { data: ex } = await supabase.from('chats').select('*').eq('servicio_id',sid).or(`and(usuario1_id.eq.${currentUser.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${currentUser.id})`).maybeSingle();
+                let cid;
+                if (ex) { cid = ex.id; } else { const { data: n } = await supabase.from('chats').insert([{ servicio_id:sid, usuario1_id:currentUser.id, usuario2_id:tid }]).select().single(); cid = n.id; }
+                const { data: t } = await supabase.from('profiles').select('full_name, photo_url').eq('id', tid).single();
+                window.showSection('chat'); await cargarConversaciones(); await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
+            } catch (error) { console.error(error); alert('Error al abrir chat'); }
         };
 
         // =============================================
         // PAGOS
         // =============================================
         window.cargarPagos = async function() {
-            const tbody = document.getElementById('pagosTableBody');
+            const t = document.getElementById('pagosTableBody');
             try {
-                const { data: pagos, error } = await supabase
-                    .from('pagos')
-                    .select('*, servicio:servicio_id(subcategoria)')
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('fecha_pago', false);
+                const { data: p, error } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',currentUser.id).order('fecha_pago', false);
                 if (error) throw error;
-                if (!pagos?.length) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-4">${p.servicio?.subcategoria || ''}</td>
-                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-4 text-gray-600">$${p.comision_taskers?.toFixed(2)}</td>
-                        <td class="p-4"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Completado</span></td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
+                if (!p?.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                t.innerHTML = p.map(x => `<tr class="border-b hover:bg-slate-50"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4 text-gray-600">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Completado</span></td></tr>`).join('');
+            } catch (error) { console.error(error); }
         };
 
         // =============================================
@@ -1213,83 +475,49 @@
         document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await supabase.from('profiles').update({
-                    full_name: document.getElementById('perfilNombre').value,
-                    phone: document.getElementById('perfilTelefono').value,
-                    updated_at: new Date()
-                }).eq('id', usuarioActual.id);
-                notificar('Perfil actualizado', 'success');
-                await cargarUsuario();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
+                await supabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value, updated_at:new Date() }).eq('id',currentUser.id);
+                showNotification('Perfil actualizado', 'success'); await loadUserData();
+            } catch (error) { alert('Error: ' + error.message); }
         });
 
         window.subirFotoPerfil = async function() {
-            const input = document.getElementById('fotoPerfil');
-            if (!input.files?.[0]) return;
-            mostrarCargando();
+            const i = document.getElementById('fotoPerfil');
+            if (!i.files?.[0]) return;
+            showLoading();
             try {
-                const file = input.files[0];
-                if (file.size > 2 * 1024 * 1024) throw new Error('Máximo 2MB');
-                const fileName = `profiles/${usuarioActual.id}/${Date.now()}_${file.name}`;
-                await supabase.storage.from('profiles-photos').upload(fileName, file);
-                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(fileName);
-                await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
-                document.getElementById('headerAvatar').src = publicUrl;
-                document.getElementById('profileAvatar').src = publicUrl;
-                notificar('Foto actualizada', 'success');
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                ocultarCargando();
-            }
+                const f = i.files[0]; if (f.size > 2*1024*1024) throw new Error('Máximo 2MB');
+                const n = `profiles/${currentUser.id}/${Date.now()}_${f.name}`;
+                await supabase.storage.from('profiles-photos').upload(n, f);
+                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
+                await supabase.from('profiles').update({ photo_url:publicUrl }).eq('id',currentUser.id);
+                document.getElementById('headerAvatar').style.backgroundImage = `url('${publicUrl}')`;
+                document.getElementById('profileAvatar').style.backgroundImage = `url('${publicUrl}')`;
+                showNotification('Foto actualizada', 'success');
+            } catch (error) { alert('Error: ' + error.message); } finally { hideLoading(); }
         };
 
         // =============================================
         // UTILIDADES
         // =============================================
-        function obtenerClaseStatus(status) {
-            const clases = {
-                'pendiente_pago': 'status-pendiente',
-                'publicado': 'status-pendiente',
-                'asignado': 'status-asignado',
-                'en_progreso': 'status-progreso',
-                'completado': 'status-completado',
-                'cancelado': 'status-cancelado'
-            };
-            return clases[status] || 'status-pendiente';
+        function getStatusClass(s) {
+            const clases = { 'pendiente_pago':'status-pendiente', 'publicado':'status-pendiente', 'asignado':'status-asignado', 'en_progreso':'status-progreso', 'completado':'status-completado', 'cancelado':'status-cancelado' };
+            return clases[s] || 'status-pendiente';
         }
-
-        function obtenerTextoStatus(status) {
-            const textos = {
-                'pendiente_pago': 'Pendiente de pago',
-                'publicado': 'Buscando tasker',
-                'asignado': 'Asignado',
-                'en_progreso': 'En progreso',
-                'completado': 'Completado',
-                'cancelado': 'Cancelado'
-            };
-            return textos[status] || status;
+        function getStatusText(s) {
+            const txt = { 'pendiente_pago':'Pendiente de pago', 'publicado':'Buscando tasker', 'asignado':'Asignado', 'en_progreso':'En progreso', 'completado':'Completado', 'cancelado':'Cancelado' };
+            return txt[s] || s;
         }
 
         // =============================================
         // NAVEGACIÓN (FUNCIÓN GLOBAL)
         // =============================================
-        window.mostrarSeccion = function(seccion) {
+        window.showSection = function(seccion) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById(seccion).classList.add('active');
             document.getElementById('link-' + seccion)?.classList.add('active');
 
-            const titulos = {
-                'inicio': 'Inicio',
-                'nuevo-servicio': 'Solicitar Servicio',
-                'mis-servicios': 'Mis Servicios',
-                'chat': 'Mensajes',
-                'pagos': 'Mis Pagos',
-                'perfil': 'Mi Perfil'
-            };
+            const titulos = { 'inicio':'Inicio', 'nuevo-servicio':'Solicitar Servicio', 'mis-servicios':'Mis Servicios', 'chat':'Mensajes', 'pagos':'Mis Pagos', 'perfil':'Mi Perfil' };
             document.getElementById('section-title').textContent = titulos[seccion] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${titulos[seccion].toLowerCase()}`;
 
@@ -1298,18 +526,16 @@
                 case 'chat': cargarConversaciones(); break;
                 case 'pagos': cargarPagos(); break;
             }
-            if (window.innerWidth < 768) toggleMenuMovil();
+            if (window.innerWidth < 768) toggleMobileMenu();
         };
 
-        window.verServicio = function(id) {
-            window.mostrarSeccion('mis-servicios');
-        };
+        window.verServicio = function(id) { window.showSection('mis-servicios'); };
 
-        function configurarSuscripciones() {
-            supabase.channel('mensajes-cliente').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => {
-                if (payload.new.remitente_id !== usuarioActual?.id) {
-                    if (chatActual && payload.new.chat_id === chatActual.id) agregarMensaje(payload.new);
-                    else notificar('Nuevo mensaje');
+        function setupRealtimeSubscriptions() {
+            supabase.channel('mensajes-cliente').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => {
+                if (p.new.remitente_id !== currentUser?.id) {
+                    if (currentChat && p.new.chat_id === currentChat.id) agregarMensaje(p.new);
+                    else showNotification('Nuevo mensaje');
                 }
             }).subscribe();
         }
@@ -1317,23 +543,21 @@
         // =============================================
         // CERRAR SESIÓN (FUNCIÓN GLOBAL)
         // =============================================
-        window.cerrarSesionCliente = async function() {
+        window.cerrarSesion = async function() {
             if (confirm('¿Cerrar sesión?')) {
-                mostrarCargando();
+                showLoading();
                 try { await supabase.auth.signOut(); } catch (e) { console.error(e); }
                 window.location.href = 'index.html';
             }
         };
-    </script>
 
-    <style>
-        .animate-slideIn {
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-    </style>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarPagoModal();
+                document.getElementById('servicioModal')?.classList.add('hidden');
+                document.getElementById('servicioModal')?.classList.remove('flex');
+            }
+        });
+    </script>
 </body>
 </html>
