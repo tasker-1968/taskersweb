@@ -4,56 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión | Tasker's México</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Fondo con gradiente animado */
+        .bg-animated {
+            background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #2563eb, #1e40af);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Efecto de desenfoque para el fondo */
+        .blur-overlay {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Tarjeta de login con efecto glass */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Animación de entrada */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slideUp {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        /* Input focus effects */
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Botón con efecto de onda */
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-ripple::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn-ripple:hover::after {
+            animation: ripple 0.6s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .glass-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-600 to-blue-800 min-h-screen flex items-center justify-center p-4">
+<body class="bg-animated min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">Bienvenido</h1>
-            <p class="text-slate-500 mt-2">Accede a tu cuenta de Tasker's</p>
+    <!-- Fondo con partículas (decorativo) -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Logo flotante (solo visible en desktop) -->
+    <div class="fixed top-8 left-8 hidden lg:block animate-slideUp">
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20">
+            <img src="logo-taskers.png" alt="Tasker's México" class="h-10 w-auto">
+            <span class="text-white font-bold text-xl">Tasker's</span>
+            <span class="text-blue-200 text-sm">MÉXICO</span>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Login Principal -->
+    <div class="glass-card rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 animate-slideUp">
+        
+        <!-- Logo en móvil (solo visible en móvil) -->
+        <div class="flex justify-center mb-6 lg:hidden">
+            <img src="logo-taskers.png" alt="Tasker's México" class="h-12 w-auto">
         </div>
 
-        <form id="loginForm" class="space-y-6">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">¡Bienvenido de vuelta!</h1>
+            <p class="text-sm md:text-base text-slate-500">Accede a tu cuenta para gestionar tus servicios</p>
+        </div>
+
+        <!-- Formulario de Login -->
+        <form id="loginForm" class="space-y-5 md:space-y-6">
+            <!-- Campo Email -->
             <div>
-                <label class="block text-sm font-medium text-slate-600 mb-2">Correo electrónico</label>
-                <input type="email" id="email" required 
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    placeholder="tucorreo@ejemplo.com">
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Correo Electrónico
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" id="email" required 
+                        class="input-focus w-full pl-12 pr-4 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base"
+                        placeholder="tucorreo@ejemplo.com">
+                </div>
             </div>
 
+            <!-- Campo Contraseña -->
             <div>
-                <label class="block text-sm font-medium text-slate-600 mb-2">Contraseña</label>
-                <input type="password" id="password" required 
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    placeholder="••••••••">
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
+                    <i class="fas fa-lock mr-2"></i>
+                    Contraseña
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="password" required 
+                        class="input-focus w-full pl-12 pr-4 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base"
+                        placeholder="••••••••">
+                </div>
             </div>
 
+            <!-- Opciones adicionales -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <span class="text-slate-600">Recordar mi cuenta</span>
+                </label>
+                <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline transition">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <!-- Botón de Login -->
             <button type="submit" id="loginBtn" 
-                class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                Iniciar sesión
+                class="btn-ripple w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative overflow-hidden">
+                <i class="fas fa-sign-in-alt"></i>
+                Iniciar Sesión
             </button>
         </form>
 
-        <p class="text-center text-sm text-slate-500 mt-8">
-            ¿No tienes cuenta? 
-            <a href="registro-clientes.html" class="text-blue-600 hover:underline">Regístrate como cliente</a>
-            <span class="mx-2">|</span>
-            <a href="registro-taskers.html" class="text-blue-600 hover:underline">como profesional</a>
+        <!-- Divisor -->
+        <div class="relative my-6 md:my-8">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200"></div>
+            </div>
+            <div class="relative flex justify-center text-xs md:text-sm">
+                <span class="bg-white px-4 text-slate-400">O continúa con</span>
+            </div>
+        </div>
+
+        <!-- Botones de Proveedores -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <button onclick="loginWithProvider('google')" 
+                class="flex items-center justify-center gap-2 px-4 py-3 md:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                <span class="text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600">Google</span>
+            </button>
+            <button onclick="loginWithProvider('facebook')" 
+                class="flex items-center justify-center gap-2 px-4 py-3 md:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
+                <span class="text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600">Facebook</span>
+            </button>
+        </div>
+
+        <!-- Enlaces de registro -->
+        <div class="mt-6 md:mt-8 text-center space-y-2">
+            <p class="text-xs md:text-sm text-slate-500">
+                ¿No tienes cuenta? 
+                <a href="registro-clientes.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Regístrate como Cliente</a>
+            </p>
+            <p class="text-xs md:text-sm text-slate-500">
+                ¿Eres profesional? 
+                <a href="registro-taskers.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Regístrate como Tasker</a>
+            </p>
+        </div>
+
+        <!-- Términos y condiciones -->
+        <p class="text-center text-xs text-slate-400 mt-6 md:mt-8">
+            Al iniciar sesión, aceptas nuestros 
+            <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> 
+            y 
+            <a href="#" class="text-blue-600 hover:underline">Política de Privacidad</a>
         </p>
     </div>
 
     <script>
         // =============================================
-        // LOGIN CORREGIDO
+        // CONFIGURACIÓN DE SUPABASE
         // =============================================
-        
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
-        // Inicializar
+        // Inicializar Supabase
         let supabaseClient = null;
         
         try {
@@ -67,29 +265,41 @@
             console.error('Error:', e);
         }
 
-        // Login form
+        // =============================================
+        // FUNCIÓN DE LOGIN
+        // =============================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             if (!supabaseClient) {
-                alert('Error: Supabase no está disponible');
+                alert('Error: Supabase no está disponible. Recarga la página.');
                 return;
             }
 
             const btn = document.getElementById('loginBtn');
+            const originalText = btn.innerHTML;
+            
+            // Deshabilitar botón y mostrar loading
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
 
             try {
-                const email = document.getElementById('email').value;
+                const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
+                // Validación básica
+                if (!email || !password) {
+                    throw new Error('Por favor completa todos los campos');
+                }
+
+                // Intentar login
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email, password
                 });
 
                 if (error) throw error;
 
+                // Obtener perfil del usuario
                 const { data: profile, error: profileError } = await supabaseClient
                     .from('profiles')
                     .select('role')
@@ -98,24 +308,98 @@
 
                 if (profileError) throw profileError;
 
-                switch(profile?.role) {
-                    case 'admin':
-                        window.location.href = 'admin.html';
-                        break;
-                    case 'tasker':
-                        window.location.href = 'dashboard-tasker.html';
-                        break;
-                    default:
-                        window.location.href = 'dashboard-cliente.html';
-                        break;
-                }
+                // Redirigir según el rol
+                let redirectUrl = 'dashboard-cliente.html';
+                if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
+                if (profile?.role === 'admin') redirectUrl = 'admin.html';
+
+                // Pequeña pausa para mostrar el éxito
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Éxito! Redirigiendo...';
+                
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 500);
 
             } catch (error) {
-                alert('Error: ' + error.message);
+                console.error('Error de login:', error);
+                
+                // Mensaje de error amigable
+                let mensaje = 'Error al iniciar sesión';
+                if (error.message.includes('Invalid login credentials')) {
+                    mensaje = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    mensaje = 'Por favor confirma tu email antes de iniciar sesión.';
+                } else {
+                    mensaje = error.message;
+                }
+                
+                alert('❌ ' + mensaje);
+                
+                // Restaurar botón
                 btn.disabled = false;
-                btn.innerHTML = 'Iniciar sesión';
+                btn.innerHTML = originalText;
             }
         });
+
+        // =============================================
+        // LOGIN CON PROVEEDORES
+        // =============================================
+        async function loginWithProvider(provider) {
+            if (!supabaseClient) {
+                alert('Error: Supabase no está disponible');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: provider,
+                    options: {
+                        redirectTo: window.location.origin + '/dashboard-redirect.html'
+                    }
+                });
+                
+                if (error) throw error;
+                
+            } catch (error) {
+                console.error('Error con proveedor:', error);
+                alert('Error al conectar con ' + provider + ': ' + error.message);
+            }
+        }
+
+        // =============================================
+        // ANIMACIONES ADICIONALES
+        // =============================================
+        // Efecto de máquina de escribir en el título (opcional)
+        const title = document.querySelector('h1');
+        if (title) {
+            title.style.opacity = '0';
+            setTimeout(() => {
+                title.style.transition = 'opacity 0.5s ease';
+                title.style.opacity = '1';
+            }, 200);
+        }
     </script>
+
+    <!-- Estilos adicionales para animaciones del fondo -->
+    <style>
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+    </style>
 </body>
 </html>
