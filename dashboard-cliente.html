@@ -118,7 +118,7 @@
         
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
         .service-card {
@@ -127,7 +127,7 @@
         
         .service-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
         
         /* Modal */
@@ -135,7 +135,7 @@
             transition: all 0.3s ease;
         }
         
-        /* Scrollbar personalizada */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -184,7 +184,7 @@
     </button>
 
     <!-- Overlay for mobile -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMenuMovil()"></div>
 
     <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
@@ -243,28 +243,28 @@
             
             <!-- Navigation -->
             <nav class="flex-1 mt-6 space-y-1 px-3">
-                <a href="#" onclick="showSection('inicio')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all active" id="link-inicio">
+                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all active" id="link-inicio">
                     <i class="fas fa-home w-6"></i>
                     <span>Inicio</span>
                 </a>
-                <a href="#" onclick="showSection('nuevo-servicio')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-nuevo-servicio">
+                <a href="#" onclick="window.mostrarSeccion('nuevo-servicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-nuevo-servicio">
                     <i class="fas fa-plus-circle w-6"></i>
                     <span>Solicitar Servicio</span>
                 </a>
-                <a href="#" onclick="showSection('mis-servicios')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-mis-servicios">
+                <a href="#" onclick="window.mostrarSeccion('mis-servicios'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-mis-servicios">
                     <i class="fas fa-list w-6"></i>
                     <span>Mis Servicios</span>
                 </a>
-                <a href="#" onclick="showSection('chat')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all relative" id="link-chat">
+                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all relative" id="link-chat">
                     <i class="fas fa-comments w-6"></i>
                     <span>Mensajes</span>
                     <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
                 </a>
-                <a href="#" onclick="showSection('pagos')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-pagos">
+                <a href="#" onclick="window.mostrarSeccion('pagos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-pagos">
                     <i class="fas fa-credit-card w-6"></i>
                     <span>Mis Pagos</span>
                 </a>
-                <a href="#" onclick="showSection('perfil')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-perfil">
+                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-perfil">
                     <i class="fas fa-user w-6"></i>
                     <span>Mi Perfil</span>
                 </a>
@@ -272,7 +272,7 @@
             
             <!-- Logout button -->
             <div class="p-4 border-t border-slate-700/50">
-                <button onclick="cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                <button onclick="window.cerrarSesionCliente()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>
                     Cerrar Sesión
                 </button>
@@ -288,11 +288,11 @@
                     <p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel de control</p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="showSection('chat')" class="relative">
+                    <button onclick="window.mostrarSeccion('chat')" class="relative">
                         <i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i>
                         <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
                     </button>
-                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer hover:border-blue-600 transition" onclick="showSection('perfil')">
+                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer hover:border-blue-600 transition" onclick="window.mostrarSeccion('perfil')">
                 </div>
             </header>
 
@@ -327,7 +327,7 @@
                             Servicios Recientes
                         </h3>
                         <div id="recientesLista" class="space-y-3">
-                            <p class="text-slate-400 text-center py-8">Cargando...</p>
+                            <p class="text-slate-400 text-center py-4">Cargando...</p>
                         </div>
                     </div>
                 </section>
@@ -621,61 +621,62 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN DE SUPABASE (UNA SOLA VEZ)
         // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        const CONFIG = {
+            url: 'https://ayhflwricnkptoinabhe.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M'
+        };
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Variable global de Supabase (UNA SOLA VEZ)
+        const supabase = window.supabase.createClient(CONFIG.url, CONFIG.key);
 
         // =============================================
         // VARIABLES GLOBALES
         // =============================================
-        let currentUser = null;
-        let currentChat = null;
-        let chatSubscription = null;
+        let usuarioActual = null;
+        let chatActual = null;
+        let subscriptionChat = null;
 
         // =============================================
         // FUNCIONES DE UTILIDAD
         // =============================================
-        function showLoading() {
+        function mostrarCargando() {
             document.getElementById('loadingModal').classList.remove('hidden');
             document.getElementById('loadingModal').classList.add('flex');
         }
 
-        function hideLoading() {
+        function ocultarCargando() {
             document.getElementById('loadingModal').classList.add('hidden');
             document.getElementById('loadingModal').classList.remove('flex');
         }
 
-        function showNotification(message, type = 'info') {
+        function notificar(mensaje, tipo = 'info') {
             const notif = document.createElement('div');
             notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 
+                tipo === 'success' ? 'bg-green-500' : 
+                tipo === 'error' ? 'bg-red-500' : 
                 'bg-blue-500'
             } text-white max-w-md`;
-            notif.innerHTML = message;
+            notif.innerHTML = mensaje;
             document.body.appendChild(notif);
-            
             setTimeout(() => notif.remove(), 3000);
         }
 
         // =============================================
         // VERIFICAR AUTENTICACIÓN
         // =============================================
-        async function checkAuth(redirectUrl = 'login.html') {
+        async function verificarAuth(redirectUrl = 'login.html') {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
                 if (error) throw error;
-                
                 if (!session) {
                     window.location.href = redirectUrl;
                     return null;
                 }
                 return session;
             } catch (error) {
-                console.error('Error checking auth:', error);
+                console.error('Error:', error);
                 window.location.href = redirectUrl;
                 return null;
             }
@@ -685,47 +686,33 @@
         // INICIALIZACIÓN
         // =============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadUserData();
-            await loadCategorias();
-            await loadDashboardData();
-            setupRealtimeSubscriptions();
-            setupMobileMenu();
+            await cargarUsuario();
+            await cargarCategorias();
+            await cargarDashboard();
+            configurarSuscripciones();
+            configurarMenuMovil();
         });
 
-        function setupMobileMenu() {
-            const menuBtn = document.getElementById('mobileMenuBtn');
+        function configurarMenuMovil() {
+            const btn = document.getElementById('mobileMenuBtn');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
-
-            if (menuBtn) {
-                menuBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('open');
-                    overlay.classList.toggle('hidden');
-                });
-            }
-
-            if (overlay) {
-                overlay.addEventListener('click', () => {
-                    sidebar.classList.remove('open');
-                    overlay.classList.add('hidden');
-                });
-            }
+            if (btn) btn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('hidden'); });
+            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.add('hidden'); });
         }
 
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.remove('open');
-            overlay.classList.add('hidden');
+        function toggleMenuMovil() {
+            document.getElementById('sidebar')?.classList.remove('open');
+            document.getElementById('sidebarOverlay')?.classList.add('hidden');
         }
 
-        async function loadUserData() {
-            showLoading();
+        async function cargarUsuario() {
+            mostrarCargando();
             try {
-                const session = await checkAuth('login.html');
+                const session = await verificarAuth('login.html');
                 if (!session) return;
 
-                const { data: profile, error } = await supabase
+                const { data: perfil, error } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
@@ -733,37 +720,37 @@
 
                 if (error) throw error;
                 
-                currentUser = profile;
-                updateUserInfo(profile);
+                usuarioActual = perfil;
+                actualizarInfoUsuario(perfil);
                 
             } catch (error) {
-                console.error('Error loading user:', error);
-                showNotification('Error al cargar datos del usuario', 'error');
+                console.error('Error:', error);
+                notificar('Error al cargar datos', 'error');
             } finally {
-                hideLoading();
+                ocultarCargando();
             }
         }
 
-        function updateUserInfo(profile) {
+        function actualizarInfoUsuario(perfil) {
             document.getElementById('userInfo').innerHTML = `
-                <p class="font-bold">${profile.full_name || 'Usuario'}</p>
+                <p class="font-bold">${perfil.full_name || 'Usuario'}</p>
                 <p class="text-xs opacity-75">Cliente</p>
             `;
             
-            if (profile.photo_url) {
-                document.getElementById('headerAvatar').src = profile.photo_url;
-                document.getElementById('profileAvatar').src = profile.photo_url;
+            if (perfil.photo_url) {
+                document.getElementById('headerAvatar').src = perfil.photo_url;
+                document.getElementById('profileAvatar').src = perfil.photo_url;
             }
             
-            document.getElementById('perfilNombre').value = profile.full_name || '';
-            document.getElementById('perfilEmail').value = profile.email || '';
-            document.getElementById('perfilTelefono').value = profile.phone || '';
+            document.getElementById('perfilNombre').value = perfil.full_name || '';
+            document.getElementById('perfilEmail').value = perfil.email || '';
+            document.getElementById('perfilTelefono').value = perfil.phone || '';
         }
 
         // =============================================
         // CATEGORÍAS
         // =============================================
-        async function loadCategorias() {
+        async function cargarCategorias() {
             try {
                 const { data: categorias, error } = await supabase
                     .from('categorias')
@@ -779,7 +766,7 @@
                     select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
                 });
             } catch (error) {
-                console.error('Error loading categorias:', error);
+                console.error('Error:', error);
             }
         }
 
@@ -809,24 +796,23 @@
                 
                 subcatSelect.disabled = false;
             } catch (error) {
-                console.error('Error loading subcategorias:', error);
+                console.error('Error:', error);
             }
         });
 
         // =============================================
         // DASHBOARD
         // =============================================
-        async function loadDashboardData() {
+        async function cargarDashboard() {
             try {
                 const { data: servicios, error } = await supabase
                     .from('servicios')
                     .select('*')
-                    .eq('cliente_id', currentUser.id)
-                    .order('created_at', { ascending: false });
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('created_at', false);
 
                 if (error) throw error;
 
-                // Calcular estadísticas
                 const stats = {
                     activos: servicios.filter(s => ['pendiente_pago', 'publicado', 'asignado', 'en_progreso'].includes(s.status)).length,
                     completados: servicios.filter(s => s.status === 'completado').length,
@@ -839,7 +825,6 @@
                 document.getElementById('statsProgreso').textContent = stats.progreso;
                 document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
 
-                // Mostrar servicios recientes
                 const recientes = servicios.slice(0, 5);
                 const container = document.getElementById('recientesLista');
                 
@@ -853,7 +838,7 @@
                                     <h4 class="font-bold text-slate-800">${s.subcategoria || 'Servicio'}</h4>
                                     <p class="text-sm text-slate-600 mt-1">${s.descripcion.substring(0, 60)}...</p>
                                 </div>
-                                <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
+                                <span class="status-badge ${obtenerClaseStatus(s.status)}">${obtenerTextoStatus(s.status)}</span>
                             </div>
                             <div class="flex justify-between items-center mt-3 text-sm">
                                 <span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion || 'No especificada'}</span>
@@ -864,7 +849,7 @@
                 }
 
             } catch (error) {
-                console.error('Error loading dashboard:', error);
+                console.error('Error:', error);
             }
         }
 
@@ -879,13 +864,12 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
 
             try {
-                // Construir ubicación
                 const cp = document.getElementById('cp').value;
                 const colonia = document.getElementById('colonia').value;
                 const ubicacion = colonia ? `${colonia}, CP ${cp}` : `CP ${cp}`;
 
                 const servicioData = {
-                    cliente_id: currentUser.id,
+                    cliente_id: usuarioActual.id,
                     categoria: document.getElementById('categoria').value,
                     subcategoria: document.getElementById('subcategoria').value,
                     descripcion: document.getElementById('descripcion').value,
@@ -898,7 +882,6 @@
                     created_at: new Date()
                 };
 
-                // Crear el servicio (estado pendiente_pago)
                 const { data: servicio, error } = await supabase
                     .from('servicios')
                     .insert([servicioData])
@@ -907,13 +890,11 @@
 
                 if (error) throw error;
 
-                // Aquí integrarías con Stripe/PayPal para el pago
-                // Por ahora, simulamos que el pago se procesó
                 await mostrarModalPago(servicio);
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al publicar: ' + error.message);
+                alert('Error: ' + error.message);
                 btn.disabled = false;
                 btn.innerHTML = 'Publicar Solicitud';
             }
@@ -933,7 +914,6 @@
                     <h4 class="font-bold text-lg mb-2">Pago Seguro</h4>
                     <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago hasta que confirmes la finalización</p>
                 </div>
-
                 <div class="bg-slate-50 p-4 rounded-xl space-y-3">
                     <div class="flex justify-between">
                         <span>Monto del servicio:</span>
@@ -948,19 +928,13 @@
                         <span class="text-blue-600">$${montoTotal.toFixed(2)}</span>
                     </div>
                 </div>
-
                 <div class="bg-amber-50 p-4 rounded-xl text-sm text-amber-800 border border-amber-200">
                     <i class="fas fa-shield-alt mr-2"></i>
                     Tu pago está protegido. No lo liberamos hasta que confirmes que el servicio está completo.
                 </div>
-
                 <div class="flex gap-3">
-                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition">
-                        Cancelar
-                    </button>
-                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                        Pagar ahora
-                    </button>
+                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition">Cancelar</button>
+                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition">Pagar ahora</button>
                 </div>
             `;
 
@@ -968,49 +942,34 @@
             modal.classList.add('flex');
         }
 
-        async function procesarPago(servicioId, monto) {
-            showLoading();
-            
+        window.procesarPago = async (servicioId, monto) => {
+            mostrarCargando();
             try {
-                // Simulamos un pago exitoso
                 await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Actualizar servicio a 'publicado'
                 const { error } = await supabase
                     .from('servicios')
-                    .update({ 
-                        status: 'publicado',
-                        pago_status: 'completado',
-                        updated_at: new Date()
-                    })
+                    .update({ status: 'publicado', pago_status: 'completado', updated_at: new Date() })
                     .eq('id', servicioId);
-
                 if (error) throw error;
-
-                // Crear registro de pago
-                await supabase
-                    .from('pagos')
-                    .insert([{
-                        servicio_id: servicioId,
-                        cliente_id: currentUser.id,
-                        monto_total: monto,
-                        comision_taskers: monto * 0.15,
-                        monto_tasker: monto * 0.85,
-                        status: 'completado',
-                        fecha_pago: new Date()
-                    }]);
-
-                alert('¡Pago procesado exitosamente! Tu servicio está publicado.');
+                await supabase.from('pagos').insert([{
+                    servicio_id: servicioId,
+                    cliente_id: usuarioActual.id,
+                    monto_total: monto,
+                    comision_taskers: monto * 0.15,
+                    monto_tasker: monto * 0.85,
+                    status: 'completado',
+                    fecha_pago: new Date()
+                }]);
+                alert('¡Pago exitoso!');
                 cerrarPagoModal();
-                showSection('mis-servicios');
+                window.mostrarSeccion('mis-servicios');
                 cargarMisServicios();
-                
             } catch (error) {
-                alert('Error al procesar el pago: ' + error.message);
+                alert('Error: ' + error.message);
             } finally {
-                hideLoading();
+                ocultarCargando();
             }
-        }
+        };
 
         function cerrarPagoModal() {
             document.getElementById('pagoModal').classList.add('hidden');
@@ -1022,7 +981,7 @@
         // =============================================
         // MIS SERVICIOS
         // =============================================
-        async function cargarMisServicios() {
+        window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus').value;
             const container = document.getElementById('serviciosContainer');
 
@@ -1031,24 +990,17 @@
                     .from('servicios')
                     .select(`
                         *,
-                        tasker:tasker_id (
-                            full_name,
-                            photo_url,
-                            calificacion_promedio
-                        )
+                        tasker:tasker_id (full_name, photo_url, calificacion_promedio)
                     `)
-                    .eq('cliente_id', currentUser.id)
-                    .order('created_at', { ascending: false });
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('created_at', false);
 
-                if (filtro !== 'todos') {
-                    query = query.eq('status', filtro);
-                }
+                if (filtro !== 'todos') query = query.eq('status', filtro);
 
                 const { data: servicios, error } = await query;
-
                 if (error) throw error;
 
-                if (!servicios || servicios.length === 0) {
+                if (!servicios?.length) {
                     container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
                     return;
                 }
@@ -1060,457 +1012,245 @@
                                 <h4 class="font-bold text-lg text-slate-800">${s.subcategoria || 'Servicio'}</h4>
                                 <p class="text-sm text-slate-600 mt-1">${s.descripcion}</p>
                             </div>
-                            <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
+                            <span class="status-badge ${obtenerClaseStatus(s.status)}">${obtenerTextoStatus(s.status)}</span>
                         </div>
-
                         <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-                            <div>
-                                <p class="text-slate-500">Presupuesto</p>
-                                <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Ubicación</p>
-                                <p>${s.ubicacion || 'No especificada'}</p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Fecha</p>
-                                <p>${new Date(s.created_at).toLocaleDateString()}</p>
-                            </div>
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || 'No especificada'}</p></div>
+                            <div><p class="text-slate-500">Fecha</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
                         </div>
-
                         ${s.tasker_id ? `
                             <div class="border-t pt-4 mt-4">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <img src="${s.tasker?.photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-200">
-                                        <div>
-                                            <p class="font-medium text-slate-800">${s.tasker?.full_name || 'Tasker asignado'}</p>
-                                            <p class="text-xs text-slate-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
-                                        </div>
+                                        <div><p class="font-medium text-slate-800">${s.tasker?.full_name || 'Tasker'}</p><p class="text-xs text-slate-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div>
                                     </div>
-                                    <button onclick="abrirChat('${s.id}', '${s.tasker_id}')" 
-                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                                        <i class="fas fa-comment mr-2"></i>Chat con tasker
+                                    <button onclick="abrirChat('${s.id}', '${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+                                        <i class="fas fa-comment mr-2"></i>Chat
                                     </button>
                                 </div>
                             </div>
                         ` : s.status === 'publicado' ? `
                             <div class="border-t pt-4 mt-4 text-center text-slate-500">
-                                <i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...
+                                <i class="fas fa-clock mr-2"></i>Esperando propuestas...
                             </div>
                         ` : ''}
-
                         ${s.status === 'en_progreso' ? `
                             <div class="border-t pt-4 mt-4">
-                                <button onclick="confirmarFinalizacion('${s.id}')" 
-                                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
-                                    <i class="fas fa-check-circle mr-2"></i>
-                                    Confirmar que el servicio está COMPLETADO
+                                <button onclick="confirmarFinalizacion('${s.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                                    <i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO
                                 </button>
-                                <p class="text-xs text-center text-slate-500 mt-2">
-                                    Al confirmar, autorizas la liberación del pago al tasker (reteniendo el 15% de comisión)
-                                </p>
                             </div>
                         ` : ''}
                     </div>
                 `).join('');
-
             } catch (error) {
                 console.error('Error:', error);
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>';
             }
-        }
+        };
 
-        async function confirmarFinalizacion(servicioId) {
-            if (!confirm('¿Confirmas que el servicio ha sido completado satisfactoriamente? Esto liberará el pago al tasker.')) return;
-
-            showLoading();
+        window.confirmarFinalizacion = async (servicioId) => {
+            if (!confirm('¿Confirmas que el servicio está completado?')) return;
+            mostrarCargando();
             try {
-                // Actualizar servicio
-                const { error } = await supabase
-                    .from('servicios')
-                    .update({ 
-                        status: 'completado',
-                        fecha_completado: new Date()
-                    })
-                    .eq('id', servicioId);
-
-                if (error) throw error;
-
-                // Crear notificación para el tasker
-                const { data: servicio } = await supabase
-                    .from('servicios')
-                    .select('tasker_id')
-                    .eq('id', servicioId)
-                    .single();
-
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: servicio.tasker_id,
-                        tipo: 'pago',
-                        titulo: '¡Servicio completado!',
-                        mensaje: 'El cliente confirmó la finalización. El pago será procesado en 24-48 hrs.'
-                    }]);
-
-                alert('¡Gracias por confirmar! El pago será liberado al tasker en 24-48 horas hábiles.');
+                await supabase.from('servicios').update({ status: 'completado', fecha_completado: new Date() }).eq('id', servicioId);
+                const { data: servicio } = await supabase.from('servicios').select('tasker_id').eq('id', servicioId).single();
+                await supabase.from('notificaciones').insert([{
+                    usuario_id: servicio.tasker_id,
+                    tipo: 'pago',
+                    titulo: '¡Servicio completado!',
+                    mensaje: 'El cliente confirmó la finalización. El pago será procesado.'
+                }]);
+                alert('¡Gracias por confirmar!');
                 cargarMisServicios();
-                
             } catch (error) {
                 alert('Error: ' + error.message);
             } finally {
-                hideLoading();
+                ocultarCargando();
             }
-        }
+        };
 
         // =============================================
-        // CHAT INTERMEDIADO
+        // CHAT
         // =============================================
-        async function cargarConversaciones() {
+        window.cargarConversaciones = async function() {
             const container = document.getElementById('conversacionesLista');
-
             try {
-                // Buscar chats donde el usuario es participante
                 const { data: chats, error } = await supabase
                     .from('chats')
-                    .select(`
-                        *,
-                        usuario1:usuario1_id (full_name, photo_url),
-                        usuario2:usuario2_id (full_name, photo_url),
-                        servicio:servicio_id (subcategoria)
-                    `)
-                    .or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`)
-                    .order('ultimo_mensaje_time', { ascending: false });
-
+                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
+                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+                    .order('ultimo_mensaje_time', false);
                 if (error) throw error;
-
-                if (!chats || chats.length === 0) {
+                if (!chats?.length) {
                     container.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
                     return;
                 }
-
                 container.innerHTML = chats.map(chat => {
-                    const otroUsuario = chat.usuario1_id === currentUser.id ? chat.usuario2 : chat.usuario1;
-                    const tieneMsjNoLeido = chat.ultimo_mensaje && !chat.ultimo_mensaje_leido;
-                    
-                    return `
-                        <div class="p-4 border-b hover:bg-slate-50 cursor-pointer transition ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
-                             onclick="seleccionarChat('${chat.id}', '${otroUsuario.id}', '${otroUsuario.full_name}', '${otroUsuario.photo_url}', '${chat.servicio?.subcategoria || ''}')">
-                            <div class="flex items-center gap-3">
-                                <img src="${otroUsuario.photo_url || 'https://via.placeholder.com/40'}" 
-                                     class="w-10 h-10 rounded-full object-cover">
-                                <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-slate-800 truncate">${otroUsuario.full_name || 'Tasker'}</p>
-                                    <p class="text-xs text-slate-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
-                                    ${chat.ultimo_mensaje ? `
-                                        <p class="text-xs text-slate-400 truncate">${chat.ultimo_mensaje}</p>
-                                    ` : ''}
-                                </div>
-                                ${tieneMsjNoLeido ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
-                            </div>
+                    const otro = chat.usuario1_id === usuarioActual.id ? chat.usuario2 : chat.usuario1;
+                    return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${chat.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${chat.servicio?.subcategoria||''}')">
+                        <div class="flex items-center gap-3">
+                            <img src="${otro.photo_url||'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                            <div class="flex-1"><p class="font-bold text-slate-800">${otro.full_name||'Tasker'}</p><p class="text-xs text-slate-500">${chat.servicio?.subcategoria||''}</p>${chat.ultimo_mensaje?`<p class="text-xs text-slate-400">${chat.ultimo_mensaje}</p>`:''}</div>
                         </div>
-                    `;
+                    </div>`;
                 }).join('');
-
             } catch (error) {
-                console.error('Error loading chats:', error);
-                container.innerHTML = '<p class="text-red-400 text-center p-4">Error al cargar</p>';
+                console.error('Error:', error);
             }
-        }
+        };
 
-        async function seleccionarChat(chatId, otroUserId, otroNombre, otroAvatar, servicioInfo) {
-            currentChat = { id: chatId, otroUserId, otroNombre, otroAvatar, servicioInfo };
-
-            // Mostrar header
-            const header = document.getElementById('chatHeader');
-            header.classList.remove('hidden');
+        window.seleccionarChat = async (chatId, otroId, otroNombre, otroAvatar, servicioInfo) => {
+            chatActual = { id: chatId, otroId, otroNombre, otroAvatar, servicioInfo };
+            document.getElementById('chatHeader').classList.remove('hidden');
             document.getElementById('chatTaskerNombre').textContent = otroNombre;
             document.getElementById('chatTaskerAvatar').src = otroAvatar || 'https://via.placeholder.com/40';
             document.getElementById('chatServicioInfo').textContent = servicioInfo;
-
-            // Mostrar input
             document.getElementById('chatInput').classList.remove('hidden');
-
-            // Cargar mensajes
             await cargarMensajes(chatId);
-
-            // Suscribirse a nuevos mensajes
-            if (chatSubscription) {
-                chatSubscription.unsubscribe();
-            }
-
-            chatSubscription = supabase
-                .channel(`chat-${chatId}`)
-                .on('postgres_changes', 
-                    { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${chatId}` },
-                    (payload) => {
-                        agregarMensajeAlChat(payload.new);
-                    }
-                )
-                .subscribe();
-        }
+            if (subscriptionChat) subscriptionChat.unsubscribe();
+            subscriptionChat = supabase.channel(`chat-${chatId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${chatId}` }, payload => agregarMensaje(payload.new)).subscribe();
+        };
 
         async function cargarMensajes(chatId) {
             const container = document.getElementById('chatMessages');
-
             try {
-                const { data: mensajes, error } = await supabase
-                    .from('mensajes')
-                    .select('*')
-                    .eq('chat_id', chatId)
-                    .order('created_at', { ascending: true });
-
+                const { data: mensajes, error } = await supabase.from('mensajes').select('*').eq('chat_id', chatId).order('created_at');
                 if (error) throw error;
-
-                if (!mensajes || mensajes.length === 0) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes aún</p>';
+                if (!mensajes?.length) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes</p>';
                     return;
                 }
-
                 container.innerHTML = mensajes.map(m => crearMensajeHTML(m)).join('');
                 container.scrollTop = container.scrollHeight;
-
             } catch (error) {
-                console.error('Error loading messages:', error);
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar mensajes</p>';
+                console.error('Error:', error);
             }
         }
 
-        function crearMensajeHTML(mensaje) {
-            const esMio = mensaje.remitente_id === currentUser.id;
-            return `
-                <div class="flex ${esMio ? 'justify-end' : 'justify-start'}">
-                    <div class="chat-message ${esMio ? 'chat-client' : 'chat-tasker'} rounded-2xl p-3">
-                        <p class="text-sm ${esMio ? 'text-white' : 'text-slate-800'}">${mensaje.mensaje}</p>
-                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-slate-400'} mt-1">
-                            ${new Date(mensaje.created_at).toLocaleTimeString()}
-                        </p>
-                    </div>
-                </div>
-            `;
+        function crearMensajeHTML(m) {
+            const esMio = m.remitente_id === usuarioActual.id;
+            return `<div class="flex ${esMio?'justify-end':'justify-start'}"><div class="chat-message ${esMio?'chat-client':'chat-tasker'} rounded-2xl p-3"><p class="text-sm ${esMio?'text-white':'text-slate-800'}">${m.mensaje}</p><p class="text-xs ${esMio?'text-blue-200':'text-slate-400'} mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
         }
 
-        function agregarMensajeAlChat(mensaje) {
+        function agregarMensaje(m) {
             const container = document.getElementById('chatMessages');
-            
-            // Si es el primer mensaje, limpiar placeholder
-            if (container.children.length === 1 && container.children[0].tagName === 'P') {
-                container.innerHTML = '';
-            }
-
-            container.innerHTML += crearMensajeHTML(mensaje);
+            if (container.children.length === 1 && container.children[0].tagName === 'P') container.innerHTML = '';
+            container.innerHTML += crearMensajeHTML(m);
             container.scrollTop = container.scrollHeight;
         }
 
         document.getElementById('mensajeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            if (!currentChat) {
-                alert('Selecciona una conversación');
-                return;
-            }
-
+            if (!chatActual) { alert('Selecciona un chat'); return; }
             const texto = document.getElementById('mensajeTexto').value.trim();
             if (!texto) return;
-
             try {
-                const mensaje = {
-                    chat_id: currentChat.id,
-                    remitente_id: currentUser.id,
-                    mensaje: texto,
-                    created_at: new Date()
-                };
-
-                const { error } = await supabase
-                    .from('mensajes')
-                    .insert([mensaje]);
-
-                if (error) throw error;
-
-                // Actualizar último mensaje del chat
-                await supabase
-                    .from('chats')
-                    .update({ 
-                        ultimo_mensaje: texto,
-                        ultimo_mensaje_time: new Date(),
-                        ultimo_mensaje_leido: false
-                    })
-                    .eq('id', currentChat.id);
-
+                await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: texto, created_at: new Date() }]);
+                await supabase.from('chats').update({ ultimo_mensaje: texto, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
                 document.getElementById('mensajeTexto').value = '';
-                
             } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Error al enviar mensaje');
+                console.error('Error:', error);
+                alert('Error al enviar');
             }
         });
 
-        async function abrirChat(servicioId, taskerId) {
-            // Buscar o crear chat
+        window.abrirChat = async (servicioId, taskerId) => {
             try {
-                const { data: existingChat, error: searchError } = await supabase
-                    .from('chats')
-                    .select('*')
-                    .eq('servicio_id', servicioId)
-                    .or(`and(usuario1_id.eq.${currentUser.id},usuario2_id.eq.${taskerId}),and(usuario1_id.eq.${taskerId},usuario2_id.eq.${currentUser.id})`)
-                    .maybeSingle();
-
-                if (searchError) throw searchError;
-
+                const { data: existente } = await supabase.from('chats').select('*').eq('servicio_id', servicioId).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${taskerId}),and(usuario1_id.eq.${taskerId},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
                 let chatId;
-                if (existingChat) {
-                    chatId = existingChat.id;
+                if (existente) {
+                    chatId = existente.id;
                 } else {
-                    // Crear nuevo chat
-                    const { data: newChat, error: createError } = await supabase
-                        .from('chats')
-                        .insert([{
-                            servicio_id: servicioId,
-                            usuario1_id: currentUser.id,
-                            usuario2_id: taskerId
-                        }])
-                        .select()
-                        .single();
-
-                    if (createError) throw createError;
-                    chatId = newChat.id;
+                    const { data: nuevo } = await supabase.from('chats').insert([{ servicio_id: servicioId, usuario1_id: usuarioActual.id, usuario2_id: taskerId }]).select().single();
+                    chatId = nuevo.id;
                 }
-
-                // Obtener datos del tasker
-                const { data: tasker } = await supabase
-                    .from('profiles')
-                    .select('full_name, photo_url')
-                    .eq('id', taskerId)
-                    .single();
-
-                showSection('chat');
+                const { data: tasker } = await supabase.from('profiles').select('full_name, photo_url').eq('id', taskerId).single();
+                window.mostrarSeccion('chat');
                 await cargarConversaciones();
                 await seleccionarChat(chatId, taskerId, tasker.full_name, tasker.photo_url, 'Servicio');
-
             } catch (error) {
-                console.error('Error opening chat:', error);
+                console.error('Error:', error);
                 alert('Error al abrir chat');
             }
-        }
+        };
 
         // =============================================
         // PAGOS
         // =============================================
-        async function cargarPagos() {
+        window.cargarPagos = async function() {
             const tbody = document.getElementById('pagosTableBody');
-
             try {
                 const { data: pagos, error } = await supabase
                     .from('pagos')
-                    .select(`
-                        *,
-                        servicio:servicio_id (subcategoria)
-                    `)
-                    .eq('cliente_id', currentUser.id)
-                    .order('fecha_pago', { ascending: false });
-
+                    .select('*, servicio:servicio_id(subcategoria)')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('fecha_pago', false);
                 if (error) throw error;
-
-                if (!pagos || pagos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay pagos registrados</td></tr>';
+                if (!pagos?.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
                     return;
                 }
-
                 tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b hover:bg-slate-50 transition">
+                    <tr class="border-b hover:bg-slate-50">
                         <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
-                        <td class="p-4 font-bold text-blue-600">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-4 text-slate-600">$${p.comision_taskers?.toFixed(2)}</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                Completado
-                            </span>
-                        </td>
+                        <td class="p-4">${p.servicio?.subcategoria || ''}</td>
+                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-4 text-gray-600">$${p.comision_taskers?.toFixed(2)}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Completado</span></td>
                     </tr>
                 `).join('');
-
             } catch (error) {
-                console.error('Error loading pagos:', error);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
+                console.error('Error:', error);
             }
-        }
+        };
 
         // =============================================
         // PERFIL
         // =============================================
         document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             try {
-                const updates = {
+                await supabase.from('profiles').update({
                     full_name: document.getElementById('perfilNombre').value,
                     phone: document.getElementById('perfilTelefono').value,
                     updated_at: new Date()
-                };
-
-                const { error } = await supabase
-                    .from('profiles')
-                    .update(updates)
-                    .eq('id', currentUser.id);
-
-                if (error) throw error;
-
-                alert('Perfil actualizado exitosamente');
-                showNotification('Perfil actualizado correctamente', 'success');
-                await loadUserData();
-                
+                }).eq('id', usuarioActual.id);
+                notificar('Perfil actualizado', 'success');
+                await cargarUsuario();
             } catch (error) {
-                alert('Error al actualizar perfil: ' + error.message);
+                alert('Error: ' + error.message);
             }
         });
 
-        async function subirFotoPerfil() {
+        window.subirFotoPerfil = async function() {
             const input = document.getElementById('fotoPerfil');
-            if (!input.files || !input.files[0]) return;
-
+            if (!input.files?.[0]) return;
+            mostrarCargando();
             try {
-                showLoading();
                 const file = input.files[0];
-                
-                // Validar tamaño (máx 2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    throw new Error('La imagen no debe exceder 2MB');
-                }
-
-                const fileName = `profiles/${currentUser.id}/${Date.now()}_${file.name}`;
-
-                const { error: uploadError } = await supabase.storage
-                    .from('profiles-photos')
-                    .upload(fileName, file);
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('profiles-photos')
-                    .getPublicUrl(fileName);
-
-                await supabase
-                    .from('profiles')
-                    .update({ photo_url: publicUrl })
-                    .eq('id', currentUser.id);
-
+                if (file.size > 2 * 1024 * 1024) throw new Error('Máximo 2MB');
+                const fileName = `profiles/${usuarioActual.id}/${Date.now()}_${file.name}`;
+                await supabase.storage.from('profiles-photos').upload(fileName, file);
+                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(fileName);
+                await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
                 document.getElementById('headerAvatar').src = publicUrl;
                 document.getElementById('profileAvatar').src = publicUrl;
-                showNotification('Foto actualizada exitosamente', 'success');
-                
+                notificar('Foto actualizada', 'success');
             } catch (error) {
-                alert('Error al subir foto: ' + error.message);
+                alert('Error: ' + error.message);
             } finally {
-                hideLoading();
+                ocultarCargando();
             }
-        }
+        };
 
         // =============================================
         // UTILIDADES
         // =============================================
-        function getStatusClass(status) {
-            const classes = {
+        function obtenerClaseStatus(status) {
+            const clases = {
                 'pendiente_pago': 'status-pendiente',
                 'publicado': 'status-pendiente',
                 'asignado': 'status-asignado',
@@ -1518,11 +1258,11 @@
                 'completado': 'status-completado',
                 'cancelado': 'status-cancelado'
             };
-            return classes[status] || 'status-pendiente';
+            return clases[status] || 'status-pendiente';
         }
 
-        function getStatusText(status) {
-            const texts = {
+        function obtenerTextoStatus(status) {
+            const textos = {
                 'pendiente_pago': 'Pendiente de pago',
                 'publicado': 'Buscando tasker',
                 'asignado': 'Asignado',
@@ -1530,22 +1270,19 @@
                 'completado': 'Completado',
                 'cancelado': 'Cancelado'
             };
-            return texts[status] || status;
+            return textos[status] || status;
         }
 
-        function showSection(sectionId) {
+        // =============================================
+        // NAVEGACIÓN (FUNCIÓN GLOBAL)
+        // =============================================
+        window.mostrarSeccion = function(seccion) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.sidebar-link').forEach(l => {
-                l.classList.remove('active');
-            });
-            
-            document.getElementById(sectionId).classList.add('active');
-            const link = document.getElementById('link-' + sectionId);
-            if (link) {
-                link.classList.add('active');
-            }
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(seccion).classList.add('active');
+            document.getElementById('link-' + seccion)?.classList.add('active');
 
-            const titles = {
+            const titulos = {
                 'inicio': 'Inicio',
                 'nuevo-servicio': 'Solicitar Servicio',
                 'mis-servicios': 'Mis Servicios',
@@ -1553,125 +1290,40 @@
                 'pagos': 'Mis Pagos',
                 'perfil': 'Mi Perfil'
             };
-            
-            document.getElementById('section-title').textContent = titles[sectionId] || 'Tasker\'s';
-            document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${titles[sectionId].toLowerCase()}`;
-            
-            // Cargar datos según sección
-            switch(sectionId) {
-                case 'mis-servicios':
-                    cargarMisServicios();
-                    break;
-                case 'chat':
-                    cargarConversaciones();
-                    break;
-                case 'pagos':
-                    cargarPagos();
-                    break;
+            document.getElementById('section-title').textContent = titulos[seccion] || 'Tasker\'s';
+            document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${titulos[seccion].toLowerCase()}`;
+
+            switch(seccion) {
+                case 'mis-servicios': cargarMisServicios(); break;
+                case 'chat': cargarConversaciones(); break;
+                case 'pagos': cargarPagos(); break;
             }
+            if (window.innerWidth < 768) toggleMenuMovil();
+        };
 
-            // Cerrar menú móvil si está abierto
-            if (window.innerWidth < 768) {
-                toggleMobileMenu();
-            }
-        }
+        window.verServicio = function(id) {
+            window.mostrarSeccion('mis-servicios');
+        };
 
-        async function verServicio(servicioId) {
-            showSection('mis-servicios');
-            // Podrías implementar un scroll hasta el servicio específico
-        }
-
-        function setupRealtimeSubscriptions() {
-            // Suscripción a nuevos mensajes
-            const mensajesSubscription = supabase
-                .channel('mensajes-cliente')
-                .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'mensajes' },
-                    (payload) => {
-                        if (payload.new.remitente_id !== currentUser?.id) {
-                            // Actualizar badge de chats
-                            updateChatBadge();
-                            
-                            // Si estamos en el chat correcto, mostrar mensaje
-                            if (currentChat && payload.new.chat_id === currentChat.id) {
-                                agregarMensajeAlChat(payload.new);
-                            } else {
-                                showNotification('Nuevo mensaje recibido');
-                            }
-                        }
-                    }
-                )
-                .subscribe();
-
-            // Suscripción a cambios en servicios
-            const serviciosSubscription = supabase
-                .channel('servicios-cliente')
-                .on('postgres_changes',
-                    { event: 'UPDATE', schema: 'public', table: 'servicios' },
-                    (payload) => {
-                        if (payload.new.cliente_id === currentUser?.id) {
-                            if (payload.new.status === 'asignado') {
-                                showNotification('¡Un tasker ha aceptado tu servicio!');
-                            } else if (payload.new.status === 'en_progreso') {
-                                showNotification('Tu servicio ha comenzado');
-                            } else if (payload.new.status === 'completado') {
-                                showNotification('Servicio completado');
-                            }
-                            
-                            if (document.getElementById('mis-servicios').classList.contains('active')) {
-                                cargarMisServicios();
-                            }
-                        }
-                    }
-                )
-                .subscribe();
-        }
-
-        async function updateChatBadge() {
-            try {
-                const { count, error } = await supabase
-                    .from('chats')
-                    .select('*', { count: 'exact', head: true })
-                    .or(`usuario1_id.eq.${currentUser.id},usuario2_id.eq.${currentUser.id}`)
-                    .eq('ultimo_mensaje_leido', false);
-
-                if (error) throw error;
-
-                if (count > 0) {
-                    document.getElementById('chatCount').textContent = count;
-                    document.getElementById('chatCount').classList.remove('hidden');
-                    document.getElementById('headerChatBadge').textContent = count;
-                    document.getElementById('headerChatBadge').classList.remove('hidden');
-                    document.getElementById('headerChatBadge').style.display = 'flex';
-                } else {
-                    document.getElementById('chatCount').classList.add('hidden');
-                    document.getElementById('headerChatBadge').classList.add('hidden');
+        function configurarSuscripciones() {
+            supabase.channel('mensajes-cliente').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => {
+                if (payload.new.remitente_id !== usuarioActual?.id) {
+                    if (chatActual && payload.new.chat_id === chatActual.id) agregarMensaje(payload.new);
+                    else notificar('Nuevo mensaje');
                 }
-            } catch (error) {
-                console.error('Error updating chat badge:', error);
-            }
+            }).subscribe();
         }
 
-        // Función para cerrar sesión
-        async function cerrarSesion() {
-            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                await supabase.auth.signOut();
+        // =============================================
+        // CERRAR SESIÓN (FUNCIÓN GLOBAL)
+        // =============================================
+        window.cerrarSesionCliente = async function() {
+            if (confirm('¿Cerrar sesión?')) {
+                mostrarCargando();
+                try { await supabase.auth.signOut(); } catch (e) { console.error(e); }
                 window.location.href = 'index.html';
             }
-        }
-
-        // Cerrar modales con Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                cerrarPagoModal();
-                cerrarModal();
-            }
-        });
-
-        function cerrarModal() {
-            document.getElementById('servicioModal').classList.add('hidden');
-            document.getElementById('servicioModal').classList.remove('flex');
-        }
+        };
     </script>
 
     <style>
