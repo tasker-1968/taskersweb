@@ -1,79 +1,165 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF--8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitar Servicio | Tasker's México</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Hero gradient */
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,170.7C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.2;
+        }
+        
+        /* Input focus */
+        .input-focus {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .input-focus:focus {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero-gradient {
+                border-radius: 1.5rem;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-12">
+<body class="bg-slate-50 min-h-screen">
 
-    <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <button onclick="window.history.back()" class="text-slate-500 hover:text-slate-800 transition">
-            <i class="fas fa-arrow-left mr-2"></i> Volver
-        </button>
-        <h1 class="font-bold text-slate-900 text-lg">Solicitud de Servicio</h1>
-        <div class="w-10"></div> </nav>
+    <!-- Navbar simplificado -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center gap-2 sm:gap-3">
+                    <img src="logo-taskers.png" alt="Tasker's México" class="h-8 sm:h-10 w-auto">
+                    <span class="text-blue-600 font-bold text-lg sm:text-xl hidden sm:inline">Tasker's</span>
+                </a>
+                
+                <!-- Botón volver -->
+                <button onclick="window.history.back()" class="flex items-center gap-2 text-slate-600 hover:text-blue-600 transition bg-slate-100 px-3 sm:px-4 py-2 rounded-xl">
+                    <i class="fas fa-arrow-left text-sm sm:text-base"></i>
+                    <span class="text-sm sm:text-base hidden sm:inline">Volver</span>
+                </button>
+            </div>
+        </div>
+    </nav>
 
-    <main class="p-6 max-w-2xl mx-auto">
-        <div class="bg-blue-600 rounded-[2rem] p-8 text-white mb-8 shadow-xl shadow-blue-100">
-            <span id="display-cat" class="text-[10px] uppercase font-bold tracking-widest bg-blue-500 px-3 py-1 rounded-full text-white/90">Categoría</span>
-            <h2 id="display-sub" class="text-3xl font-extrabold mt-3">Cargando servicio...</h2>
-            <p class="text-blue-100 text-sm mt-2">Describe tu necesidad y recibe propuestas de profesionales verificados.</p>
+    <main class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-2xl">
+        <!-- Hero con categoría -->
+        <div class="hero-gradient rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 text-white mb-6 sm:mb-8 shadow-xl shadow-blue-200">
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+                    <i class="fas fa-tag"></i>
+                    <span id="display-cat">Categoría</span>
+                </div>
+                <h2 id="display-sub" class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3">Cargando servicio...</h2>
+                <p class="text-sm sm:text-base text-blue-100 opacity-90">Describe tu necesidad y recibe propuestas de profesionales verificados en minutos.</p>
+            </div>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
-            <form id="serviceForm" class="space-y-6">
-                
+        <!-- Formulario -->
+        <div class="bg-white rounded-2xl sm:rounded-[2.5rem] border border-slate-200 shadow-lg p-6 sm:p-8">
+            <form id="serviceForm" class="space-y-5 sm:space-y-6">
+                <!-- Descripción -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">¿Qué necesitas exactamente?</label>
-                    <textarea id="descripcion" required 
-                        class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition min-h-[120px]"
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                        <i class="fas fa-align-left mr-2 text-blue-600"></i>
+                        ¿Qué necesitas exactamente?
+                    </label>
+                    <textarea id="descripcion" required rows="4" 
+                        class="input-focus w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm sm:text-base"
                         placeholder="Ej: Necesito reparar una fuga de agua en el fregadero de la cocina..."></textarea>
                 </div>
 
+                <!-- Ubicación -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Ubicación del Servicio</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                        <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+                        Ubicación del Servicio
+                    </label>
                     <input type="text" id="ubicacion" required 
-                        class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        class="input-focus w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm sm:text-base"
                         placeholder="Colonia o Zona (Ej: Polanco, CDMX)">
                 </div>
 
+                <!-- Presupuesto -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Presupuesto Estimado ($MXN)</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                        <i class="fas fa-dollar-sign mr-2 text-blue-600"></i>
+                        Presupuesto Estimado ($MXN)
+                    </label>
                     <div class="relative">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                        <input type="number" id="monto" required 
-                            class="w-full pl-10 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-bold text-slate-700"
+                        <span class="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <input type="number" id="monto" required min="100" step="100"
+                            class="input-focus w-full pl-10 sm:pl-12 pr-4 sm:pr-5 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-bold text-slate-700 text-sm sm:text-base"
                             placeholder="0.00">
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-3 px-1 italic">
-                        * Recuerda que Tasker's retiene el pago de forma segura. El 15% de comisión por administración ya debe estar contemplado en tu oferta.
-                    </p>
+                    <div class="mt-3 p-3 bg-blue-50 rounded-lg text-xs sm:text-sm text-blue-700 flex items-start gap-2">
+                        <i class="fas fa-info-circle mt-0.5"></i>
+                        <span>Tasker's retiene el 15% por administración. El tasker recibirá el 85% de tu presupuesto.</span>
+                    </div>
                 </div>
 
+                <!-- Botón -->
                 <button type="submit" id="submitBtn" 
-                    class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-600 shadow-lg transition-all active:scale-[0.98]">
+                    class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
                     Publicar Solicitud
                 </button>
             </form>
         </div>
 
-        <div class="mt-8 flex items-center justify-center gap-4 text-slate-400">
-            <i class="fas fa-shield-alt text-2xl"></i>
-            <p class="text-[10px] leading-tight max-w-[200px]">Tu dinero está protegido. No liberamos el pago hasta que confirmes la entrega del servicio.</p>
+        <!-- Mensaje de seguridad -->
+        <div class="mt-6 sm:mt-8 flex items-center justify-center gap-3 text-slate-400 text-xs sm:text-sm">
+            <i class="fas fa-shield-alt text-2xl sm:text-3xl text-blue-600"></i>
+            <p class="max-w-[250px] sm:max-w-sm leading-tight">Tu dinero está protegido. No liberamos el pago hasta que confirmes la entrega del servicio.</p>
         </div>
     </main>
 
     <script>
-        const supabaseClient = supabase.createClient(
-            'https://ayhflwricnkptoinabhe.supabase.co', 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M'
-        );
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Obtener parámetros de la URL (Categoría y Subcategoría)
+        // =============================================
+        // OBTENER PARÁMETROS DE LA URL
+        // =============================================
         const urlParams = new URLSearchParams(window.location.search);
         const categoria = urlParams.get('cat');
         const subcategoria = urlParams.get('sub');
@@ -82,44 +168,72 @@
         document.getElementById('display-cat').innerText = categoria || 'General';
         document.getElementById('display-sub').innerText = subcategoria || 'Nuevo Servicio';
 
-        document.getElementById('serviceForm').onsubmit = async (e) => {
+        // =============================================
+        // ENVÍO DEL FORMULARIO
+        // =============================================
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = "Procesando...";
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                alert("Debes iniciar sesión para solicitar un servicio.");
-                window.location.href = 'login.html';
-                return;
-            }
+            try {
+                // Verificar sesión
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                
+                if (userError || !user) {
+                    alert("Debes iniciar sesión para solicitar un servicio.");
+                    window.location.href = 'login.html';
+                    return;
+                }
 
-            const payload = {
-                cliente_id: user.id,
-                categoria: categoria,
-                subcategoria: subcategoria,
-                descripcion: document.getElementById('descripcion').value,
-                ubicacion: document.getElementById('ubicacion').value,
-                monto_ofertado: parseFloat(document.getElementById('monto').value),
-                status: 'pendiente_pago' // Iniciamos en este estado para que tú gestiones el cobro
-            };
+                // Validar campos
+                const descripcion = document.getElementById('descripcion').value.trim();
+                const ubicacion = document.getElementById('ubicacion').value.trim();
+                const monto = parseFloat(document.getElementById('monto').value);
 
-            // Insertar en la tabla 'servicios'
-            const { error } = await supabaseClient
-                .from('servicios')
-                .insert([payload]);
+                if (!descripcion || !ubicacion || !monto) {
+                    throw new Error('Todos los campos son obligatorios');
+                }
 
-            if (error) {
-                alert("Error al enviar solicitud: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "Publicar Solicitud";
-            } else {
-                alert("¡Solicitud publicada con éxito! Ahora te redirigiremos a tus servicios.");
+                if (monto < 100) {
+                    throw new Error('El presupuesto mínimo es de $100 MXN');
+                }
+
+                // Construir payload
+                const payload = {
+                    cliente_id: user.id,
+                    categoria: categoria,
+                    subcategoria: subcategoria,
+                    descripcion: descripcion,
+                    ubicacion: ubicacion,
+                    monto_ofertado: monto,
+                    status: 'pendiente_pago',
+                    pago_status: 'pendiente',
+                    created_at: new Date()
+                };
+
+                // Insertar en servicios
+                const { data: servicio, error } = await supabaseClient
+                    .from('servicios')
+                    .insert([payload])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                // Éxito - redirigir al dashboard
+                alert('✅ ¡Solicitud publicada con éxito! Serás redirigido a tu panel.');
                 window.location.href = 'dashboard-cliente.html';
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Publicar Solicitud';
             }
-        };
+        });
     </script>
 </body>
 </html>
