@@ -382,11 +382,13 @@
 
     <script>
         // =============================================
-        // ÚNICA DECLARACIÓN DE SUPABASE
+        // CONFIGURACIÓN ÚNICA - VARIABLE RENOMBRADA
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Variable con nombre ÚNICO para evitar conflictos de caché
+        const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================
         // GLOBALES
@@ -403,10 +405,10 @@
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white`; n.innerText = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
         // =============================================
-        // AUTENTICACIÓN
+        // AUTENTICACIÓN (usando clienteSupabase)
         // =============================================
         async function verificarAuth(r = 'login.html') {
-            try { const { data: { session } } = await supabase.auth.getSession(); if (!session) { window.location.href = r; return null; } return session; }
+            try { const { data: { session } } = await clienteSupabase.auth.getSession(); if (!session) { window.location.href = r; return null; } return session; }
             catch { window.location.href = r; return null; }
         }
 
@@ -435,7 +437,7 @@
             try {
                 const sesion = await verificarAuth();
                 if (!sesion) return;
-                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', sesion.user.id).single();
+                const { data: perfil } = await clienteSupabase.from('profiles').select('*').eq('id', sesion.user.id).single();
                 if (!perfil) throw new Error('Perfil no encontrado');
                 usuarioActual = perfil;
                 document.getElementById('infoUsuario').innerHTML = `<p class="font-medium">${perfil.full_name||'Usuario'}</p><p class="text-xs opacity-75">Cliente</p>`;
@@ -451,7 +453,7 @@
 
         async function cargarCategorias() {
             try {
-                const { data: cats } = await supabase.from('categorias').select('*').eq('activo',true).order('orden');
+                const { data: cats } = await clienteSupabase.from('categorias').select('*').eq('activo',true).order('orden');
                 if (cats) {
                     const s = document.getElementById('categoria');
                     s.innerHTML = '<option value="">Selecciona</option>';
@@ -465,7 +467,7 @@
             sub.innerHTML = '<option value="">Cargando...</option>'; sub.disabled = true;
             if (!this.value) { sub.innerHTML = '<option value="">Primero elige categoría</option>'; return; }
             try {
-                const { data: subs } = await supabase.from('subcategorias').select('*').eq('categoria_id',this.value).eq('activo',true);
+                const { data: subs } = await clienteSupabase.from('subcategorias').select('*').eq('categoria_id',this.value).eq('activo',true);
                 sub.innerHTML = '<option value="">Selecciona</option>';
                 subs.forEach(s => sub.innerHTML += `<option value="${s.id}">${s.nombre}</option>`);
                 sub.disabled = false;
@@ -474,7 +476,7 @@
 
         async function cargarDashboard() {
             try {
-                const { data: s } = await supabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id).order('created_at',false);
+                const { data: s } = await clienteSupabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id).order('created_at',false);
                 if (!s) return;
                 const stats = {
                     activos: s.filter(x=>['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length,
@@ -510,7 +512,7 @@
                     fecha_solicitada: document.getElementById('fecha').value || null,
                     status: 'pendiente_pago', pago_status: 'pendiente', created_at: new Date()
                 };
-                const { data: serv } = await supabase.from('servicios').insert([data]).select().single();
+                const { data: serv } = await clienteSupabase.from('servicios').insert([data]).select().single();
                 await mostrarModalPago(serv);
             } catch (e) { alert('Error: '+e.message); btn.disabled = false; btn.innerHTML = 'Publicar Solicitud'; }
         });
@@ -526,8 +528,8 @@
         window.procesarPago = async (id, m) => {
             mostrarCarga();
             try {
-                await supabase.from('servicios').update({ status:'publicado', pago_status:'completado', updated_at:new Date() }).eq('id',id);
-                await supabase.from('pagos').insert([{ servicio_id:id, cliente_id:usuarioActual.id, monto_total:m, comision_taskers:m*0.15, monto_tasker:m*0.85, status:'completado', fecha_pago:new Date() }]);
+                await clienteSupabase.from('servicios').update({ status:'publicado', pago_status:'completado', updated_at:new Date() }).eq('id',id);
+                await clienteSupabase.from('pagos').insert([{ servicio_id:id, cliente_id:usuarioActual.id, monto_total:m, comision_taskers:m*0.15, monto_tasker:m*0.85, status:'completado', fecha_pago:new Date() }]);
                 alert('Pago exitoso'); cerrarModalPago(); window.cambiarSeccion('mis-servicios'); window.cargarMisServicios();
             } catch (e) { alert('Error: '+e.message); } finally { ocultarCarga(); }
         };
@@ -537,7 +539,7 @@
             const f = document.getElementById('filtroStatus').value;
             const c = document.getElementById('contenedorServicios');
             try {
-                let q = supabase.from('servicios').select('*, tasker:tasker_id(full_name,photo_url,calificacion_promedio)').eq('cliente_id',usuarioActual.id).order('created_at',false);
+                let q = clienteSupabase.from('servicios').select('*, tasker:tasker_id(full_name,photo_url,calificacion_promedio)').eq('cliente_id',usuarioActual.id).order('created_at',false);
                 if (f!=='todos') q = q.eq('status',f);
                 const { data: s } = await q;
                 if (!s?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay servicios</p>'; return; }
@@ -549,9 +551,9 @@
             if (!confirm('¿Servicio completado?')) return;
             mostrarCarga();
             try {
-                await supabase.from('servicios').update({ status:'completado', fecha_completado:new Date() }).eq('id',id);
-                const { data: d } = await supabase.from('servicios').select('tasker_id').eq('id',id).single();
-                await supabase.from('notificaciones').insert([{ usuario_id:d.tasker_id, tipo:'pago', titulo:'Servicio completado', mensaje:'El cliente confirmó' }]);
+                await clienteSupabase.from('servicios').update({ status:'completado', fecha_completado:new Date() }).eq('id',id);
+                const { data: d } = await clienteSupabase.from('servicios').select('tasker_id').eq('id',id).single();
+                await clienteSupabase.from('notificaciones').insert([{ usuario_id:d.tasker_id, tipo:'pago', titulo:'Servicio completado', mensaje:'El cliente confirmó' }]);
                 alert('¡Gracias!'); window.cargarMisServicios();
             } catch (e) { alert('Error'); } finally { ocultarCarga(); }
         };
@@ -559,7 +561,7 @@
         window.cargarConversaciones = async function() {
             const c = document.getElementById('listaConversaciones');
             try {
-                const { data: chats } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time',false);
+                const { data: chats } = await clienteSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time',false);
                 if (!chats?.length) { c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>'; return; }
                 c.innerHTML = chats.map(ch => {
                     const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
@@ -577,13 +579,13 @@
             document.getElementById('inputChat').classList.remove('hidden');
             await cargarMensajes(id);
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = supabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
+            suscripcionChat = clienteSupabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
         };
 
         async function cargarMensajes(id) {
             const c = document.getElementById('mensajesChat');
             try {
-                const { data: msgs } = await supabase.from('mensajes').select('*').eq('chat_id',id).order('created_at');
+                const { data: msgs } = await clienteSupabase.from('mensajes').select('*').eq('chat_id',id).order('created_at');
                 if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
                 c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
                 c.scrollTop = c.scrollHeight;
@@ -603,18 +605,18 @@
             const txt = document.getElementById('textoMensaje').value.trim();
             if (!txt) return;
             try {
-                await supabase.from('mensajes').insert([{ chat_id:chatActual.id, remitente_id:usuarioActual.id, mensaje:txt, created_at:new Date() }]);
-                await supabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date(), ultimo_mensaje_leido:false }).eq('id',chatActual.id);
+                await clienteSupabase.from('mensajes').insert([{ chat_id:chatActual.id, remitente_id:usuarioActual.id, mensaje:txt, created_at:new Date() }]);
+                await clienteSupabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date(), ultimo_mensaje_leido:false }).eq('id',chatActual.id);
                 document.getElementById('textoMensaje').value = '';
             } catch (e) { console.error(e); alert('Error al enviar'); }
         });
 
         window.abrirChat = async (sid, tid) => {
             try {
-                const { data: ex } = await supabase.from('chats').select('*').eq('servicio_id',sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
+                const { data: ex } = await clienteSupabase.from('chats').select('*').eq('servicio_id',sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
                 let cid;
-                if (ex) { cid = ex.id; } else { const { data: n } = await supabase.from('chats').insert([{ servicio_id:sid, usuario1_id:usuarioActual.id, usuario2_id:tid }]).select().single(); cid = n.id; }
-                const { data: t } = await supabase.from('profiles').select('full_name,photo_url').eq('id',tid).single();
+                if (ex) { cid = ex.id; } else { const { data: n } = await clienteSupabase.from('chats').insert([{ servicio_id:sid, usuario1_id:usuarioActual.id, usuario2_id:tid }]).select().single(); cid = n.id; }
+                const { data: t } = await clienteSupabase.from('profiles').select('full_name,photo_url').eq('id',tid).single();
                 window.cambiarSeccion('chat'); await window.cargarConversaciones(); await window.seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
             } catch (e) { console.error(e); alert('Error al abrir chat'); }
         };
@@ -622,7 +624,7 @@
         window.cargarPagos = async function() {
             const t = document.getElementById('tablaPagos');
             try {
-                const { data: p } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',usuarioActual.id).order('fecha_pago',false);
+                const { data: p } = await clienteSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',usuarioActual.id).order('fecha_pago',false);
                 if (!p?.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>'; return; }
                 t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado badge-completado">Completado</span></td></tr>`).join('');
             } catch (e) { console.error(e); }
@@ -631,7 +633,7 @@
         document.getElementById('formPerfil')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await supabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value, updated_at:new Date() }).eq('id',usuarioActual.id);
+                await clienteSupabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value, updated_at:new Date() }).eq('id',usuarioActual.id);
                 notificar('Perfil actualizado','success'); await cargarUsuario();
             } catch (e) { alert('Error: '+e.message); }
         });
@@ -643,9 +645,9 @@
             try {
                 const f = i.files[0]; if (f.size>2*1024*1024) throw new Error('Máx 2MB');
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
-                await supabase.storage.from('profiles-photos').upload(n,f);
-                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
-                await supabase.from('profiles').update({ photo_url:publicUrl }).eq('id',usuarioActual.id);
+                await clienteSupabase.storage.from('profiles-photos').upload(n,f);
+                const { data: { publicUrl } } = clienteSupabase.storage.from('profiles-photos').getPublicUrl(n);
+                await clienteSupabase.from('profiles').update({ photo_url:publicUrl }).eq('id',usuarioActual.id);
                 document.getElementById('avatarHeader').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('avatarPerfil').style.backgroundImage = `url('${publicUrl}')`;
                 notificar('Foto actualizada','success');
@@ -676,7 +678,7 @@
         window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
 
         function configurarRealtime() {
-            supabase.channel('mensajes').on('postgres_changes',{ event:'INSERT', schema:'public', table:'mensajes' }, p => {
+            clienteSupabase.channel('mensajes').on('postgres_changes',{ event:'INSERT', schema:'public', table:'mensajes' }, p => {
                 if (p.new.remitente_id !== usuarioActual?.id) {
                     if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
                     else notificar('Nuevo mensaje');
@@ -687,7 +689,7 @@
         window.cerrarSesionCliente = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
-                await supabase.auth.signOut();
+                await clienteSupabase.auth.signOut();
                 window.location.href = 'index.html';
             }
         };
