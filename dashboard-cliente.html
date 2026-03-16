@@ -4,48 +4,203 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Panel | Tasker's Cliente</title>
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        .active-link { @apply bg-blue-600 text-white; }
-        .section-content { display: none; }
-        .section-content.active { display: block; }
-        .chat-message { max-width: 70%; }
-        .chat-client { @apply bg-blue-600 text-white ml-auto; }
-        .chat-tasker { @apply bg-gray-100 text-gray-800; }
-        .status-badge { @apply px-3 py-1 rounded-full text-xs font-bold; }
-        .status-pendiente { @apply bg-yellow-100 text-yellow-700; }
-        .status-asignado { @apply bg-blue-100 text-blue-700; }
-        .status-progreso { @apply bg-purple-100 text-purple-700; }
-        .status-completado { @apply bg-green-100 text-green-700; }
-        .status-cancelado { @apply bg-red-100 text-red-700; }
-        .animate-slideIn {
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .sidebar-link.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+            color: white;
+        }
+        
+        /* Section transitions */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Chat styles */
+        .chat-message {
+            max-width: 70%;
             animation: slideIn 0.3s ease-out;
         }
+        
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .chat-client {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .chat-tasker {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            @apply px-3 py-1 rounded-full text-xs font-bold;
+            transition: all 0.3s ease;
+        }
+        
+        .status-pendiente { 
+            background: #fef3c7; 
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        .status-asignado { 
+            background: #dbeafe; 
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        .status-progreso { 
+            background: #ede9fe; 
+            color: #5b21b6;
+            border: 1px solid #c4b5fd;
+        }
+        .status-completado { 
+            background: #d1fae5; 
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .status-cancelado { 
+            background: #fee2e2; 
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        /* Cards */
+        .stat-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+        }
+        
+        /* Modal */
+        .modal {
+            transition: all 0.3s ease;
+        }
+        
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 50;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .chat-message {
+                max-width: 85%;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-slate-50">
+
+    <!-- Mobile menu button -->
+    <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <!-- Overlay for mobile -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
 
     <!-- Modal de carga -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
             <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="text-gray-600">Cargando...</p>
+            <p class="text-gray-600 font-medium">Cargando...</p>
         </div>
     </div>
 
     <!-- Modal de pago -->
-    <div id="pagoModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+    <div id="pagoModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Confirmar Pago</h3>
-                <button onclick="cerrarPagoModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
+                <h3 class="text-xl font-bold text-slate-800">Confirmar Pago</h3>
+                <button onclick="cerrarPagoModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <div id="pagoModalContent" class="space-y-4">
@@ -54,86 +209,125 @@
         </div>
     </div>
 
+    <!-- Modal de servicio -->
+    <div id="servicioModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center modal">
+        <div class="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
+                <h3 class="text-xl font-bold text-slate-800">Detalles del Servicio</h3>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="space-y-4">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white hidden md:flex flex-col">
-            <div class="p-6">
-                <div class="text-2xl font-bold text-blue-400">Tasker's <span class="text-white">Cliente</span></div>
-                <div id="userInfo" class="mt-6 text-sm text-gray-300"></div>
+        <aside id="sidebar" class="sidebar w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
+            <!-- Logo -->
+            <div class="p-6 border-b border-slate-700/50">
+                <div class="flex items-center gap-3">
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
+                    <div>
+                        <div class="text-xl font-bold text-white">Tasker's</div>
+                        <div class="text-xs text-blue-400">Panel Cliente</div>
+                    </div>
+                </div>
+                <div id="userInfo" class="mt-4 text-sm text-slate-300 bg-slate-800/50 p-3 rounded-lg">
+                    <!-- Se llena dinámicamente -->
+                </div>
             </div>
             
-            <nav class="flex-1 mt-2">
-                <a href="#" onclick="showSection('inicio')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition-all active-link" id="link-inicio">
-                    <i class="fas fa-home w-6"></i> Inicio
+            <!-- Navigation -->
+            <nav class="flex-1 mt-6 space-y-1 px-3">
+                <a href="#" onclick="showSection('inicio')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all active" id="link-inicio">
+                    <i class="fas fa-home w-6"></i>
+                    <span>Inicio</span>
                 </a>
-                <a href="#" onclick="showSection('nuevo-servicio')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-nuevo-servicio">
-                    <i class="fas fa-plus-circle w-6"></i> Solicitar Servicio
+                <a href="#" onclick="showSection('nuevo-servicio')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-nuevo-servicio">
+                    <i class="fas fa-plus-circle w-6"></i>
+                    <span>Solicitar Servicio</span>
                 </a>
-                <a href="#" onclick="showSection('mis-servicios')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-mis-servicios">
-                    <i class="fas fa-list w-6"></i> Mis Servicios
+                <a href="#" onclick="showSection('mis-servicios')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-mis-servicios">
+                    <i class="fas fa-list w-6"></i>
+                    <span>Mis Servicios</span>
                 </a>
-                <a href="#" onclick="showSection('chat')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-chat">
-                    <i class="fas fa-comments w-6"></i> Mensajes
-                    <span id="chatCount" class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full hidden">0</span>
+                <a href="#" onclick="showSection('chat')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all relative" id="link-chat">
+                    <i class="fas fa-comments w-6"></i>
+                    <span>Mensajes</span>
+                    <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
                 </a>
-                <a href="#" onclick="showSection('pagos')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-pagos">
-                    <i class="fas fa-credit-card w-6"></i> Mis Pagos
+                <a href="#" onclick="showSection('pagos')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-pagos">
+                    <i class="fas fa-credit-card w-6"></i>
+                    <span>Mis Pagos</span>
                 </a>
-                <a href="#" onclick="showSection('perfil')" class="flex items-center px-6 py-3 hover:bg-slate-800 transition" id="link-perfil">
-                    <i class="fas fa-user w-6"></i> Mi Perfil
+                <a href="#" onclick="showSection('perfil')" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-slate-300 hover:text-white transition-all" id="link-perfil">
+                    <i class="fas fa-user w-6"></i>
+                    <span>Mi Perfil</span>
                 </a>
             </nav>
             
-            <div class="p-4 border-t border-slate-700">
-                <button onclick="cerrarSesion()" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            <!-- Logout button -->
+            <div class="p-4 border-t border-slate-700/50">
+                <button onclick="cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-y-auto">
+        <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
+            <!-- Header -->
             <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
-                <div>
-                    <h2 id="section-title" class="text-xl font-bold text-gray-800">Inicio</h2>
-                    <p id="section-subtitle" class="text-sm text-gray-500">Bienvenido a tu panel de control</p>
+                <div class="ml-12 md:ml-0">
+                    <h2 id="section-title" class="text-xl font-bold text-slate-800">Inicio</h2>
+                    <p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel de control</p>
                 </div>
                 <div class="flex items-center gap-4">
                     <button onclick="showSection('chat')" class="relative">
-                        <i class="fas fa-comments text-gray-600 text-xl"></i>
+                        <i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i>
                         <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
                     </button>
-                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer" onclick="showSection('perfil')">
+                    <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer hover:border-blue-600 transition" onclick="showSection('perfil')">
                 </div>
             </header>
 
-            <div class="p-6">
+            <!-- Content -->
+            <div class="p-4 md:p-6">
                 <!-- SECCIÓN: INICIO -->
                 <section id="inicio" class="section-content active">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                            <p class="text-gray-500 text-sm">Servicios Activos</p>
-                            <p id="statsActivos" class="text-3xl font-bold mt-2">0</p>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-slate-500 text-sm">Servicios Activos</p>
+                            <p id="statsActivos" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                            <p class="text-gray-500 text-sm">Completados</p>
-                            <p id="statsCompletados" class="text-3xl font-bold mt-2">0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-slate-500 text-sm">Completados</p>
+                            <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-                            <p class="text-gray-500 text-sm">En Progreso</p>
-                            <p id="statsProgreso" class="text-3xl font-bold mt-2">0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-slate-500 text-sm">En Progreso</p>
+                            <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                            <p class="text-gray-500 text-sm">Total Pagado</p>
-                            <p id="statsPagado" class="text-3xl font-bold mt-2">$0</p>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-slate-500 text-sm">Total Pagado</p>
+                            <p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
                         </div>
                     </div>
 
                     <!-- Servicios Recientes -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg mb-4">Servicios Recientes</h3>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-history text-blue-600"></i>
+                            Servicios Recientes
+                        </h3>
                         <div id="recientesLista" class="space-y-3">
-                            <p class="text-gray-400 text-center py-4">Cargando...</p>
+                            <p class="text-slate-400 text-center py-8">Cargando...</p>
                         </div>
                     </div>
                 </section>
@@ -141,84 +335,125 @@
                 <!-- SECCIÓN: NUEVO SERVICIO -->
                 <section id="nuevo-servicio" class="section-content">
                     <div class="max-w-3xl mx-auto">
-                        <div class="bg-white rounded-2xl shadow-sm p-8">
-                            <h3 class="text-2xl font-bold mb-2">Solicitar Nuevo Servicio</h3>
-                            <p class="text-gray-500 text-sm mb-6">Todos los pagos se procesan de forma segura a través de Tasker's. El tasker recibirá su pago 24-48 hrs después de que confirmes la finalización.</p>
+                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
+                            <p class="text-slate-500 text-sm mb-6">Completa el formulario y recibe propuestas de profesionales verificados</p>
                             
                             <form id="nuevoServicioForm" class="space-y-6">
-                                <div class="grid grid-cols-2 gap-4">
+                                <!-- Categoría y Subcategoría -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
-                                        <select id="categoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Selecciona</option>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                                            <i class="fas fa-tag mr-2 text-blue-600"></i>
+                                            Categoría *
+                                        </label>
+                                        <select id="categoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="">Selecciona una categoría</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Subcategoría *</label>
-                                        <select id="subcategoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" disabled>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                                            <i class="fas fa-list mr-2 text-blue-600"></i>
+                                            Subcategoría *
+                                        </label>
+                                        <select id="subcategoria" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" disabled>
                                             <option value="">Primero selecciona categoría</option>
                                         </select>
                                     </div>
                                 </div>
 
+                                <!-- Descripción -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción detallada *</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-align-left mr-2 text-blue-600"></i>
+                                        Descripción detallada *
+                                    </label>
                                     <textarea id="descripcion" required rows="4" 
-                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                         placeholder="Describe exactamente qué necesitas..."></textarea>
                                 </div>
 
+                                <!-- Ubicación -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Código Postal *</label>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                                            <i class="fas fa-map-pin mr-2 text-blue-600"></i>
+                                            Código Postal *
+                                        </label>
                                         <input type="text" id="cp" required maxlength="5"
-                                            class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                             placeholder="Ej: 03100">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Colonia</label>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                                            <i class="fas fa-city mr-2 text-blue-600"></i>
+                                            Colonia
+                                        </label>
                                         <input type="text" id="colonia" 
-                                            class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                             placeholder="Ej: Del Valle">
                                     </div>
                                 </div>
 
+                                <!-- Presupuesto -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Presupuesto máximo ($MXN) *</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-dollar-sign mr-2 text-blue-600"></i>
+                                        Presupuesto máximo ($MXN) *
+                                    </label>
                                     <input type="number" id="monto" required min="100" step="100"
-                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                         placeholder="Ej: 1000">
-                                    <p class="text-xs text-gray-500 mt-2">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        El tasker recibirá el 85% (comisión Tasker's: 15%)
-                                    </p>
+                                    <div class="mt-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-center gap-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>El tasker recibirá el 85% (comisión Tasker's: 15%)</span>
+                                    </div>
                                 </div>
 
+                                <!-- Fecha -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">¿Cuándo lo necesitas?</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-calendar mr-2 text-blue-600"></i>
+                                        ¿Cuándo lo necesitas?
+                                    </label>
                                     <input type="datetime-local" id="fecha" 
-                                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                                 </div>
 
-                                <div class="bg-blue-50 p-4 rounded-xl">
-                                    <h4 class="font-bold text-blue-800 mb-2">📋 Importante:</h4>
-                                    <ul class="text-sm text-blue-700 space-y-1">
-                                        <li>• No compartas datos de contacto directo</li>
-                                        <li>• Toda comunicación debe ser por el chat de la plataforma</li>
-                                        <li>• No realices pagos fuera de Tasker's</li>
-                                        <li>• El pago se libera al tasker solo cuando confirmes la finalización</li>
+                                <!-- Importante -->
+                                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                                    <h4 class="font-bold text-amber-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-shield-alt"></i>
+                                        Importante:
+                                    </h4>
+                                    <ul class="text-sm text-amber-700 space-y-2">
+                                        <li class="flex items-start gap-2">
+                                            <i class="fas fa-times-circle text-amber-500 mt-0.5"></i>
+                                            <span>No compartas datos de contacto directo</span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-amber-500 mt-0.5"></i>
+                                            <span>Toda comunicación debe ser por el chat de la plataforma</span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
+                                            <span>No realices pagos fuera de Tasker's</span>
+                                        </li>
                                     </ul>
                                 </div>
 
+                                <!-- Términos -->
                                 <div class="flex items-start gap-3">
-                                    <input type="checkbox" id="terminos" required class="mt-1">
-                                    <label class="text-sm text-gray-600">
+                                    <input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                    <label class="text-sm text-slate-600">
                                         Acepto los <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> y entiendo que Tasker's actúa como intermediario en todos los pagos y comunicaciones.
                                     </label>
                                 </div>
 
+                                <!-- Botón -->
                                 <button type="submit" id="btnPublicar"
-                                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                                    class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                                    <i class="fas fa-paper-plane"></i>
                                     Publicar Solicitud
                                 </button>
                             </form>
@@ -228,10 +463,10 @@
 
                 <!-- SECCIÓN: MIS SERVICIOS -->
                 <section id="mis-servicios" class="section-content">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Mis Servicios</h3>
-                        <select id="filtroStatus" onchange="cargarMisServicios()" class="p-2 border rounded-lg text-sm">
-                            <option value="todos">Todos</option>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">Mis Servicios</h3>
+                        <select id="filtroStatus" onchange="cargarMisServicios()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option value="todos">Todos los servicios</option>
                             <option value="pendiente_pago">Pendientes de pago</option>
                             <option value="publicado">Buscando tasker</option>
                             <option value="asignado">Asignados</option>
@@ -239,50 +474,54 @@
                             <option value="completado">Completados</option>
                         </select>
                     </div>
-                    <div id="serviciosContainer" class="space-y-4">
+                    <div id="serviciosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Se llena dinámicamente -->
                     </div>
                 </section>
 
-                <!-- SECCIÓN: CHAT (INTERMEDIADO) -->
+                <!-- SECCIÓN: CHAT -->
                 <section id="chat" class="section-content">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
                         <!-- Lista de conversaciones -->
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4 border-b bg-gray-50">
-                                <h3 class="font-bold">Conversaciones</h3>
+                            <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                                <h3 class="font-bold flex items-center gap-2">
+                                    <i class="fas fa-comments"></i>
+                                    Conversaciones
+                                </h3>
                             </div>
                             <div id="conversacionesLista" class="overflow-y-auto h-full">
-                                <p class="text-gray-400 text-center p-4">Cargando...</p>
+                                <p class="text-slate-400 text-center p-4">Cargando...</p>
                             </div>
                         </div>
 
                         <!-- Área de chat -->
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
-                            <div id="chatHeader" class="p-4 border-b bg-gray-50 hidden">
+                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
                                 <div class="flex items-center gap-3">
-                                    <img id="chatTaskerAvatar" src="" class="w-10 h-10 rounded-full object-cover">
+                                    <img id="chatTaskerAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
                                     <div>
-                                        <h4 id="chatTaskerNombre" class="font-bold"></h4>
-                                        <p id="chatServicioInfo" class="text-xs text-gray-500"></p>
+                                        <h4 id="chatTaskerNombre" class="font-bold text-slate-800"></h4>
+                                        <p id="chatServicioInfo" class="text-xs text-slate-500"></p>
                                     </div>
                                 </div>
                             </div>
 
                             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-                                <p class="text-gray-400 text-center py-8">Selecciona una conversación</p>
+                                <p class="text-slate-400 text-center py-8">Selecciona una conversación</p>
                             </div>
 
-                            <div id="chatInput" class="p-4 border-t hidden">
+                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
                                 <form id="mensajeForm" class="flex gap-2">
                                     <input type="text" id="mensajeTexto" 
-                                        class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
+                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                         placeholder="Escribe tu mensaje...">
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </form>
-                                <p class="text-xs text-gray-400 mt-2 text-center">
+                                <p class="text-xs text-slate-400 mt-2 text-center">
+                                    <i class="fas fa-shield-alt mr-1 text-blue-600"></i>
                                     Todos los mensajes son monitoreados. No compartas datos de contacto.
                                 </p>
                             </div>
@@ -292,56 +531,88 @@
 
                 <!-- SECCIÓN: PAGOS -->
                 <section id="pagos" class="section-content">
-                    <h3 class="text-2xl font-bold mb-6">Historial de Pagos</h3>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-credit-card text-blue-600"></i>
+                        Historial de Pagos
+                    </h3>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <table class="w-full">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Fecha</th>
-                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Servicio</th>
-                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Monto</th>
-                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Comisión</th>
-                                    <th class="p-4 text-left text-sm font-bold text-gray-600">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pagosTableBody">
-                                <tr><td colspan="5" class="text-center p-8 text-gray-400">Cargando...</td></tr>
-                            </tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagosTableBody">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
                 <!-- SECCIÓN: PERFIL -->
                 <section id="perfil" class="section-content">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold mb-6">Mi Perfil</h3>
-                        
-                        <div class="flex flex-col items-center mb-8">
-                            <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 mb-4">
-                            <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
-                            <button onclick="document.getElementById('fotoPerfil').click()" class="text-blue-600 hover:underline">
-                                <i class="fas fa-camera mr-2"></i>Cambiar foto
-                            </button>
-                        </div>
+                    <div class="max-w-2xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                            <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <i class="fas fa-user-circle text-blue-600"></i>
+                                Mi Perfil
+                            </h3>
+                            
+                            <!-- Foto de perfil -->
+                            <div class="flex flex-col items-center mb-8">
+                                <div class="relative">
+                                    <img id="profileAvatar" src="https://via.placeholder.com/120" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100">
+                                    <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                </div>
+                                <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
+                                <p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
+                            </div>
 
-                        <form id="perfilForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Nombre completo</label>
-                                <input type="text" id="perfilNombre" required class="mt-1 w-full p-3 border rounded-xl">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                                <input type="email" id="perfilEmail" readonly class="mt-1 w-full p-3 border rounded-xl bg-gray-50">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                                <input type="tel" id="perfilTelefono" required class="mt-1 w-full p-3 border rounded-xl">
-                                <p class="text-xs text-gray-500 mt-1">No compartimos tu teléfono con los taskers</p>
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
-                                Guardar Cambios
-                            </button>
-                        </form>
+                            <!-- Formulario -->
+                            <form id="perfilForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                                        Nombre completo
+                                    </label>
+                                    <input type="text" id="perfilNombre" required 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-envelope mr-2 text-blue-600"></i>
+                                        Correo electrónico
+                                    </label>
+                                    <input type="email" id="perfilEmail" readonly 
+                                        class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fas fa-phone mr-2 text-blue-600"></i>
+                                        Teléfono
+                                    </label>
+                                    <input type="tel" id="perfilTelefono" required 
+                                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        No compartimos tu teléfono con los taskers
+                                    </p>
+                                </div>
+                                <button type="submit" 
+                                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                                    <i class="fas fa-save"></i>
+                                    Guardar Cambios
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -357,7 +628,42 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Función para verificar autenticación
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
+        let currentUser = null;
+        let currentChat = null;
+        let chatSubscription = null;
+
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } text-white max-w-md`;
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN
+        // =============================================
         async function checkAuth(redirectUrl = 'login.html') {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -375,27 +681,6 @@
             }
         }
 
-        // Función para mostrar notificaciones
-        function showNotification(message, type = 'info') {
-            const notif = document.createElement('div');
-            notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 
-                'bg-blue-500'
-            } text-white`;
-            notif.innerHTML = message;
-            document.body.appendChild(notif);
-            
-            setTimeout(() => {
-                notif.remove();
-            }, 3000);
-        }
-
-        // Variables globales
-        let currentUser = null;
-        let currentChat = null;
-        let chatSubscription = null;
-
         // =============================================
         // INICIALIZACIÓN
         // =============================================
@@ -404,7 +689,35 @@
             await loadCategorias();
             await loadDashboardData();
             setupRealtimeSubscriptions();
+            setupMobileMenu();
         });
+
+        function setupMobileMenu() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('hidden');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.add('hidden');
+                });
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+        }
 
         async function loadUserData() {
             showLoading();
@@ -425,7 +738,7 @@
                 
             } catch (error) {
                 console.error('Error loading user:', error);
-                showError('Error al cargar datos del usuario');
+                showNotification('Error al cargar datos del usuario', 'error');
             } finally {
                 hideLoading();
             }
@@ -531,19 +844,19 @@
                 const container = document.getElementById('recientesLista');
                 
                 if (recientes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-4">No hay servicios aún</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay servicios aún</p>';
                 } else {
                     container.innerHTML = recientes.map(s => `
-                        <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onclick="verServicio('${s.id}')">
+                        <div class="border rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition" onclick="verServicio('${s.id}')">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">${s.descripcion.substring(0, 60)}...</p>
+                                    <h4 class="font-bold text-slate-800">${s.subcategoria || 'Servicio'}</h4>
+                                    <p class="text-sm text-slate-600 mt-1">${s.descripcion.substring(0, 60)}...</p>
                                 </div>
                                 <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
                             </div>
                             <div class="flex justify-between items-center mt-3 text-sm">
-                                <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion || 'No especificada'}</span>
+                                <span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion || 'No especificada'}</span>
                                 <span class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2) || '0'}</span>
                             </div>
                         </div>
@@ -621,7 +934,7 @@
                     <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago hasta que confirmes la finalización</p>
                 </div>
 
-                <div class="bg-gray-50 p-4 rounded-xl space-y-3">
+                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
                     <div class="flex justify-between">
                         <span>Monto del servicio:</span>
                         <span class="font-bold">$${montoTotal.toFixed(2)}</span>
@@ -636,16 +949,16 @@
                     </div>
                 </div>
 
-                <div class="bg-yellow-50 p-4 rounded-xl text-sm text-yellow-800">
+                <div class="bg-amber-50 p-4 rounded-xl text-sm text-amber-800 border border-amber-200">
                     <i class="fas fa-shield-alt mr-2"></i>
                     Tu pago está protegido. No lo liberamos hasta que confirmes que el servicio está completo.
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50">
+                    <button onclick="cerrarPagoModal()" class="flex-1 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition">
                         Cancelar
                     </button>
-                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">
+                    <button onclick="procesarPago('${servicio.id}', ${montoTotal})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                         Pagar ahora
                     </button>
                 </div>
@@ -659,7 +972,6 @@
             showLoading();
             
             try {
-                // Aquí iría la integración real con Stripe/PayPal
                 // Simulamos un pago exitoso
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -737,31 +1049,31 @@
                 if (error) throw error;
 
                 if (!servicios || servicios.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay servicios</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
                     return;
                 }
 
                 container.innerHTML = servicios.map(s => `
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-gray-600 mt-1">${s.descripcion}</p>
+                                <h4 class="font-bold text-lg text-slate-800">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600 mt-1">${s.descripcion}</p>
                             </div>
                             <span class="status-badge ${getStatusClass(s.status)}">${getStatusText(s.status)}</span>
                         </div>
 
                         <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
                             <div>
-                                <p class="text-gray-500">Presupuesto</p>
+                                <p class="text-slate-500">Presupuesto</p>
                                 <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">Ubicación</p>
+                                <p class="text-slate-500">Ubicación</p>
                                 <p>${s.ubicacion || 'No especificada'}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">Fecha</p>
+                                <p class="text-slate-500">Fecha</p>
                                 <p>${new Date(s.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
@@ -770,20 +1082,20 @@
                             <div class="border-t pt-4 mt-4">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <img src="${s.tasker?.photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                                        <img src="${s.tasker?.photo_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-200">
                                         <div>
-                                            <p class="font-medium">${s.tasker?.full_name || 'Tasker asignado'}</p>
-                                            <p class="text-xs text-gray-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
+                                            <p class="font-medium text-slate-800">${s.tasker?.full_name || 'Tasker asignado'}</p>
+                                            <p class="text-xs text-slate-500">⭐ ${s.tasker?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
                                         </div>
                                     </div>
                                     <button onclick="abrirChat('${s.id}', '${s.tasker_id}')" 
-                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                         <i class="fas fa-comment mr-2"></i>Chat con tasker
                                     </button>
                                 </div>
                             </div>
                         ` : s.status === 'publicado' ? `
-                            <div class="border-t pt-4 mt-4 text-center text-gray-500">
+                            <div class="border-t pt-4 mt-4 text-center text-slate-500">
                                 <i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...
                             </div>
                         ` : ''}
@@ -791,10 +1103,11 @@
                         ${s.status === 'en_progreso' ? `
                             <div class="border-t pt-4 mt-4">
                                 <button onclick="confirmarFinalizacion('${s.id}')" 
-                                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
+                                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
+                                    <i class="fas fa-check-circle mr-2"></i>
                                     Confirmar que el servicio está COMPLETADO
                                 </button>
-                                <p class="text-xs text-center text-gray-500 mt-2">
+                                <p class="text-xs text-center text-slate-500 mt-2">
                                     Al confirmar, autorizas la liberación del pago al tasker (reteniendo el 15% de comisión)
                                 </p>
                             </div>
@@ -872,7 +1185,7 @@
                 if (error) throw error;
 
                 if (!chats || chats.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center p-4">No hay conversaciones</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
                     return;
                 }
 
@@ -881,16 +1194,16 @@
                     const tieneMsjNoLeido = chat.ultimo_mensaje && !chat.ultimo_mensaje_leido;
                     
                     return `
-                        <div class="p-4 border-b hover:bg-gray-50 cursor-pointer ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
+                        <div class="p-4 border-b hover:bg-slate-50 cursor-pointer transition ${tieneMsjNoLeido ? 'bg-blue-50' : ''}"
                              onclick="seleccionarChat('${chat.id}', '${otroUsuario.id}', '${otroUsuario.full_name}', '${otroUsuario.photo_url}', '${chat.servicio?.subcategoria || ''}')">
                             <div class="flex items-center gap-3">
                                 <img src="${otroUsuario.photo_url || 'https://via.placeholder.com/40'}" 
                                      class="w-10 h-10 rounded-full object-cover">
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold truncate">${otroUsuario.full_name || 'Tasker'}</p>
-                                    <p class="text-xs text-gray-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
+                                    <p class="font-bold text-slate-800 truncate">${otroUsuario.full_name || 'Tasker'}</p>
+                                    <p class="text-xs text-slate-500 truncate">${chat.servicio?.subcategoria || 'Servicio'}</p>
                                     ${chat.ultimo_mensaje ? `
-                                        <p class="text-xs text-gray-400 truncate">${chat.ultimo_mensaje}</p>
+                                        <p class="text-xs text-slate-400 truncate">${chat.ultimo_mensaje}</p>
                                     ` : ''}
                                 </div>
                                 ${tieneMsjNoLeido ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
@@ -950,7 +1263,7 @@
                 if (error) throw error;
 
                 if (!mensajes || mensajes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">No hay mensajes aún</p>';
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay mensajes aún</p>';
                     return;
                 }
 
@@ -968,8 +1281,8 @@
             return `
                 <div class="flex ${esMio ? 'justify-end' : 'justify-start'}">
                     <div class="chat-message ${esMio ? 'chat-client' : 'chat-tasker'} rounded-2xl p-3">
-                        <p class="text-sm ${esMio ? 'text-white' : 'text-gray-800'}">${mensaje.mensaje}</p>
-                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-gray-400'} mt-1">
+                        <p class="text-sm ${esMio ? 'text-white' : 'text-slate-800'}">${mensaje.mensaje}</p>
+                        <p class="text-xs ${esMio ? 'text-blue-200' : 'text-slate-400'} mt-1">
                             ${new Date(mensaje.created_at).toLocaleTimeString()}
                         </p>
                     </div>
@@ -1099,16 +1412,16 @@
                 if (error) throw error;
 
                 if (!pagos || pagos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-400">No hay pagos registrados</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay pagos registrados</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b">
+                    <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
                         <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
-                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-4 text-gray-600">$${p.comision_taskers?.toFixed(2)}</td>
+                        <td class="p-4 font-bold text-blue-600">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-4 text-slate-600">$${p.comision_taskers?.toFixed(2)}</td>
                         <td class="p-4">
                             <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
                                 Completado
@@ -1144,6 +1457,7 @@
                 if (error) throw error;
 
                 alert('Perfil actualizado exitosamente');
+                showNotification('Perfil actualizado correctamente', 'success');
                 await loadUserData();
                 
             } catch (error) {
@@ -1158,6 +1472,12 @@
             try {
                 showLoading();
                 const file = input.files[0];
+                
+                // Validar tamaño (máx 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    throw new Error('La imagen no debe exceder 2MB');
+                }
+
                 const fileName = `profiles/${currentUser.id}/${Date.now()}_${file.name}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -1177,7 +1497,7 @@
 
                 document.getElementById('headerAvatar').src = publicUrl;
                 document.getElementById('profileAvatar').src = publicUrl;
-                alert('Foto actualizada exitosamente');
+                showNotification('Foto actualizada exitosamente', 'success');
                 
             } catch (error) {
                 alert('Error al subir foto: ' + error.message);
@@ -1189,20 +1509,6 @@
         // =============================================
         // UTILIDADES
         // =============================================
-        function showLoading() {
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingModal').classList.add('hidden');
-            document.getElementById('loadingModal').classList.remove('flex');
-        }
-
-        function showError(message) {
-            alert(message);
-        }
-
         function getStatusClass(status) {
             const classes = {
                 'pendiente_pago': 'status-pendiente',
@@ -1229,14 +1535,14 @@
 
         function showSection(sectionId) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('aside nav a').forEach(l => {
-                l.classList.remove('active-link', 'bg-blue-600', 'text-white');
+            document.querySelectorAll('.sidebar-link').forEach(l => {
+                l.classList.remove('active');
             });
             
             document.getElementById(sectionId).classList.add('active');
             const link = document.getElementById('link-' + sectionId);
             if (link) {
-                link.classList.add('active-link', 'bg-blue-600', 'text-white');
+                link.classList.add('active');
             }
 
             const titles = {
@@ -1249,6 +1555,7 @@
             };
             
             document.getElementById('section-title').textContent = titles[sectionId] || 'Tasker\'s';
+            document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${titles[sectionId].toLowerCase()}`;
             
             // Cargar datos según sección
             switch(sectionId) {
@@ -1261,6 +1568,11 @@
                 case 'pagos':
                     cargarPagos();
                     break;
+            }
+
+            // Cerrar menú móvil si está abierto
+            if (window.innerWidth < 768) {
+                toggleMobileMenu();
             }
         }
 
@@ -1342,9 +1654,34 @@
 
         // Función para cerrar sesión
         async function cerrarSesion() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Cerrar modales con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarPagoModal();
+                cerrarModal();
+            }
+        });
+
+        function cerrarModal() {
+            document.getElementById('servicioModal').classList.add('hidden');
+            document.getElementById('servicioModal').classList.remove('flex');
         }
     </script>
+
+    <style>
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </body>
 </html>
