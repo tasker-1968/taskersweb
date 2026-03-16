@@ -17,7 +17,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* Sidebar admin */
         .admin-sidebar {
             background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             transition: all 0.3s ease;
@@ -48,7 +47,6 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
-        /* Section transitions */
         .section-content {
             display: none;
             animation: fadeIn 0.4s ease-out;
@@ -63,32 +61,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Table styles */
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Badges */
-        .badge-pending {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-        
-        .badge-verified {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-        
-        .badge-rejected {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        
-        /* Mobile menu */
         @media (max-width: 768px) {
             .admin-sidebar {
                 position: fixed;
@@ -104,7 +81,6 @@
             }
         }
         
-        /* Loading spinner */
         .animate-spin {
             animation: spin 1s linear infinite;
         }
@@ -156,24 +132,24 @@
             
             <!-- Navigation -->
             <nav class="flex-1 mt-6 px-3 space-y-1">
-                <a href="#" onclick="showSection('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-dashboard">
+                <a href="javascript:void(0)" onclick="showSection('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-dashboard">
                     <i class="fas fa-chart-pie w-6"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="showSection('taskers')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-taskers">
+                <a href="javascript:void(0)" onclick="showSection('taskers')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-taskers">
                     <i class="fas fa-users w-6"></i>
                     <span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
                 </a>
-                <a href="#" onclick="showSection('servicios')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
+                <a href="javascript:void(0)" onclick="showSection('servicios')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
                     <i class="fas fa-briefcase w-6"></i>
                     <span>Servicios</span>
                 </a>
-                <a href="#" onclick="showSection('pagos')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-pagos">
+                <a href="javascript:void(0)" onclick="showSection('pagos')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-pagos">
                     <i class="fas fa-credit-card w-6"></i>
                     <span>Pagos</span>
                 </a>
-                <a href="#" onclick="showSection('ganancias')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ganancias">
+                <a href="javascript:void(0)" onclick="showSection('ganancias')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ganancias">
                     <i class="fas fa-chart-line w-6"></i>
                     <span>Mis Ganancias</span>
                 </a>
@@ -255,7 +231,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="taskersTable">
-                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -283,7 +259,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="serviciosTable">
-                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">No hay servicios</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -312,14 +288,14 @@
                                     </tr>
                                 </thead>
                                 <tbody id="pagosTable">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: GANANCIAS (TUS GANANCIAS DEL 15%) -->
+                <!-- SECCIÓN: GANANCIAS -->
                 <section id="ganancias" class="section-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Resumen de ganancias -->
@@ -366,7 +342,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="gananciasTable">
-                                        <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                        <tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -379,7 +355,7 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN DE SUPABASE (UNA SOLA VEZ)
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
@@ -441,7 +417,6 @@
                 if (profileError) {
                     console.error('Error obteniendo perfil:', profileError);
                     
-                    // Si no hay perfil, redirigir a login
                     if (profileError.message.includes('no rows')) {
                         alert('Tu perfil no está configurado. Contacta al administrador.');
                         await supabase.auth.signOut();
@@ -904,9 +879,9 @@
         }
 
         // =============================================
-        // NAVEGACIÓN
+        // FUNCIÓN DE NAVEGACIÓN (DEFINIDA ANTES DE USARSE)
         // =============================================
-        function showSection(sectionId) {
+        window.showSection = function(sectionId) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             
@@ -947,12 +922,12 @@
             if (window.innerWidth < 768) {
                 toggleMobileMenu();
             }
-        }
+        };
 
         // =============================================
         // CERRAR SESIÓN
         // =============================================
-        async function cerrarSesion() {
+        window.cerrarSesion = async function() {
             if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
                 showLoading();
                 try {
@@ -965,7 +940,7 @@
                     hideLoading();
                 }
             }
-        }
+        };
     </script>
 
     <style>
