@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         * {
@@ -19,6 +20,23 @@
         /* Sidebar admin */
         .admin-sidebar {
             background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #3b82f6;
+            color: white;
         }
         
         .stat-card {
@@ -30,7 +48,22 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
-        /* Tabla responsive */
+        /* Section transitions */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Table styles */
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -64,12 +97,21 @@
                 width: 80%;
                 max-width: 300px;
                 height: 100vh;
-                transition: left 0.3s ease;
             }
             
             .admin-sidebar.open {
                 left: 0;
             }
+        }
+        
+        /* Loading spinner */
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -97,9 +139,7 @@
             <!-- Logo -->
             <div class="p-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
-                    <div class="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-crown text-white"></i>
-                    </div>
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
                     <div>
                         <div class="text-xl font-bold text-white">Tasker's</div>
                         <div class="text-xs text-blue-400">Administrador</div>
@@ -110,30 +150,30 @@
             <!-- Admin Info -->
             <div class="p-4 border-b border-white/10">
                 <div id="adminInfo" class="text-sm text-white/80">
-                    <!-- Se llena dinámicamente -->
+                    <p class="font-bold">Cargando...</p>
                 </div>
             </div>
             
             <!-- Navigation -->
-            <nav class="flex-1 mt-6 px-3">
-                <a href="#" onclick="showSection('dashboard')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all active" id="link-dashboard">
+            <nav class="flex-1 mt-6 px-3 space-y-1">
+                <a href="#" onclick="showSection('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-dashboard">
                     <i class="fas fa-chart-pie w-6"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="showSection('taskers')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-taskers">
+                <a href="#" onclick="showSection('taskers')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-taskers">
                     <i class="fas fa-users w-6"></i>
                     <span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
                 </a>
-                <a href="#" onclick="showSection('servicios')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-servicios">
+                <a href="#" onclick="showSection('servicios')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
                     <i class="fas fa-briefcase w-6"></i>
                     <span>Servicios</span>
                 </a>
-                <a href="#" onclick="showSection('pagos')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-pagos">
+                <a href="#" onclick="showSection('pagos')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-pagos">
                     <i class="fas fa-credit-card w-6"></i>
                     <span>Pagos</span>
                 </a>
-                <a href="#" onclick="showSection('ganancias')" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all" id="link-ganancias">
+                <a href="#" onclick="showSection('ganancias')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ganancias">
                     <i class="fas fa-chart-line w-6"></i>
                     <span>Mis Ganancias</span>
                 </a>
@@ -337,7 +377,6 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // =============================================
         // CONFIGURACIÓN DE SUPABASE
@@ -383,6 +422,7 @@
         // VERIFICAR AUTENTICACIÓN Y ROL
         // =============================================
         async function checkAdminAuth() {
+            showLoading();
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
                 if (error) throw error;
@@ -398,8 +438,20 @@
                     .eq('id', session.user.id)
                     .single();
 
-                if (profileError || profile?.role !== 'admin') {
-                    alert('Acceso no autorizado');
+                if (profileError) {
+                    console.error('Error obteniendo perfil:', profileError);
+                    
+                    // Si no hay perfil, redirigir a login
+                    if (profileError.message.includes('no rows')) {
+                        alert('Tu perfil no está configurado. Contacta al administrador.');
+                        await supabase.auth.signOut();
+                        window.location.href = 'login.html';
+                    }
+                    return null;
+                }
+
+                if (profile?.role !== 'admin') {
+                    alert('Acceso no autorizado. Esta área es solo para administradores.');
                     window.location.href = 'index.html';
                     return null;
                 }
@@ -416,9 +468,11 @@
 
                 return session;
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error en autenticación:', error);
                 window.location.href = 'login.html';
                 return null;
+            } finally {
+                hideLoading();
             }
         }
 
@@ -562,6 +616,7 @@
         async function aprobarTasker(id) {
             if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
 
+            showLoading();
             try {
                 const { error } = await supabase
                     .from('profiles')
@@ -579,12 +634,15 @@
                 
             } catch (error) {
                 alert('Error: ' + error.message);
+            } finally {
+                hideLoading();
             }
         }
 
         async function rechazarTasker(id) {
             if (!confirm('¿Estás seguro de rechazar este tasker?')) return;
 
+            showLoading();
             try {
                 const { error } = await supabase
                     .from('profiles')
@@ -602,6 +660,8 @@
                 
             } catch (error) {
                 alert('Error: ' + error.message);
+            } finally {
+                hideLoading();
             }
         }
 
@@ -817,7 +877,7 @@
         }
 
         function updateGananciasChart(pagos) {
-            if (!gananciasChart) return;
+            if (!gananciasChart || !pagos) return;
 
             // Agrupar por mes (últimos 6 meses)
             const meses = [];
@@ -848,12 +908,12 @@
         // =============================================
         function showSection(sectionId) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('nav a').forEach(l => l.classList.remove('active', 'bg-white/10'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             
             document.getElementById(sectionId).classList.add('active');
             const link = document.getElementById('link-' + sectionId);
             if (link) {
-                link.classList.add('active', 'bg-white/10');
+                link.classList.add('active');
             }
 
             const titles = {
@@ -867,6 +927,23 @@
             document.getElementById('section-title').textContent = titles[sectionId] || 'Admin';
             document.getElementById('section-subtitle').innerHTML = `Panel de control de ${titles[sectionId].toLowerCase()}`;
 
+            // Cargar datos según sección
+            switch(sectionId) {
+                case 'taskers':
+                    loadTaskersPendientes();
+                    break;
+                case 'servicios':
+                    loadServicios();
+                    break;
+                case 'pagos':
+                    loadPagos();
+                    break;
+                case 'ganancias':
+                    loadGanancias();
+                    break;
+            }
+
+            // Cerrar menú móvil si está abierto
             if (window.innerWidth < 768) {
                 toggleMobileMenu();
             }
@@ -876,28 +953,22 @@
         // CERRAR SESIÓN
         // =============================================
         async function cerrarSesion() {
-            if (confirm('¿Cerrar sesión?')) {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                showLoading();
+                try {
+                    await supabase.auth.signOut();
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    window.location.href = 'index.html';
+                } finally {
+                    hideLoading();
+                }
             }
         }
     </script>
 
     <style>
-        .section-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-        
-        .section-content.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         .animate-slideIn {
             animation: slideIn 0.3s ease-out;
         }
