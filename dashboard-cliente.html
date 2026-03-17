@@ -20,7 +20,6 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         
-        /* Sidebar moderno */
         .sidebar-moderno {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             transition: left 0.3s ease;
@@ -387,7 +386,6 @@
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         
-        // Variable con nombre ÚNICO para evitar conflictos de caché
         const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================
@@ -405,7 +403,7 @@
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white`; n.innerText = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
         // =============================================
-        // AUTENTICACIÓN (usando clienteSupabase)
+        // AUTENTICACIÓN
         // =============================================
         async function verificarAuth(r = 'login.html') {
             try { const { data: { session } } = await clienteSupabase.auth.getSession(); if (!session) { window.location.href = r; return null; } return session; }
@@ -535,16 +533,91 @@
         };
         function cerrarModalPago() { document.getElementById('modalPago').classList.add('hidden'); document.getElementById('modalPago').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
 
+        // =============================================
+        // MIS SERVICIOS - VERSIÓN CORREGIDA (SIN RELACIONES COMPLEJAS)
+        // =============================================
         window.cargarMisServicios = async function() {
-            const f = document.getElementById('filtroStatus').value;
-            const c = document.getElementById('contenedorServicios');
+            const filtro = document.getElementById('filtroStatus')?.value || 'todos';
+            const contenedor = document.getElementById('contenedorServicios');
+            if (!contenedor) return;
+
             try {
-                let q = clienteSupabase.from('servicios').select('*, tasker:tasker_id(full_name,photo_url,calificacion_promedio)').eq('cliente_id',usuarioActual.id).order('created_at',false);
-                if (f!=='todos') q = q.eq('status',f);
-                const { data: s } = await q;
-                if (!s?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay servicios</p>'; return; }
-                c.innerHTML = s.map(x => `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start"><div><h4 class="font-bold">${x.subcategoria||''}</h4><p class="text-sm text-slate-600">${x.descripcion||''}</p></div><span class="badge-estado ${obtenerClase(x.status)}">${obtenerTexto(x.status)}</span></div><div class="grid grid-cols-3 gap-4 mt-4 text-sm"><div><p class="text-slate-500">$${(x.monto_ofertado||0).toFixed(2)}</p></div><div><p class="text-slate-500">${x.ubicacion||''}</p></div><div><p class="text-slate-500">${new Date(x.created_at).toLocaleDateString()}</p></div></div>${x.tasker_id?`<div class="border-t pt-4 mt-4 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-300"></div><span class="font-medium">${x.tasker?.full_name||'Tasker'}</span></div><button onclick="abrirChat('${x.id}','${x.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Chat</button></div>`:x.status==='publicado'?`<div class="border-t pt-4 mt-4 text-center text-slate-500">Esperando propuestas...</div>`:''}${x.status==='en_progreso'?`<div class="border-t pt-4 mt-4"><button onclick="confirmarFinalizacion('${x.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg">Confirmar COMPLETADO</button></div>`:''}</div>`).join('');
-            } catch (e) { console.error(e); }
+                let query = clienteSupabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('created_at', { ascending: false });
+
+                if (filtro !== 'todos') {
+                    query = query.eq('status', filtro);
+                }
+
+                const { data: servicios, error: servError } = await query;
+                if (servError) throw servError;
+
+                if (!servicios || servicios.length === 0) {
+                    contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
+                    return;
+                }
+
+                const serviciosConTasker = await Promise.all(servicios.map(async (servicio) => {
+                    if (servicio.tasker_id) {
+                        const { data: tasker, error: taskerError } = await clienteSupabase
+                            .from('profiles')
+                            .select('full_name, photo_url, calificacion_promedio')
+                            .eq('id', servicio.tasker_id)
+                            .single();
+                        
+                        if (!taskerError && tasker) {
+                            servicio.tasker_info = tasker;
+                        }
+                    }
+                    return servicio;
+                }));
+
+                contenedor.innerHTML = serviciosConTasker.map(s => {
+                    const tasker = s.tasker_info;
+                    const puedeConfirmar = s.status === 'en_progreso';
+                    const tieneTasker = s.tasker_id && tasker;
+
+                    return `
+                    <div class="bg-white rounded-xl shadow-sm p-5">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600">${s.descripcion || ''}</p>
+                            </div>
+                            <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+                            <div><p class="text-slate-500">$${(s.monto_ofertado || 0).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">${s.ubicacion || ''}</p></div>
+                            <div><p class="text-slate-500">${new Date(s.created_at).toLocaleDateString()}</p></div>
+                        </div>
+                        ${tieneTasker ? `
+                        <div class="border-t pt-4 mt-4 flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-slate-300" style="background-image: url('${tasker.photo_url || ''}'); background-size: cover;"></div>
+                                <span class="font-medium">${tasker.full_name || 'Tasker'}</span>
+                            </div>
+                            <button onclick="abrirChat('${s.id}','${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Chat</button>
+                        </div>
+                        ` : s.status === 'publicado' ? `
+                        <div class="border-t pt-4 mt-4 text-center text-slate-500">Esperando propuestas...</div>
+                        ` : ''}
+                        ${puedeConfirmar ? `
+                        <div class="border-t pt-4 mt-4">
+                            <button onclick="confirmarFinalizacion('${s.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg">Confirmar COMPLETADO</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error en cargarMisServicios:', error);
+                contenedor.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
+            }
         };
 
         window.confirmarFinalizacion = async (id) => {
