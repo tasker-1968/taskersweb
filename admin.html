@@ -399,19 +399,14 @@
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (perfilError) {
                     console.error('Error obteniendo perfil:', perfilError);
-                    if (perfilError.message.includes('no rows')) {
-                        alert('Tu perfil no está configurado. Contacta al administrador.');
-                        await adminSupabase.auth.signOut();
-                        window.location.href = 'login.html';
-                    }
                     return null;
                 }
 
-                if (perfil?.role !== 'admin') {
+                if (!perfil || perfil?.role !== 'admin') {
                     alert('Acceso no autorizado. Esta área es solo para administradores.');
                     window.location.href = 'index.html';
                     return null;
@@ -568,7 +563,7 @@
         };
 
         // =============================================
-        // SERVICIOS - VERSIÓN CORREGIDA
+        // SERVICIOS - VERSIÓN CORREGIDA CON maybeSingle
         // =============================================
         async function cargarServicios() {
             const tbody = document.getElementById('serviciosTable');
@@ -592,7 +587,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', s.cliente_id)
-                            .single();
+                            .maybeSingle();
                         s.cliente_nombre = cliente?.full_name || 'Cliente';
                     }
                     if (s.tasker_id) {
@@ -600,7 +595,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', s.tasker_id)
-                            .single();
+                            .maybeSingle();
                         s.tasker_nombre = tasker?.full_name || 'Tasker';
                     }
                     return s;
@@ -632,7 +627,7 @@
         }
 
         // =============================================
-        // PAGOS - VERSIÓN CORREGIDA
+        // PAGOS - VERSIÓN CORREGIDA CON maybeSingle
         // =============================================
         async function cargarPagos() {
             const tbody = document.getElementById('pagosTable');
@@ -657,7 +652,7 @@
                             .from('servicios')
                             .select('subcategoria')
                             .eq('id', p.servicio_id)
-                            .single();
+                            .maybeSingle();
                         p.servicio_nombre = servicio?.subcategoria || 'Servicio';
                     }
                     if (p.cliente_id) {
@@ -665,7 +660,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.cliente_id)
-                            .single();
+                            .maybeSingle();
                         p.cliente_nombre = cliente?.full_name || 'Cliente';
                     }
                     if (p.tasker_id) {
@@ -673,7 +668,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.tasker_id)
-                            .single();
+                            .maybeSingle();
                         p.tasker_nombre = tasker?.full_name || 'Tasker';
                     }
                     return p;
@@ -697,7 +692,7 @@
         }
 
         // =============================================
-        // GANANCIAS - VERSIÓN CORREGIDA
+        // GANANCIAS - VERSIÓN CORREGIDA CON maybeSingle
         // =============================================
         async function cargarGanancias() {
             try {
@@ -730,7 +725,7 @@
                             .from('servicios')
                             .select('subcategoria')
                             .eq('id', p.servicio_id)
-                            .single();
+                            .maybeSingle();
                         p.servicio_nombre = servicio?.subcategoria || 'Servicio';
                     }
                     if (p.cliente_id) {
@@ -738,7 +733,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.cliente_id)
-                            .single();
+                            .maybeSingle();
                         p.cliente_nombre = cliente?.full_name || 'Cliente';
                     }
                     if (p.tasker_id) {
@@ -746,7 +741,7 @@
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.tasker_id)
-                            .single();
+                            .maybeSingle();
                         p.tasker_nombre = tasker?.full_name || 'Tasker';
                     }
                     return p;
