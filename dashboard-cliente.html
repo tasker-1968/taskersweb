@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Panel | Tasker's Cliente</title>
     
-    <!-- Anti-caché: fuerza siempre la última versión -->
+    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -385,7 +385,6 @@
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        
         const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================
@@ -415,7 +414,7 @@
         // =============================================
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarUsuario();
-            await cargarCategorias();
+            await cargarCategorias(); // 🟨 FUNCIÓN CORREGIDA
             await cargarDashboard();
             configurarRealtime();
             menuMovil();
@@ -449,27 +448,84 @@
             } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
         }
 
+        // 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨
+        // 🟨 FUNCIÓN CORREGIDA - CARGA CATEGORÍAS DESDE SUPABASE
+        // 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨 🟨
         async function cargarCategorias() {
             try {
-                const { data: cats } = await clienteSupabase.from('categorias').select('*').eq('activo',true).order('orden');
-                if (cats) {
-                    const s = document.getElementById('categoria');
-                    s.innerHTML = '<option value="">Selecciona</option>';
-                    cats.forEach(c => s.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+                const { data: cats, error } = await clienteSupabase
+                    .from('categorias')
+                    .select('id, nombre')
+                    .eq('activo', true)
+                    .order('orden');
+
+                if (error) {
+                    console.error('Error al cargar categorías:', error);
+                    return;
                 }
-            } catch (e) { console.error(e); }
+
+                const selectCategoria = document.getElementById('categoria');
+                if (!selectCategoria) return;
+
+                selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
+                
+                if (cats && cats.length > 0) {
+                    cats.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.nombre;
+                        selectCategoria.appendChild(option);
+                    });
+                } else {
+                    console.warn('No hay categorías en Supabase');
+                }
+            } catch (error) {
+                console.error('Error en cargarCategorias:', error);
+            }
         }
 
+        // 🟨 EVENTO CORREGIDO - CARGA SUBCATEGORÍAS AL SELECCIONAR CATEGORÍA
         document.getElementById('categoria')?.addEventListener('change', async function() {
-            const sub = document.getElementById('subcategoria');
-            sub.innerHTML = '<option value="">Cargando...</option>'; sub.disabled = true;
-            if (!this.value) { sub.innerHTML = '<option value="">Primero elige categoría</option>'; return; }
+            const subSelect = document.getElementById('subcategoria');
+            if (!subSelect) return;
+
+            const categoriaId = this.value;
+            
+            if (!categoriaId) {
+                subSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
+                subSelect.disabled = true;
+                return;
+            }
+
+            subSelect.innerHTML = '<option value="">Cargando...</option>';
+            subSelect.disabled = true;
+
             try {
-                const { data: subs } = await clienteSupabase.from('subcategorias').select('*').eq('categoria_id',this.value).eq('activo',true);
-                sub.innerHTML = '<option value="">Selecciona</option>';
-                subs.forEach(s => sub.innerHTML += `<option value="${s.id}">${s.nombre}</option>`);
-                sub.disabled = false;
-            } catch { sub.innerHTML = '<option value="">Error</option>'; }
+                const { data: subs, error } = await clienteSupabase
+                    .from('subcategorias')
+                    .select('id, nombre')
+                    .eq('categoria_id', categoriaId)
+                    .eq('activo', true);
+
+                if (error) throw error;
+
+                subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+                
+                if (subs && subs.length > 0) {
+                    subs.forEach(sub => {
+                        const option = document.createElement('option');
+                        option.value = sub.id;
+                        option.textContent = sub.nombre;
+                        subSelect.appendChild(option);
+                    });
+                    subSelect.disabled = false;
+                } else {
+                    subSelect.innerHTML = '<option value="">No hay subcategorías</option>';
+                }
+            } catch (error) {
+                console.error('Error cargando subcategorías:', error);
+                subSelect.innerHTML = '<option value="">Error al cargar</option>';
+            }
         });
 
         async function cargarDashboard() {
@@ -533,9 +589,6 @@
         };
         function cerrarModalPago() { document.getElementById('modalPago').classList.add('hidden'); document.getElementById('modalPago').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
 
-        // =============================================
-        // MIS SERVICIOS - VERSIÓN CORREGIDA (SIN RELACIONES COMPLEJAS)
-        // =============================================
         window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const contenedor = document.getElementById('contenedorServicios');
