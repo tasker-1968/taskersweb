@@ -190,7 +190,7 @@
                         <p id="section-subtitle" class="text-sm text-slate-500">Panel de control administrativo</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <img id="headerAvatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-blue-500 object-cover">
+                        <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-500"></div>
                     </div>
                 </div>
             </header>
@@ -424,7 +424,7 @@
                 `;
                 
                 if (perfil.photo_url) {
-                    document.getElementById('headerAvatar').src = perfil.photo_url;
+                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                 }
 
                 return session;
@@ -484,7 +484,7 @@
         }
 
         // =============================================
-        // TASKERS PENDIENTES (CORREGIDO)
+        // TASKERS PENDIENTES
         // =============================================
         async function cargarTaskers() {
             const tbody = document.getElementById('taskersTable');
@@ -517,10 +517,10 @@
                         </td>
                         <td class="p-4">
                             <div class="flex gap-2">
-                                <button onclick="aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
                                     <i class="fas fa-check mr-1"></i>Aprobar
                                 </button>
-                                <button onclick="rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
                                     <i class="fas fa-times mr-1"></i>Rechazar
                                 </button>
                             </div>
@@ -535,7 +535,7 @@
         }
 
         // =============================================
-        // APROBAR / RECHAZAR TASKER (FUNCIONES GLOBALES)
+        // APROBAR / RECHAZAR TASKER
         // =============================================
         window.aprobarTasker = async function(id) {
             if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
@@ -568,18 +568,14 @@
         };
 
         // =============================================
-        // SERVICIOS
+        // SERVICIOS - VERSIÓN CORREGIDA
         // =============================================
         async function cargarServicios() {
             const tbody = document.getElementById('serviciosTable');
             try {
                 const { data: servicios, error } = await adminSupabase
                     .from('servicios')
-                    .select(`
-                        *,
-                        cliente:cliente_id (full_name, email),
-                        tasker:tasker_id (full_name)
-                    `)
+                    .select('*')
                     .order('created_at', { ascending: false })
                     .limit(50);
 
@@ -590,11 +586,31 @@
                     return;
                 }
 
-                tbody.innerHTML = servicios.map(s => `
+                const serviciosCompletos = await Promise.all(servicios.map(async (s) => {
+                    if (s.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', s.cliente_id)
+                            .single();
+                        s.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (s.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', s.tasker_id)
+                            .single();
+                        s.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return s;
+                }));
+
+                tbody.innerHTML = serviciosCompletos.map(s => `
                     <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">${s.cliente?.full_name || 'Cliente'}</td>
+                        <td class="p-4">${s.cliente_nombre || 'Cliente'}</td>
                         <td class="p-4">${s.subcategoria || 'Servicio'}</td>
-                        <td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td>
+                        <td class="p-4">${s.tasker_nombre || 'Sin asignar'}</td>
                         <td class="p-4 font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</td>
                         <td class="p-4">
                             <span class="px-2 py-1 rounded-full text-xs font-bold ${
@@ -610,25 +626,20 @@
                 `).join('');
 
             } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar</td></tr>';
+                console.error('Error en cargarServicios:', e);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar servicios</td></tr>';
             }
         }
 
         // =============================================
-        // PAGOS
+        // PAGOS - VERSIÓN CORREGIDA
         // =============================================
         async function cargarPagos() {
             const tbody = document.getElementById('pagosTable');
             try {
                 const { data: pagos, error } = await adminSupabase
                     .from('pagos')
-                    .select(`
-                        *,
-                        servicio:servicio_id (subcategoria),
-                        cliente:cliente_id (full_name),
-                        tasker:tasker_id (full_name)
-                    `)
+                    .select('*')
                     .eq('status', 'completado')
                     .order('fecha_pago', { ascending: false })
                     .limit(50);
@@ -640,36 +651,59 @@
                     return;
                 }
 
-                tbody.innerHTML = pagos.map(p => `
+                const pagosCompletos = await Promise.all(pagos.map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('subcategoria')
+                            .eq('id', p.servicio_id)
+                            .single();
+                        p.servicio_nombre = servicio?.subcategoria || 'Servicio';
+                    }
+                    if (p.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.cliente_id)
+                            .single();
+                        p.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.tasker_id)
+                            .single();
+                        p.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return p;
+                }));
+
+                tbody.innerHTML = pagosCompletos.map(p => `
                     <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
-                        <td class="p-4">${p.cliente?.full_name || 'Cliente'}</td>
-                        <td class="p-4">${p.tasker?.full_name || 'Tasker'}</td>
+                        <td class="p-4">${p.servicio_nombre || 'Servicio'}</td>
+                        <td class="p-4">${p.cliente_nombre || 'Cliente'}</td>
+                        <td class="p-4">${p.tasker_nombre || 'Tasker'}</td>
                         <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
                         <td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
                     </tr>
                 `).join('');
 
             } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar</td></tr>';
+                console.error('Error en cargarPagos:', e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
             }
         }
 
         // =============================================
-        // GANANCIAS
+        // GANANCIAS - VERSIÓN CORREGIDA
         // =============================================
         async function cargarGanancias() {
             try {
                 const { data: pagos, error } = await adminSupabase
                     .from('pagos')
-                    .select(`
-                        *,
-                        servicio:servicio_id (subcategoria),
-                        cliente:cliente_id (full_name),
-                        tasker:tasker_id (full_name)
-                    `)
+                    .select('*')
                     .eq('status', 'completado')
                     .order('fecha_pago', { ascending: false });
 
@@ -677,31 +711,67 @@
 
                 const total = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
                 const hoy = new Date();
-                const mes = pagos?.filter(p => new Date(p.fecha_pago).getMonth() === hoy.getMonth() && new Date(p.fecha_pago).getFullYear() === hoy.getFullYear()).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-                const dia = pagos?.filter(p => new Date(p.fecha_pago).toDateString() === hoy.toDateString()).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const mes = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const dia = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.toDateString() === hoy.toDateString();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
 
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('gananciasMes').textContent = `$${mes.toFixed(2)}`;
                 document.getElementById('gananciasHoy').textContent = `$${dia.toFixed(2)}`;
 
+                const pagosCompletos = await Promise.all((pagos || []).map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('subcategoria')
+                            .eq('id', p.servicio_id)
+                            .single();
+                        p.servicio_nombre = servicio?.subcategoria || 'Servicio';
+                    }
+                    if (p.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.cliente_id)
+                            .single();
+                        p.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.tasker_id)
+                            .single();
+                        p.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return p;
+                }));
+
                 const tbody = document.getElementById('gananciasTable');
-                if (!pagos || pagos.length === 0) {
+                if (!pagosCompletos || pagosCompletos.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>';
                     return;
                 }
-                tbody.innerHTML = pagos.map(p => `
+                tbody.innerHTML = pagosCompletos.map(p => `
                     <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-3">${p.servicio?.subcategoria || ''}</td>
-                        <td class="p-3">${p.cliente?.full_name || ''}</td>
-                        <td class="p-3">${p.tasker?.full_name || ''}</td>
+                        <td class="p-3">${p.servicio_nombre || ''}</td>
+                        <td class="p-3">${p.cliente_nombre || ''}</td>
+                        <td class="p-3">${p.tasker_nombre || ''}</td>
                         <td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td>
                         <td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
                     </tr>
                 `).join('');
 
                 actualizarGraficaGanancias(pagos);
-            } catch (e) { console.error('Error loading ganancias:', e); }
+            } catch (e) {
+                console.error('Error en cargarGanancias:', e);
+            }
         }
 
         // =============================================
@@ -712,13 +782,13 @@
             activityChart = new Chart(ctx, {
                 type: 'line',
                 data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Servicios', data: [0,0,0,0,0,0], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
             });
             const ctx2 = document.getElementById('gananciasChart').getContext('2d');
             gananciasChart = new Chart(ctx2, {
                 type: 'bar',
                 data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Tus Ganancias (15%)', data: [0,0,0,0,0,0], backgroundColor: '#3b82f6', borderRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
             });
         }
 
