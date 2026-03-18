@@ -598,84 +598,104 @@
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-        // =============================================
-        // PROPUESTAS PENDIENTES (NUEVO)
-        // =============================================
-        async function cargarPropuestas() {
-            const tbody = document.getElementById('propuestasTable');
-            try {
-                const { data: propuestas, error } = await adminSupabase
-                    .from('propuestas')
-                    .select(`
-                        *,
-                        servicio:servicio_id (
-                            id,
-                            subcategoria,
-                            descripcion,
-                            monto_ofertado,
-                            cliente_id,
-                            cliente:cliente_id (full_name)
-                        ),
-                        tasker:tasker_id (
-                            id,
-                            full_name,
-                            photo_url
-                        )
-                    `)
-                    .eq('status', 'pendiente')
-                    .order('created_at', { ascending: false });
+       // =============================================
+// PROPUESTAS PENDIENTES - VERSIÓN CORREGIDA
+// =============================================
+async function cargarPropuestas() {
+    const tbody = document.getElementById('propuestasTable');
+    try {
+        // 1. Obtener las propuestas pendientes (sin relaciones complejas)
+        const { data: propuestas, error } = await adminSupabase
+            .from('propuestas')
+            .select('*')
+            .eq('status', 'pendiente')
+            .order('created_at', { ascending: false });
 
-                if (error) throw error;
+        if (error) throw error;
 
-                // Actualizar contador
-                document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
+        // Actualizar contador
+        document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
 
-                if (!propuestas || propuestas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = propuestas.map(p => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">
-                            <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
-                            <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50)}...</p>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-300" 
-                                     style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
-                                </div>
-                                <span>${p.tasker?.full_name || 'Tasker'}</span>
-                            </div>
-                        </td>
-                        <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
-                        <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
-                        <td class="p-4">${p.tiempo_estimado || '—'} min</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex gap-2">
-                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
-                                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
-                                    <i class="fas fa-check mr-1"></i>Aprobar
-                                </button>
-                                <button onclick="window.rechazarPropuesta('${p.id}')" 
-                                        class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
-                                    <i class="fas fa-times mr-1"></i>Rechazar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error cargando propuestas:', error);
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
-            }
+        if (!propuestas || propuestas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
+            return;
         }
 
+        // 2. Para cada propuesta, obtener los datos relacionados por separado
+        const propuestasCompletas = await Promise.all(propuestas.map(async (p) => {
+            // Obtener datos del servicio
+            if (p.servicio_id) {
+                const { data: servicio } = await adminSupabase
+                    .from('servicios')
+                    .select('id, subcategoria, descripcion, monto_ofertado, cliente_id')
+                    .eq('id', p.servicio_id)
+                    .maybeSingle();
+                p.servicio = servicio || {};
+
+                // Si el servicio tiene cliente, obtener su nombre
+                if (servicio?.cliente_id) {
+                    const { data: cliente } = await adminSupabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', servicio.cliente_id)
+                        .maybeSingle();
+                    p.cliente_nombre = cliente?.full_name || 'Cliente';
+                }
+            }
+
+            // Obtener datos del tasker
+            if (p.tasker_id) {
+                const { data: tasker } = await adminSupabase
+                    .from('profiles')
+                    .select('id, full_name, photo_url')
+                    .eq('id', p.tasker_id)
+                    .maybeSingle();
+                p.tasker = tasker || {};
+            }
+            return p;
+        }));
+
+        // 3. Renderizar la tabla
+        tbody.innerHTML = propuestasCompletas.map(p => `
+            <tr class="border-b hover:bg-slate-50 transition">
+                <td class="p-4">
+                    <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
+                    <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50) || ''}...</p>
+                </td>
+                <td class="p-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-300" 
+                             style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
+                        </div>
+                        <span>${p.tasker?.full_name || 'Tasker'}</span>
+                    </div>
+                </td>
+                <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
+                <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
+                <td class="p-4">${p.tiempo_estimado || '—'} min</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
+                </td>
+                <td class="p-4">
+                    <div class="flex gap-2">
+                        <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
+                                class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                            <i class="fas fa-check mr-1"></i>Aprobar
+                        </button>
+                        <button onclick="window.rechazarPropuesta('${p.id}')" 
+                                class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                            <i class="fas fa-times mr-1"></i>Rechazar
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando propuestas:', error);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
+    }
+}
         // =============================================
         // APROBAR PROPUESTA (Y RECHAZAR LAS DEMÁS)
         // =============================================
