@@ -159,6 +159,11 @@
                     <span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
                 </a>
+                <a href="#" onclick="window.mostrarSeccion('propuestas'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-propuestas">
+                    <i class="fas fa-file-signature w-6"></i>
+                    <span>Propuestas Pendientes</span>
+                    <span id="propuestasCount" class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                </a>
                 <a href="#" onclick="window.mostrarSeccion('servicios'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
                     <i class="fas fa-briefcase w-6"></i>
                     <span>Servicios</span>
@@ -245,6 +250,36 @@
                                 </thead>
                                 <tbody id="taskersTable">
                                     <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROPUESTAS PENDIENTES (NUEVA SECCIÓN) -->
+                <section id="seccion-propuestas" class="seccion-contenido">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-file-signature"></i>
+                                Propuestas Pendientes de Revisión
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Propuesta</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Mensaje</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tiempo</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="propuestasTable">
+                                    <tr><td colspan="7" class="text-center p-8 text-slate-400">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -440,6 +475,7 @@
             if (session) {
                 await cargarDashboard();
                 await cargarTaskers();
+                await cargarPropuestas(); // NUEVO
                 await cargarServicios();
                 await cargarPagos();
                 await cargarGanancias();
@@ -560,6 +596,187 @@
                 await cargarTaskers();
                 await cargarDashboard();
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
+        };
+
+        // =============================================
+        // PROPUESTAS PENDIENTES (NUEVO)
+        // =============================================
+        async function cargarPropuestas() {
+            const tbody = document.getElementById('propuestasTable');
+            try {
+                const { data: propuestas, error } = await adminSupabase
+                    .from('propuestas')
+                    .select(`
+                        *,
+                        servicio:servicio_id (
+                            id,
+                            subcategoria,
+                            descripcion,
+                            monto_ofertado,
+                            cliente_id,
+                            cliente:cliente_id (full_name)
+                        ),
+                        tasker:tasker_id (
+                            id,
+                            full_name,
+                            photo_url
+                        )
+                    `)
+                    .eq('status', 'pendiente')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Actualizar contador
+                document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
+
+                if (!propuestas || propuestas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = propuestas.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">
+                            <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
+                            <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50)}...</p>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-300" 
+                                     style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
+                                </div>
+                                <span>${p.tasker?.full_name || 'Tasker'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
+                        <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
+                        <td class="p-4">${p.tiempo_estimado || '—'} min</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
+                                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-check mr-1"></i>Aprobar
+                                </button>
+                                <button onclick="window.rechazarPropuesta('${p.id}')" 
+                                        class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                    <i class="fas fa-times mr-1"></i>Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error cargando propuestas:', error);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
+            }
+        }
+
+        // =============================================
+        // APROBAR PROPUESTA (Y RECHAZAR LAS DEMÁS)
+        // =============================================
+        window.aprobarPropuesta = async function(propuestaId, servicioId, taskerId) {
+            if (!confirm('¿Estás seguro de aprobar esta propuesta? Las demás serán rechazadas automáticamente.')) return;
+            
+            mostrarCarga();
+            try {
+                // 1. Aprobar la propuesta seleccionada
+                const { error: aprobarError } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'aceptada', updated_at: new Date() })
+                    .eq('id', propuestaId);
+
+                if (aprobarError) throw aprobarError;
+
+                // 2. Rechazar todas las otras propuestas del mismo servicio
+                const { error: rechazarError } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'rechazada', updated_at: new Date() })
+                    .eq('servicio_id', servicioId)
+                    .neq('id', propuestaId);
+
+                if (rechazarError) throw rechazarError;
+
+                // 3. Actualizar el servicio: asignar tasker y cambiar estado
+                const { error: servicioError } = await adminSupabase
+                    .from('servicios')
+                    .update({ 
+                        status: 'asignado',
+                        tasker_id: taskerId,
+                        updated_at: new Date()
+                    })
+                    .eq('id', servicioId);
+
+                if (servicioError) throw servicioError;
+
+                // 4. Notificar al tasker que su propuesta fue aceptada
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: taskerId,
+                        tipo: 'propuesta',
+                        titulo: '¡Propuesta aceptada!',
+                        mensaje: 'Tu propuesta ha sido aprobada por el administrador. Ya puedes comenzar a trabajar.'
+                    }]);
+
+                // 5. Notificar al cliente que ya tiene tasker asignado
+                const { data: servicio } = await adminSupabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioId)
+                    .single();
+
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Tasker asignado!',
+                        mensaje: 'Un profesional ha sido asignado a tu servicio. Ya puedes contactarlo.'
+                    }]);
+
+                notificar('Propuesta aprobada exitosamente', 'success');
+                
+                // Recargar las tablas
+                await cargarPropuestas();
+                await cargarServicios();
+                
+            } catch (error) {
+                console.error('Error al aprobar propuesta:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+        // =============================================
+        // RECHAZAR PROPUESTA (SIN ASIGNAR)
+        // =============================================
+        window.rechazarPropuesta = async function(propuestaId) {
+            if (!confirm('¿Estás seguro de rechazar esta propuesta?')) return;
+            
+            mostrarCarga();
+            try {
+                const { error } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'rechazada', updated_at: new Date() })
+                    .eq('id', propuestaId);
+
+                if (error) throw error;
+
+                notificar('Propuesta rechazada', 'info');
+                await cargarPropuestas();
+                
+            } catch (error) {
+                console.error('Error al rechazar propuesta:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
         };
 
         // =============================================
@@ -808,13 +1025,25 @@
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            const tit = { dashboard:'Dashboard', taskers:'Taskers Pendientes', servicios:'Servicios', pagos:'Pagos', ganancias:'Mis Ganancias' };
+            
+            const tit = { 
+                dashboard:'Dashboard', 
+                taskers:'Taskers Pendientes', 
+                propuestas:'Propuestas Pendientes',
+                servicios:'Servicios', 
+                pagos:'Pagos', 
+                ganancias:'Mis Ganancias' 
+            };
+            
             document.getElementById('section-title').textContent = tit[sec] || 'Admin';
             document.getElementById('section-subtitle').innerHTML = `Panel de control de ${tit[sec].toLowerCase()}`;
+            
             if (sec === 'taskers') cargarTaskers();
+            if (sec === 'propuestas') cargarPropuestas();
             if (sec === 'servicios') cargarServicios();
             if (sec === 'pagos') cargarPagos();
             if (sec === 'ganancias') cargarGanancias();
+            
             if (window.innerWidth < 768) toggleMobileMenu();
         };
 
