@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirigiendo | Tasker's México</title>
+    
+    <!-- Anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Tailwind CSS y Fuentes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            animation: gradient 10s ease infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center fade-in">
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            <img src="logo-taskers.png" alt="Tasker's México" class="h-16 w-auto">
+        </div>
+        
+        <!-- Loader -->
+        <div class="flex justify-center my-8">
+            <span class="loader"></span>
+        </div>
+        
+        <!-- Mensaje principal -->
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">
+            Procesando tu acceso
+        </h1>
+        
+        <p class="text-slate-600 mb-6">
+            Estamos verificando tu cuenta y te redirigiremos en unos segundos...
+        </p>
+        
+        <!-- Mensaje de error (oculto por defecto) -->
+        <div id="errorMessage" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-red-100 rounded-full p-2">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                </div>
+                <div class="text-left">
+                    <h3 class="font-bold text-red-800">Error de redirección</h3>
+                    <p id="errorText" class="text-sm text-red-600"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Botón manual (solo si hay error) -->
+        <div id="manualRedirect" class="hidden">
+            <p class="text-sm text-slate-500 mb-3">Haz clic en el botón si no eres redirigido automáticamente</p>
+            <a href="dashboard-cliente.html" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
+                Ir a mi panel
+            </a>
+        </div>
+        
+        <!-- Términos -->
+        <p class="text-xs text-slate-400 mt-6">
+            Estamos configurando tu experiencia. Esto solo tomará un momento.
+        </p>
+    </div>
+
+    <script>
+        // =============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // =============================================
+        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // =============================================
+        // FUNCIÓN PRINCIPAL DE REDIRECCIÓN
+        // =============================================
+        async function handleRedirect() {
+            try {
+                console.log('🔍 Iniciando proceso de redirección...');
+                
+                // 1. Obtener la sesión actual
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) throw sessionError;
+                
+                // 2. Si no hay sesión, redirigir al login
+                if (!session) {
+                    console.log('⚠️ No hay sesión activa, redirigiendo a login...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+
+                console.log('✅ Sesión encontrada:', session.user.email);
+
+                // 3. Obtener el perfil del usuario
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.error('❌ Error al obtener perfil:', profileError);
+                    throw profileError;
+                }
+
+                // 4. Determinar la URL según el rol
+                let redirectUrl = 'dashboard-cliente.html';
+                
+                if (profile?.role === 'tasker') {
+                    redirectUrl = 'dashboard-tasker.html';
+                } else if (profile?.role === 'admin') {
+                    redirectUrl = 'admin.html';
+                }
+
+                console.log('🎯 Redirigiendo a:', redirectUrl);
+
+                // 5. Redirigir después de 2 segundos
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 2000);
+
+            } catch (error) {
+                console.error('🔥 Error en redirección:', error);
+                
+                // Mostrar mensaje de error
+                document.getElementById('errorMessage').classList.remove('hidden');
+                document.getElementById('errorText').textContent = error.message || 'Error al procesar la autenticación';
+                
+                // Mostrar opción manual
+                document.getElementById('manualRedirect').classList.remove('hidden');
+            }
+        }
+
+        // =============================================
+        // INICIAR PROCESO AL CARGAR LA PÁGINA
+        // =============================================
+        document.addEventListener('DOMContentLoaded', handleRedirect);
+
+        // =============================================
+        // RESPALDO: Si no hay redirección en 5 segundos
+        // =============================================
+        setTimeout(() => {
+            const manualDiv = document.getElementById('manualRedirect');
+            if (manualDiv.classList.contains('hidden')) {
+                manualDiv.classList.remove('hidden');
+                document.getElementById('errorMessage').classList.remove('hidden');
+                document.getElementById('errorText').textContent = 'Tiempo de espera agotado. Haz clic en el botón para continuar.';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
