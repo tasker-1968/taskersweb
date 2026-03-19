@@ -100,6 +100,7 @@
             max-width: 70%;
         }
         
+        /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
             .sidebar-moderno {
                 position: fixed;
@@ -107,9 +108,117 @@
                 z-index: 50;
                 width: 280px;
                 height: 100vh;
+                transition: left 0.3s ease;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
             }
-            .sidebar-moderno.abierto { left: 0; }
-            .mensaje-cliente, .mensaje-tasker { max-width: 85%; }
+            
+            .sidebar-moderno.abierto {
+                left: 0;
+            }
+            
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+            
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .mensaje-cliente, .mensaje-tasker {
+                max-width: 85%;
+            }
+            
+            /* Ajustes de espaciado */
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .grid-cols-2 {
+                gap: 0.75rem;
+            }
+            
+            .tarjeta-stats {
+                padding: 1rem;
+            }
+            
+            .tarjeta-stats p.text-3xl {
+                font-size: 1.5rem;
+            }
+            
+            /* Tablas horizontales */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -1rem;
+                padding: 0 1rem;
+                width: calc(100% + 2rem);
+            }
+            
+            table {
+                min-width: 500px;
+            }
+            
+            /* Botones más grandes para touch */
+            button, 
+            .enlace-moderno,
+            [onclick] {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Inputs sin zoom */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* Ajustes para tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-2 {
+                gap: 1rem;
+            }
+            
+            .tarjeta-stats {
+                padding: 1.25rem;
+            }
+            
+            .tarjeta-stats p.text-3xl {
+                font-size: 2rem;
+            }
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Estilos para el botón de menú móvil */
+        #btnMenuMovil {
+            z-index: 60;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        #btnMenuMovil:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Prevenir scroll cuando el menú está abierto */
+        body.menu-open {
+            overflow: hidden;
         }
     </style>
 </head>
@@ -121,7 +230,7 @@
     </button>
 
     <!-- Overlay para móvil -->
-    <div id="overlayMenu" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="cerrarMenuMovil()"></div>
+    <div id="overlayMenu" class="sidebar-overlay hidden md:hidden" onclick="cerrarMenuMovil()"></div>
 
     <!-- Modal de carga -->
     <div id="modalCarga" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
@@ -343,7 +452,7 @@
                 <section id="seccion-pagos" class="seccion-contenido">
                     <h3 class="text-2xl font-bold text-slate-800 mb-6">Historial de Pagos</h3>
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
+                        <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th></tr>
@@ -410,24 +519,70 @@
         }
 
         // =============================================
-        // INICIO
+        // MENÚ MÓVIL CORREGIDO
         // =============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarUsuario();
-            await cargarCategorias();
-            await cargarDashboard();
-            configurarRealtime();
-            menuMovil();
-        });
-
         function menuMovil() {
             const btn = document.getElementById('btnMenuMovil');
-            const barra = document.getElementById('barraLateral');
+            const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
-            if (btn) btn.addEventListener('click', ()=>{ barra.classList.toggle('abierto'); overlay.classList.toggle('hidden'); });
-            if (overlay) overlay.addEventListener('click', ()=>{ barra.classList.remove('abierto'); overlay.classList.add('hidden'); });
+            
+            if (!btn || !sidebar || !overlay) {
+                console.error('Elementos del menú móvil no encontrados');
+                return;
+            }
+
+            // Abrir menú
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                sidebar.classList.add('abierto');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('active');
+                document.body.classList.add('menu-open');
+            });
+
+            // Cerrar menú con overlay
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('abierto');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('active');
+                document.body.classList.remove('menu-open');
+            });
+
+            // Cerrar menú al hacer clic en enlaces
+            const links = document.querySelectorAll('.enlace-moderno');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('abierto');
+                        overlay.classList.add('hidden');
+                        overlay.classList.remove('active');
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            });
         }
-        function cerrarMenuMovil() { document.getElementById('barraLateral')?.classList.remove('abierto'); document.getElementById('overlayMenu')?.classList.add('hidden'); }
+
+        // Función para cerrar menú manualmente
+        function cerrarMenuMovil() {
+            const sidebar = document.getElementById('barraLateral');
+            const overlay = document.getElementById('overlayMenu');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('abierto');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('active');
+                document.body.classList.remove('menu-open');
+            }
+        }
+
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                cerrarMenuMovil();
+            }
+        });
 
         async function cargarUsuario() {
             mostrarCarga();
@@ -588,16 +743,12 @@
         };
         function cerrarModalPago() { document.getElementById('modalPago').classList.add('hidden'); document.getElementById('modalPago').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
 
-        // =============================================
-        // MIS SERVICIOS - VERSIÓN CORREGIDA (CON TASKER ASIGNADO)
-        // =============================================
         window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const contenedor = document.getElementById('contenedorServicios');
             if (!contenedor) return;
 
             try {
-                // 1. Obtener los servicios del cliente
                 let query = clienteSupabase
                     .from('servicios')
                     .select('*')
@@ -616,14 +767,13 @@
                     return;
                 }
 
-                // 2. Para cada servicio, obtener la información del tasker (si existe)
                 const serviciosConTasker = await Promise.all(servicios.map(async (servicio) => {
                     if (servicio.tasker_id) {
                         const { data: tasker, error: taskerError } = await clienteSupabase
                             .from('profiles')
                             .select('full_name, photo_url, calificacion_promedio')
                             .eq('id', servicio.tasker_id)
-                            .maybeSingle(); // Cambiado a maybeSingle para evitar errores
+                            .maybeSingle();
                         
                         if (!taskerError && tasker) {
                             servicio.tasker_info = tasker;
@@ -632,7 +782,6 @@
                     return servicio;
                 }));
 
-                // 3. Renderizar los servicios
                 contenedor.innerHTML = serviciosConTasker.map(s => {
                     const tasker = s.tasker_info;
                     const puedeConfirmar = s.status === 'en_progreso';
@@ -848,6 +997,17 @@
                 window.location.href = 'index.html';
             }
         };
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarUsuario();
+            await cargarCategorias();
+            await cargarDashboard();
+            configurarRealtime();
+            menuMovil(); // Inicializar menú móvil
+        });
     </script>
     <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
 </body>
