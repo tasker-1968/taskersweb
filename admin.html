@@ -256,7 +256,7 @@
                     </div>
                 </section>
 
-                <!-- PROPUESTAS PENDIENTES (NUEVA SECCIÓN) -->
+                <!-- PROPUESTAS PENDIENTES -->
                 <section id="seccion-propuestas" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white">
@@ -475,7 +475,7 @@
             if (session) {
                 await cargarDashboard();
                 await cargarTaskers();
-                await cargarPropuestas(); // NUEVO
+                await cargarPropuestas();
                 await cargarServicios();
                 await cargarPagos();
                 await cargarGanancias();
@@ -598,106 +598,103 @@
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-       // =============================================
-// PROPUESTAS PENDIENTES - VERSIÓN CORREGIDA
-// =============================================
-async function cargarPropuestas() {
-    const tbody = document.getElementById('propuestasTable');
-    try {
-        // 1. Obtener las propuestas pendientes (sin relaciones complejas)
-        const { data: propuestas, error } = await adminSupabase
-            .from('propuestas')
-            .select('*')
-            .eq('status', 'pendiente')
-            .order('created_at', { ascending: false });
+        // =============================================
+        // PROPUESTAS PENDIENTES - VERSIÓN CORREGIDA
+        // =============================================
+        async function cargarPropuestas() {
+            const tbody = document.getElementById('propuestasTable');
+            try {
+                // 1. Obtener las propuestas pendientes
+                const { data: propuestas, error } = await adminSupabase
+                    .from('propuestas')
+                    .select('*')
+                    .eq('status', 'pendiente')
+                    .order('created_at', { ascending: false });
 
-        if (error) throw error;
+                if (error) throw error;
 
-        // Actualizar contador
-        document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
+                document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
 
-        if (!propuestas || propuestas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
-            return;
+                if (!propuestas || propuestas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
+                    return;
+                }
+
+                // 2. Obtener datos relacionados por separado
+                const propuestasCompletas = await Promise.all(propuestas.map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('id, subcategoria, descripcion, monto_ofertado, cliente_id')
+                            .eq('id', p.servicio_id)
+                            .maybeSingle();
+                        p.servicio = servicio || {};
+
+                        if (servicio?.cliente_id) {
+                            const { data: cliente } = await adminSupabase
+                                .from('profiles')
+                                .select('full_name')
+                                .eq('id', servicio.cliente_id)
+                                .maybeSingle();
+                            p.cliente_nombre = cliente?.full_name || 'Cliente';
+                        }
+                    }
+
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('id, full_name, photo_url')
+                            .eq('id', p.tasker_id)
+                            .maybeSingle();
+                        p.tasker = tasker || {};
+                    }
+                    return p;
+                }));
+
+                // 3. Renderizar tabla
+                tbody.innerHTML = propuestasCompletas.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">
+                            <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
+                            <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50) || ''}...</p>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-300" 
+                                     style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
+                                </div>
+                                <span>${p.tasker?.full_name || 'Tasker'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
+                        <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
+                        <td class="p-4">${p.tiempo_estimado || '—'} min</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
+                                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-check mr-1"></i>Aprobar
+                                </button>
+                                <button onclick="window.rechazarPropuesta('${p.id}')" 
+                                        class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                    <i class="fas fa-times mr-1"></i>Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error cargando propuestas:', error);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
+            }
         }
 
-        // 2. Para cada propuesta, obtener los datos relacionados por separado
-        const propuestasCompletas = await Promise.all(propuestas.map(async (p) => {
-            // Obtener datos del servicio
-            if (p.servicio_id) {
-                const { data: servicio } = await adminSupabase
-                    .from('servicios')
-                    .select('id, subcategoria, descripcion, monto_ofertado, cliente_id')
-                    .eq('id', p.servicio_id)
-                    .maybeSingle();
-                p.servicio = servicio || {};
-
-                // Si el servicio tiene cliente, obtener su nombre
-                if (servicio?.cliente_id) {
-                    const { data: cliente } = await adminSupabase
-                        .from('profiles')
-                        .select('full_name')
-                        .eq('id', servicio.cliente_id)
-                        .maybeSingle();
-                    p.cliente_nombre = cliente?.full_name || 'Cliente';
-                }
-            }
-
-            // Obtener datos del tasker
-            if (p.tasker_id) {
-                const { data: tasker } = await adminSupabase
-                    .from('profiles')
-                    .select('id, full_name, photo_url')
-                    .eq('id', p.tasker_id)
-                    .maybeSingle();
-                p.tasker = tasker || {};
-            }
-            return p;
-        }));
-
-        // 3. Renderizar la tabla
-        tbody.innerHTML = propuestasCompletas.map(p => `
-            <tr class="border-b hover:bg-slate-50 transition">
-                <td class="p-4">
-                    <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
-                    <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50) || ''}...</p>
-                </td>
-                <td class="p-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-300" 
-                             style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
-                        </div>
-                        <span>${p.tasker?.full_name || 'Tasker'}</span>
-                    </div>
-                </td>
-                <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
-                <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
-                <td class="p-4">${p.tiempo_estimado || '—'} min</td>
-                <td class="p-4">
-                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
-                </td>
-                <td class="p-4">
-                    <div class="flex gap-2">
-                        <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
-                                class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
-                            <i class="fas fa-check mr-1"></i>Aprobar
-                        </button>
-                        <button onclick="window.rechazarPropuesta('${p.id}')" 
-                                class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
-                            <i class="fas fa-times mr-1"></i>Rechazar
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-
-    } catch (error) {
-        console.error('Error cargando propuestas:', error);
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
-    }
-}
         // =============================================
-        // APROBAR PROPUESTA (Y RECHAZAR LAS DEMÁS)
+        // APROBAR PROPUESTA (CORREGIDA)
         // =============================================
         window.aprobarPropuesta = async function(propuestaId, servicioId, taskerId) {
             if (!confirm('¿Estás seguro de aprobar esta propuesta? Las demás serán rechazadas automáticamente.')) return;
@@ -721,7 +718,7 @@ async function cargarPropuestas() {
 
                 if (rechazarError) throw rechazarError;
 
-                // 3. Actualizar el servicio: asignar tasker y cambiar estado
+                // 3. ACTUALIZAR EL SERVICIO: asignar tasker y cambiar estado
                 const { error: servicioError } = await adminSupabase
                     .from('servicios')
                     .update({ 
@@ -733,7 +730,7 @@ async function cargarPropuestas() {
 
                 if (servicioError) throw servicioError;
 
-                // 4. Notificar al tasker que su propuesta fue aceptada
+                // 4. Notificar al tasker
                 await adminSupabase
                     .from('notificaciones')
                     .insert([{
@@ -743,7 +740,7 @@ async function cargarPropuestas() {
                         mensaje: 'Tu propuesta ha sido aprobada por el administrador. Ya puedes comenzar a trabajar.'
                     }]);
 
-                // 5. Notificar al cliente que ya tiene tasker asignado
+                // 5. Notificar al cliente
                 const { data: servicio } = await adminSupabase
                     .from('servicios')
                     .select('cliente_id')
@@ -761,9 +758,9 @@ async function cargarPropuestas() {
 
                 notificar('Propuesta aprobada exitosamente', 'success');
                 
-                // Recargar las tablas
+                // 6. RECARGAR TODAS LAS TABLAS
                 await cargarPropuestas();
-                await cargarServicios();
+                await cargarServicios();  // Esto actualizará la lista de servicios
                 
             } catch (error) {
                 console.error('Error al aprobar propuesta:', error);
@@ -774,7 +771,7 @@ async function cargarPropuestas() {
         };
 
         // =============================================
-        // RECHAZAR PROPUESTA (SIN ASIGNAR)
+        // RECHAZAR PROPUESTA
         // =============================================
         window.rechazarPropuesta = async function(propuestaId) {
             if (!confirm('¿Estás seguro de rechazar esta propuesta?')) return;
@@ -800,7 +797,7 @@ async function cargarPropuestas() {
         };
 
         // =============================================
-        // SERVICIOS - VERSIÓN CORREGIDA CON maybeSingle
+        // SERVICIOS
         // =============================================
         async function cargarServicios() {
             const tbody = document.getElementById('serviciosTable');
@@ -864,7 +861,7 @@ async function cargarPropuestas() {
         }
 
         // =============================================
-        // PAGOS - VERSIÓN CORREGIDA CON maybeSingle
+        // PAGOS
         // =============================================
         async function cargarPagos() {
             const tbody = document.getElementById('pagosTable');
@@ -929,7 +926,7 @@ async function cargarPropuestas() {
         }
 
         // =============================================
-        // GANANCIAS - VERSIÓN CORREGIDA CON maybeSingle
+        // GANANCIAS
         // =============================================
         async function cargarGanancias() {
             try {
