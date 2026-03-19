@@ -122,22 +122,6 @@
             box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
         
-        .file-upload {
-            border: 2px dashed #e2e8f0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .file-upload:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-        
-        .file-upload.has-file {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
         @media (max-width: 768px) {
             .sidebar-tasker {
                 position: fixed;
@@ -315,10 +299,7 @@
                     <i class="fas fa-user w-6"></i>
                     <span>Mi Perfil</span>
                 </a>
-                <a href="#" onclick="window.mostrarSeccion('documentos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-documentos">
-                    <i class="fas fa-file-upload w-6"></i>
-                    <span>Documentación</span>
-                </a>
+                <!-- ELIMINADA LA SECCIÓN DE DOCUMENTOS -->
             </nav>
             
             <div class="p-4 border-t border-white/20">
@@ -536,57 +517,7 @@
                     </div>
                 </section>
 
-                <!-- DOCUMENTOS -->
-                <section id="seccion-documentos" class="seccion-contenido">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold text-slate-800 mb-2">Documentación</h3>
-                        <p class="text-slate-500 text-sm mb-6">Sube tus documentos para verificar tu identidad</p>
-
-                        <div class="space-y-6">
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold text-slate-800">Identificación oficial</h4>
-                                        <p class="text-xs text-slate-500">INE, pasaporte o cédula profesional</p>
-                                    </div>
-                                    <span id="ineStatus" class="text-sm text-yellow-600 font-medium">Pendiente</span>
-                                </div>
-                                <input type="file" id="docINE" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
-                            </div>
-
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold text-slate-800">Comprobante de domicilio</h4>
-                                        <p class="text-xs text-slate-500">Luz, agua, teléfono (últimos 3 meses)</p>
-                                    </div>
-                                    <span id="domicilioStatus" class="text-sm text-yellow-600 font-medium">Pendiente</span>
-                                </div>
-                                <input type="file" id="docDomicilio" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
-                            </div>
-
-                            <div class="border rounded-xl p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-bold text-slate-800">Carta de antecedentes no penales</h4>
-                                        <p class="text-xs text-slate-500">Opcional pero recomendado</p>
-                                    </div>
-                                    <span id="penalesStatus" class="text-sm text-slate-400 font-medium">No subido</span>
-                                </div>
-                                <input type="file" id="docPenales" accept="image/*,.pdf" class="w-full p-2 border border-slate-200 rounded-lg">
-                            </div>
-
-                            <button onclick="subirDocumentos()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                                Enviar documentos para verificación
-                            </button>
-
-                            <div class="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 border border-blue-200">
-                                <i class="fas fa-shield-alt mr-2"></i>
-                                Tus documentos están seguros. Solo los usa el equipo de verificación de Tasker's.
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA COMPLETAMENTE -->
             </div>
         </main>
     </div>
@@ -979,51 +910,44 @@
         };
 
         // =============================================
-        // DOCUMENTOS
-        // =============================================
-        window.subirDocumentos = async function() {
-            const files = {
-                ine: document.getElementById('docINE').files[0],
-                domicilio: document.getElementById('docDomicilio').files[0],
-                penales: document.getElementById('docPenales').files[0]
-            };
-            if (!files.ine || !files.domicilio) { alert('Debes subir al menos INE y comprobante de domicilio'); return; }
-            mostrarCarga();
-            try {
-                const urls = {};
-                for (let [key, file] of Object.entries(files)) {
-                    if (file) {
-                        if (file.size > 5*1024*1024) throw new Error(`El archivo ${key} no debe exceder 5MB`);
-                        const ext = file.name.split('.').pop();
-                        const path = `documentos/${usuarioActual.id}/${key}_${Date.now()}.${ext}`;
-                        await taskerSupabase.storage.from('taskers-documents').upload(path, file);
-                        const { data: { publicUrl } } = taskerSupabase.storage.from('taskers-documents').getPublicUrl(path);
-                        urls[key] = publicUrl;
-                    }
-                }
-                await taskerSupabase.from('profiles').update({ document_ine_url: urls.ine, document_domicilio_url: urls.domicilio, document_penal_url: urls.penales, status: 'pending', updated_at: new Date() }).eq('id', usuarioActual.id);
-                alert('Documentos enviados para verificación');
-                document.getElementById('ineStatus').textContent = 'En revisión';
-                document.getElementById('domicilioStatus').textContent = 'En revisión';
-                if (urls.penales) document.getElementById('penalesStatus').textContent = 'En revisión';
-            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
-        };
-
-        // =============================================
-        // NAVEGACIÓN
+        // NAVEGACIÓN (CORREGIDA CON RECARGA DE DATOS)
         // =============================================
         window.mostrarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil', documentos:'Documentación' };
+            
+            const tit = { 
+                inicio:'Inicio', 
+                disponibles:'Servicios Disponibles', 
+                'mis-trabajos':'Mis Trabajos', 
+                chat:'Mensajes', 
+                finanzas:'Finanzas', 
+                perfil:'Mi Perfil'
+            };
+            
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            if (sec === 'disponibles') window.cargarDisponibles();
-            if (sec === 'mis-trabajos') window.cargarMisTrabajos();
-            if (sec === 'chat') window.cargarConversaciones();
-            if (sec === 'finanzas') cargarFinanzas();
+            
+            // Forzar recarga de datos al cambiar de sección
+            if (sec === 'disponibles') {
+                console.log('🔄 Cargando servicios disponibles...');
+                window.cargarDisponibles();
+            }
+            if (sec === 'mis-trabajos') {
+                console.log('🔄 Cargando mis trabajos...');
+                window.cargarMisTrabajos();
+            }
+            if (sec === 'chat') {
+                console.log('🔄 Cargando conversaciones...');
+                window.cargarConversaciones();
+            }
+            if (sec === 'finanzas') {
+                console.log('🔄 Cargando finanzas...');
+                cargarFinanzas();
+            }
+            
             if (window.innerWidth < 768) toggleMobileMenu();
         };
 
