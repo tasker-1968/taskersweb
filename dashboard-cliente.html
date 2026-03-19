@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Mi Panel | Tasker's Cliente</title>
     
     <!-- Anti-caché -->
@@ -102,78 +102,100 @@
         
         /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
+            /* Sidebar oculto por defecto */
             .sidebar-moderno {
-                position: fixed;
-                left: -280px;
-                z-index: 50;
-                width: 280px;
-                height: 100vh;
-                transition: left 0.3s ease;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+                position: fixed !important;
+                left: -280px !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                z-index: 9999 !important;
+                width: 280px !important;
+                display: flex !important;
+                transition: left 0.3s ease !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
+            /* Sidebar visible */
             .sidebar-moderno.abierto {
-                left: 0;
+                left: 0 !important;
             }
             
-            .sidebar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 40;
+            /* Overlay */
+            #overlayMenu {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: rgba(0, 0, 0, 0.5) !important;
+                z-index: 9998 !important;
+                display: none;
                 opacity: 0;
-                visibility: hidden;
                 transition: opacity 0.3s ease;
             }
             
-            .sidebar-overlay.active {
-                opacity: 1;
-                visibility: visible;
+            #overlayMenu.visible {
+                display: block !important;
+                opacity: 1 !important;
             }
             
-            .mensaje-cliente, .mensaje-tasker {
-                max-width: 85%;
+            /* Botón menú siempre visible */
+            #btnMenuMovil {
+                display: flex !important;
+                z-index: 10000 !important;
+                position: fixed !important;
+                top: 1rem !important;
+                left: 1rem !important;
+                background: #3b82f6 !important;
+                color: white !important;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
-            /* Ajustes de espaciado */
+            /* Ajustes de contenido */
+            .ml-12 {
+                margin-left: 3.5rem !important;
+            }
+            
             .p-6 {
-                padding: 1rem;
+                padding: 1rem !important;
             }
             
             .grid-cols-2 {
-                gap: 0.75rem;
+                gap: 0.75rem !important;
             }
             
             .tarjeta-stats {
-                padding: 1rem;
+                padding: 1rem !important;
             }
             
             .tarjeta-stats p.text-3xl {
-                font-size: 1.5rem;
+                font-size: 1.5rem !important;
             }
             
             /* Tablas horizontales */
             .table-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                margin: 0 -1rem;
-                padding: 0 1rem;
-                width: calc(100% + 2rem);
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                margin: 0 -1rem !important;
+                padding: 0 1rem !important;
+                width: calc(100% + 2rem) !important;
             }
             
             table {
-                min-width: 500px;
+                min-width: 500px !important;
             }
             
             /* Botones más grandes para touch */
             button, 
             .enlace-moderno,
             [onclick] {
-                min-height: 44px;
-                min-width: 44px;
+                min-height: 44px !important;
+                min-width: 44px !important;
             }
             
             /* Inputs sin zoom */
@@ -206,31 +228,24 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Estilos para el botón de menú móvil */
-        #btnMenuMovil {
-            z-index: 60;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        #btnMenuMovil:hover {
-            transform: scale(1.05);
-        }
-        
         /* Prevenir scroll cuando el menú está abierto */
         body.menu-open {
-            overflow: hidden;
+            overflow: hidden !important;
         }
+        
+        /* Debug - eliminar después */
+        .debug { border: 2px solid red; }
     </style>
 </head>
 <body class="bg-slate-50">
 
     <!-- Botón menú móvil -->
-    <button id="btnMenuMovil" class="fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
         <i class="fas fa-bars text-xl"></i>
     </button>
 
     <!-- Overlay para móvil -->
-    <div id="overlayMenu" class="sidebar-overlay hidden md:hidden" onclick="cerrarMenuMovil()"></div>
+    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
 
     <!-- Modal de carga -->
     <div id="modalCarga" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
@@ -504,7 +519,7 @@
         let suscripcionChat = null;
 
         // =============================================
-        // UTILIDADES
+        // FUNCIONES DE UTILIDAD
         // =============================================
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
@@ -519,45 +534,46 @@
         }
 
         // =============================================
-        // MENÚ MÓVIL CORREGIDO
+        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
         // =============================================
-        function menuMovil() {
-            const btn = document.getElementById('btnMenuMovil');
+        function iniciarMenuMovil() {
+            const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
             
-            if (!btn || !sidebar || !overlay) {
-                console.error('Elementos del menú móvil no encontrados');
+            if (!menuBtn || !sidebar || !overlay) {
+                console.error('❌ Elementos del menú no encontrados');
                 return;
             }
 
+            console.log('✅ Menú móvil inicializado');
+
             // Abrir menú
-            btn.addEventListener('click', function(e) {
+            menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('🔵 Abriendo menú');
                 
                 sidebar.classList.add('abierto');
-                overlay.classList.remove('hidden');
-                overlay.classList.add('active');
+                overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
 
-            // Cerrar menú con overlay
+            // Cerrar con overlay
             overlay.addEventListener('click', function() {
+                console.log('⚫ Cerrando menú');
                 sidebar.classList.remove('abierto');
-                overlay.classList.add('hidden');
-                overlay.classList.remove('active');
+                overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
 
-            // Cerrar menú al hacer clic en enlaces
+            // Cerrar con enlaces
             const links = document.querySelectorAll('.enlace-moderno');
             links.forEach(link => {
                 link.addEventListener('click', function() {
                     if (window.innerWidth < 768) {
                         sidebar.classList.remove('abierto');
-                        overlay.classList.add('hidden');
-                        overlay.classList.remove('active');
+                        overlay.classList.remove('visible');
                         document.body.classList.remove('menu-open');
                     }
                 });
@@ -571,8 +587,7 @@
             
             if (sidebar && overlay) {
                 sidebar.classList.remove('abierto');
-                overlay.classList.add('hidden');
-                overlay.classList.remove('active');
+                overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             }
         }
@@ -589,7 +604,7 @@
             try {
                 const sesion = await verificarAuth();
                 if (!sesion) return;
-                const { data: perfil } = await clienteSupabase.from('profiles').select('*').eq('id', sesion.user.id).single();
+                const { data: perfil } = await clienteSupabase.from('profiles').select('*').eq('id', sesion.user.id).maybeSingle();
                 if (!perfil) throw new Error('Perfil no encontrado');
                 usuarioActual = perfil;
                 document.getElementById('infoUsuario').innerHTML = `<p class="font-medium">${perfil.full_name||'Usuario'}</p><p class="text-xs opacity-75">Cliente</p>`;
@@ -720,7 +735,7 @@
                     fecha_solicitada: document.getElementById('fecha').value || null,
                     status: 'pendiente_pago', pago_status: 'pendiente', created_at: new Date()
                 };
-                const { data: serv } = await clienteSupabase.from('servicios').insert([data]).select().single();
+                const { data: serv } = await clienteSupabase.from('servicios').insert([data]).select().maybeSingle();
                 await mostrarModalPago(serv);
             } catch (e) { alert('Error: '+e.message); btn.disabled = false; btn.innerHTML = 'Publicar Solicitud'; }
         });
@@ -1006,7 +1021,7 @@
             await cargarCategorias();
             await cargarDashboard();
             configurarRealtime();
-            menuMovil(); // Inicializar menú móvil
+            iniciarMenuMovil(); // Inicializar menú móvil
         });
     </script>
     <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
