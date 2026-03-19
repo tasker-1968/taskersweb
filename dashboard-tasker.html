@@ -648,7 +648,7 @@
             try {
                 const session = await verificarAuth('login.html');
                 if (!session) return;
-                const { data: perfil } = await taskerSupabase.from('profiles').select('*').eq('id', session.user.id).single();
+                const { data: perfil } = await taskerSupabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
                 if (!perfil) throw new Error('Perfil no encontrado');
                 usuarioActual = perfil;
                 document.getElementById('userInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Tasker'}</p><p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>`;
@@ -786,7 +786,7 @@
         });
 
         // =============================================
-        // MIS TRABAJOS
+        // MIS TRABAJOS - VERSIÓN CORREGIDA
         // =============================================
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
@@ -796,29 +796,36 @@
                 if (filtro !== 'todos') query = query.eq('status', filtro);
                 const { data: trabajos } = await query;
                 if (!trabajos?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>'; return; }
-                container.innerHTML = trabajos.map(t => `
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                container.innerHTML = trabajos.map(t => {
+                    const esAsignado = t.status === 'asignado';
+                    const esProgreso = t.status === 'en_progreso';
+                    const esCompletado = t.status === 'completado';
+                    
+                    return `
+                    <div class="bg-white rounded-xl shadow-sm p-6 ${!esCompletado ? 'service-card' : ''}">
                         <div class="flex justify-between items-start mb-4">
                             <div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion}</p></div>
-                            <span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : t.status === 'en_progreso' ? 'status-progreso' : 'status-completado'}">${t.status}</span>
+                            <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">
+                                ${t.status}
+                            </span>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
                             <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div>
                             <div><p class="text-slate-500">Ubicación</p><p>${t.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p></div>
                         </div>
-                        ${t.status === 'asignado' ? `
+                        ${esAsignado ? `
                         <div class="border-t pt-4 flex gap-3">
                             <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button>
                             <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Contactar cliente</button>
                         </div>
-                        ` : t.status === 'en_progreso' ? `
+                        ` : esProgreso ? `
                         <div class="border-t pt-4">
                             <p class="text-sm text-slate-600 mb-3"><i class="fas fa-info-circle text-blue-600 mr-2"></i>Esperando confirmación del cliente</p>
                             <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>
                         </div>
                         ` : ''}
                     </div>
-                `).join('');
+                `}).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
         };
 
