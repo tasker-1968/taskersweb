@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Panel Tasker | Tasker's Profesional</title>
     
     <!-- Anti-caché -->
@@ -22,11 +22,12 @@
         
         .sidebar-tasker {
             background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-            transition: all 0.3s ease;
+            transition: left 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
         
         .sidebar-link {
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border-left: 3px solid transparent;
         }
         
@@ -122,23 +123,158 @@
             box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
         
+        /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
+            /* Sidebar oculto por defecto */
             .sidebar-tasker {
-                position: fixed;
-                left: -100%;
-                z-index: 50;
-                width: 80%;
-                max-width: 300px;
-                height: 100vh;
+                position: fixed !important;
+                left: -280px !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                z-index: 9999 !important;
+                width: 280px !important;
+                display: flex !important;
+                transition: left 0.3s ease !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
-            .sidebar-tasker.open {
-                left: 0;
+            /* Sidebar visible */
+            .sidebar-tasker.abierto {
+                left: 0 !important;
             }
             
+            /* Overlay */
+            #overlayMenu {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: rgba(0, 0, 0, 0.5) !important;
+                z-index: 9998 !important;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            #overlayMenu.visible {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            
+            /* Botón menú siempre visible */
+            #btnMenuMovil {
+                display: flex !important;
+                z-index: 10000 !important;
+                position: fixed !important;
+                top: 1rem !important;
+                left: 1rem !important;
+                background: #3b82f6 !important;
+                color: white !important;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+            }
+            
+            /* Ajustes de contenido */
+            .ml-12 {
+                margin-left: 3.5rem !important;
+            }
+            
+            .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .grid-cols-2 {
+                gap: 0.75rem !important;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Tablas horizontales */
+            .table-container {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                margin: 0 -1rem !important;
+                padding: 0 1rem !important;
+                width: calc(100% + 2rem) !important;
+            }
+            
+            table {
+                min-width: 600px !important;
+            }
+            
+            /* Botones más grandes para touch */
+            button, 
+            .sidebar-link,
+            [onclick] {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+            
+            /* Inputs sin zoom */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+            
+            /* Ajustes de chat */
             .chat-message {
-                max-width: 85%;
+                max-width: 85% !important;
             }
+        }
+        
+        /* Ajustes para tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-2 {
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 2rem;
+            }
+        }
+        
+        .file-upload {
+            border: 2px dashed #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .file-upload.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Prevenir scroll cuando el menú está abierto */
+        body.menu-open {
+            overflow: hidden !important;
         }
         
         ::-webkit-scrollbar {
@@ -163,13 +299,13 @@
 </head>
 <body class="bg-slate-50">
 
-    <!-- Mobile menu button -->
-    <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+    <!-- Botón menú móvil -->
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
         <i class="fas fa-bars text-xl"></i>
     </button>
 
-    <!-- Overlay for mobile -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileMenu()"></div>
+    <!-- Overlay para móvil -->
+    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
 
     <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
@@ -299,7 +435,7 @@
                     <i class="fas fa-user w-6"></i>
                     <span>Mi Perfil</span>
                 </a>
-                <!-- ELIMINADA LA SECCIÓN DE DOCUMENTOS -->
+                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </nav>
             
             <div class="p-4 border-t border-white/20">
@@ -451,7 +587,7 @@
 
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="font-bold text-lg text-slate-800 mb-4">Historial de pagos</h3>
-                        <div class="overflow-x-auto">
+                        <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
                                     <tr>
@@ -517,7 +653,7 @@
                     </div>
                 </section>
 
-                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA COMPLETAMENTE -->
+                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </div>
         </main>
     </div>
@@ -554,6 +690,72 @@
         }
 
         // =============================================
+        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // =============================================
+        function iniciarMenuMovil() {
+            const menuBtn = document.getElementById('btnMenuMovil');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            
+            if (!menuBtn || !sidebar || !overlay) {
+                console.error('❌ Elementos del menú no encontrados');
+                return;
+            }
+
+            console.log('✅ Menú móvil inicializado');
+
+            // Abrir menú
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔵 Abriendo menú');
+                
+                sidebar.classList.add('abierto');
+                overlay.classList.add('visible');
+                document.body.classList.add('menu-open');
+            });
+
+            // Cerrar con overlay
+            overlay.addEventListener('click', function() {
+                console.log('⚫ Cerrando menú');
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            });
+
+            // Cerrar con enlaces
+            const links = document.querySelectorAll('.sidebar-link');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('abierto');
+                        overlay.classList.remove('visible');
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            });
+        }
+
+        // Función para cerrar menú manualmente
+        function cerrarMenuMovil() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            }
+        }
+
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                cerrarMenuMovil();
+            }
+        });
+
+        // =============================================
         // INICIALIZACIÓN
         // =============================================
         document.addEventListener('DOMContentLoaded', async () => {
@@ -562,15 +764,11 @@
             await cargarDashboard();
             await cargarFinanzas();
             configurarRealtime();
-            menuMovil();
+            iniciarMenuMovil(); // Inicializar menú móvil
         });
 
         function menuMovil() {
-            const btn = document.getElementById('mobileMenuBtn');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (btn) btn.addEventListener('click', ()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('hidden'); });
-            if (overlay) overlay.addEventListener('click', ()=>{ sidebar.classList.remove('open'); overlay.classList.add('hidden'); });
+            // Esta función se mantiene por compatibilidad
         }
         function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
 
@@ -717,7 +915,7 @@
         });
 
         // =============================================
-        // MIS TRABAJOS - VERSIÓN CORREGIDA
+        // MIS TRABAJOS
         // =============================================
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
@@ -910,7 +1108,7 @@
         };
 
         // =============================================
-        // NAVEGACIÓN (CORREGIDA CON RECARGA DE DATOS)
+        // NAVEGACIÓN
         // =============================================
         window.mostrarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
@@ -930,7 +1128,6 @@
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
             
-            // Forzar recarga de datos al cambiar de sección
             if (sec === 'disponibles') {
                 console.log('🔄 Cargando servicios disponibles...');
                 window.cargarDisponibles();
@@ -948,7 +1145,7 @@
                 cargarFinanzas();
             }
             
-            if (window.innerWidth < 768) toggleMobileMenu();
+            if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
         function configurarRealtime() {
