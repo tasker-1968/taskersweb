@@ -651,7 +651,7 @@
                     return p;
                 }));
 
-                // 3. Renderizar tabla
+                // 3. Renderizar tabla usando propuestasCompletas
                 tbody.innerHTML = propuestasCompletas.map(p => `
                     <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-4">
@@ -760,7 +760,7 @@
                 
                 // 6. RECARGAR TODAS LAS TABLAS
                 await cargarPropuestas();
-                await cargarServicios();  // Esto actualizará la lista de servicios
+                await cargarServicios();
                 
             } catch (error) {
                 console.error('Error al aprobar propuesta:', error);
