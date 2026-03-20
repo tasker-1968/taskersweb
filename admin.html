@@ -90,6 +90,7 @@
         
         /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
+            /* Sidebar oculto por defecto */
             .admin-sidebar {
                 position: fixed !important;
                 left: -280px !important;
@@ -102,10 +103,12 @@
                 box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
+            /* Sidebar visible */
             .admin-sidebar.abierto {
                 left: 0 !important;
             }
             
+            /* Overlay */
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -124,6 +127,7 @@
                 opacity: 1 !important;
             }
             
+            /* Botón menú siempre visible */
             #btnMenuMovil {
                 display: flex !important;
                 z-index: 10000 !important;
@@ -140,6 +144,7 @@
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
+            /* Ajustes de contenido */
             .ml-12 {
                 margin-left: 3.5rem !important;
             }
@@ -160,6 +165,7 @@
                 font-size: 1.5rem !important;
             }
             
+            /* Tablas horizontales */
             .table-container {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
@@ -172,6 +178,7 @@
                 min-width: 600px !important;
             }
             
+            /* Botones más grandes para touch */
             button, 
             .sidebar-link,
             [onclick] {
@@ -179,18 +186,22 @@
                 min-width: 44px !important;
             }
             
+            /* Inputs sin zoom */
             input, select, textarea {
                 font-size: 16px !important;
             }
         }
         
+        /* Ajustes para tablets */
         @media (min-width: 769px) and (max-width: 1024px) {
             .grid-cols-2 {
                 gap: 1rem;
             }
+            
             .stat-card {
                 padding: 1.25rem;
             }
+            
             .stat-card p.text-3xl {
                 font-size: 2rem;
             }
@@ -205,22 +216,9 @@
             to { transform: rotate(360deg); }
         }
         
+        /* Prevenir scroll cuando el menú está abierto */
         body.menu-open {
             overflow: hidden !important;
-        }
-        
-        .ganancia-item {
-            transition: background-color 0.2s;
-        }
-        .ganancia-item:hover {
-            background-color: #f8fafc;
-        }
-        .btn-cargar-mas {
-            transition: all 0.2s;
-        }
-        .btn-cargar-mas:hover {
-            background-color: #2563eb;
-            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -455,9 +453,9 @@
                     </div>
                 </section>
 
-                <!-- GANANCIAS - SECCIÓN OPTIMIZADA -->
+                <!-- GANANCIAS -->
                 <section id="seccion-ganancias" class="seccion-contenido">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm p-6">
                             <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
                                 <i class="fas fa-chart-line text-blue-600"></i>
@@ -480,68 +478,29 @@
                         </div>
 
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-calendar-alt text-purple-600"></i>
-                                Proyección Mensual
-                            </h3>
-                            <div class="flex justify-between items-center mb-4">
-                                <p class="text-sm text-slate-500">Basado en los últimos 3 meses</p>
-                                <button onclick="calcularProyeccion()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                    <i class="fas fa-sync-alt mr-1"></i>Actualizar
-                                </button>
-                            </div>
-                            <div id="proyeccionContainer" class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                <div class="bg-slate-50 p-3 rounded-lg text-center">
-                                    <div class="animate-pulse h-4 bg-slate-200 rounded mb-2"></div>
-                                    <div class="animate-pulse h-6 bg-slate-200 rounded"></div>
-                                </div>
-                            </div>
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Proyección Mensual</h3>
+                            <canvas id="gananciasChart" height="200"></canvas>
                         </div>
-                    </div>
 
-                    <!-- TABLA DE COMISIONES OPTIMIZADA -->
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white flex justify-between items-center">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-coins"></i>
-                                Detalle de Comisiones
-                            </h3>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs bg-white/20 px-2 py-1 rounded-full" id="totalRegistrosGanancias">0 registros</span>
-                                <button onclick="recargarGanancias()" class="text-white hover:text-indigo-200 transition">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
+                        <div class="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Detalle de Comisiones</h3>
+                            <div class="table-container">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Monto Total</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tu Comisión (15%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="gananciasTable">
+                                        <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                        
-                        <!-- Vista móvil (tarjetas) -->
-                        <div id="vistaMovilGanancias" class="block md:hidden divide-y max-h-96 overflow-y-auto">
-                        </div>
-                        
-                        <!-- Vista desktop (tabla) -->
-                        <div id="vistaDesktopGanancias" class="hidden md:block table-container">
-                            <table class="w-full">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Cliente</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Tasker</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Monto Total</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Tu Comisión (15%)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="gananciasTable">
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Botón cargar más -->
-                        <div id="contenedorCargarMas" class="p-4 bg-slate-50 text-center border-t">
-                            <button onclick="cargarMasGanancias()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium inline-flex items-center gap-2">
-                                <i class="fas fa-chevron-down"></i>
-                                Cargar más registros
-                            </button>
                         </div>
                     </div>
                 </section>
@@ -551,11 +510,11 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN ÚNICA DE SUPABASE
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const adminSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================
         // VARIABLES GLOBALES
@@ -563,66 +522,49 @@
         let usuarioActual = null;
         let activityChart = null;
         let gananciasChart = null;
-        let todasLasGanancias = [];
-        let paginaGanancias = 0;
-        const LIMITE_GANANCIAS = 10;
-        let filtroOrdenActual = 'todas';
-        let esMovil = window.innerWidth < 768;
 
         // =============================================
         // FUNCIONES DE UTILIDAD
         // =============================================
-        function mostrarCarga() { 
-            document.getElementById('loadingModal').classList.remove('hidden'); 
-            document.getElementById('loadingModal').classList.add('flex'); 
-        }
-        
-        function ocultarCarga() { 
-            document.getElementById('loadingModal').classList.add('hidden'); 
-            document.getElementById('loadingModal').classList.remove('flex'); 
-        }
-        
-        function notificar(mensaje, tipo = 'info') { 
-            const notificacion = document.createElement('div'); 
-            notificacion.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${tipo === 'success' ? 'bg-green-500' : tipo === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white max-w-md`; 
-            notificacion.innerHTML = mensaje; 
-            document.body.appendChild(notificacion); 
-            setTimeout(() => notificacion.remove(), 3000); 
-        }
+        function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
+        function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
+        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white max-w-md`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
         // =============================================
-        // DETECCIÓN DE MÓVIL
-        // =============================================
-        window.addEventListener('resize', function() {
-            esMovil = window.innerWidth < 768;
-            if (document.getElementById('seccion-ganancias').classList.contains('active')) {
-                actualizarVistaGanancias();
-            }
-        });
-
-        // =============================================
-        // MENÚ MÓVIL
+        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
         // =============================================
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
             
-            if (!menuBtn || !sidebar || !overlay) return;
+            if (!menuBtn || !sidebar || !overlay) {
+                console.error('❌ Elementos del menú no encontrados');
+                return;
+            }
 
+            console.log('✅ Menú móvil inicializado');
+
+            // Abrir menú
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
+                console.log('🔵 Abriendo menú');
+                
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
 
+            // Cerrar con overlay
             overlay.addEventListener('click', function() {
+                console.log('⚫ Cerrando menú');
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
 
+            // Cerrar con enlaces
             const links = document.querySelectorAll('.sidebar-link');
             links.forEach(link => {
                 link.addEventListener('click', function() {
@@ -635,9 +577,11 @@
             });
         }
 
+        // Función para cerrar menú manualmente
         function cerrarMenuMovil() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
+            
             if (sidebar && overlay) {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
@@ -645,29 +589,36 @@
             }
         }
 
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                cerrarMenuMovil();
+            }
+        });
+
         // =============================================
-        // VERIFICAR ADMIN
+        // VERIFICAR AUTENTICACIÓN Y ROL
         // =============================================
         async function verificarAdmin() {
             mostrarCarga();
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session }, error } = await adminSupabase.auth.getSession();
                 if (error) throw error;
-                if (!session) { 
-                    window.location.href = 'login.html'; 
-                    return null; 
-                }
+                if (!session) { window.location.href = 'login.html'; return null; }
 
-                const { data: perfil, error: perfilError } = await supabase
+                const { data: perfil, error: perfilError } = await adminSupabase
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
                     .maybeSingle();
 
-                if (perfilError) return null;
+                if (perfilError) {
+                    console.error('Error obteniendo perfil:', perfilError);
+                    return null;
+                }
 
                 if (!perfil || perfil?.role !== 'admin') {
-                    alert('Acceso no autorizado');
+                    alert('Acceso no autorizado. Esta área es solo para administradores.');
                     window.location.href = 'index.html';
                     return null;
                 }
@@ -680,12 +631,11 @@
                 
                 if (perfil.photo_url) {
                     document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                    document.getElementById('headerAvatar').style.backgroundSize = 'cover';
                 }
 
                 return session;
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error en autenticación:', error);
                 window.location.href = 'login.html';
                 return null;
             } finally {
@@ -704,22 +654,26 @@
                 await cargarPropuestas();
                 await cargarServicios();
                 await cargarPagos();
-                await cargarPrimerasGanancias();
-                iniciarMenuMovil();
+                await cargarGanancias();
+                iniciarMenuMovil(); // Inicializar menú móvil
                 initCharts();
-                calcularProyeccion();
             }
         });
+
+        function menuMovil() {
+            // Esta función se mantiene por compatibilidad
+        }
+        function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
 
         // =============================================
         // DASHBOARD
         // =============================================
         async function cargarDashboard() {
             try {
-                const { count: totalUsuarios } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-                const { count: totalPendientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
-                const { count: totalServicios } = await supabase.from('servicios').select('*', { count: 'exact', head: true }).in('status', ['publicado', 'asignado', 'en_progreso']);
-                const { data: pagos } = await supabase.from('pagos').select('comision_taskers').eq('status', 'completado');
+                const { count: totalUsuarios } = await adminSupabase.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: totalPendientes } = await adminSupabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
+                const { count: totalServicios } = await adminSupabase.from('servicios').select('*', { count: 'exact', head: true }).in('status', ['publicado', 'asignado', 'en_progreso']);
+                const { data: pagos } = await adminSupabase.from('pagos').select('comision_taskers').eq('status', 'completado');
 
                 const totalGanancias = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
 
@@ -729,7 +683,7 @@
                 document.getElementById('totalGanancias').textContent = `$${totalGanancias.toFixed(2)}`;
                 document.getElementById('pendingCount').textContent = totalPendientes || 0;
 
-            } catch (e) { console.error('Error:', e); }
+            } catch (e) { console.error('Error loading dashboard:', e); }
         }
 
         // =============================================
@@ -738,7 +692,7 @@
         async function cargarTaskers() {
             const tbody = document.getElementById('taskersTable');
             try {
-                const { data: taskers, error } = await supabase
+                const { data: taskers, error } = await adminSupabase
                     .from('profiles')
                     .select('*')
                     .eq('role', 'tasker')
@@ -766,10 +720,10 @@
                         </td>
                         <td class="p-4">
                             <div class="flex gap-2">
-                                <button onclick="aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
                                     <i class="fas fa-check mr-1"></i>Aprobar
                                 </button>
-                                <button onclick="rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
                                     <i class="fas fa-times mr-1"></i>Rechazar
                                 </button>
                             </div>
@@ -790,7 +744,7 @@
             if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
             mostrarCarga();
             try {
-                const { error } = await supabase
+                const { error } = await adminSupabase
                     .from('profiles')
                     .update({ status: 'verified', updated_at: new Date() })
                     .eq('id', id);
@@ -805,7 +759,7 @@
             if (!confirm('¿Estás seguro de rechazar este tasker?')) return;
             mostrarCarga();
             try {
-                const { error } = await supabase
+                const { error } = await adminSupabase
                     .from('profiles')
                     .update({ status: 'rejected', updated_at: new Date() })
                     .eq('id', id);
@@ -822,7 +776,7 @@
         async function cargarPropuestas() {
             const tbody = document.getElementById('propuestasTable');
             try {
-                const { data: propuestas, error } = await supabase
+                const { data: propuestas, error } = await adminSupabase
                     .from('propuestas')
                     .select('*')
                     .eq('status', 'pendiente')
@@ -839,7 +793,7 @@
 
                 const propuestasCompletas = await Promise.all(propuestas.map(async (p) => {
                     if (p.servicio_id) {
-                        const { data: servicio } = await supabase
+                        const { data: servicio } = await adminSupabase
                             .from('servicios')
                             .select('id, subcategoria, descripcion, monto_ofertado, cliente_id')
                             .eq('id', p.servicio_id)
@@ -847,7 +801,7 @@
                         p.servicio = servicio || {};
 
                         if (servicio?.cliente_id) {
-                            const { data: cliente } = await supabase
+                            const { data: cliente } = await adminSupabase
                                 .from('profiles')
                                 .select('full_name')
                                 .eq('id', servicio.cliente_id)
@@ -857,7 +811,7 @@
                     }
 
                     if (p.tasker_id) {
-                        const { data: tasker } = await supabase
+                        const { data: tasker } = await adminSupabase
                             .from('profiles')
                             .select('id, full_name, photo_url')
                             .eq('id', p.tasker_id)
@@ -889,11 +843,11 @@
                         </td>
                         <td class="p-4">
                             <div class="flex gap-2">
-                                <button onclick="aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
+                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
                                         class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
                                     <i class="fas fa-check mr-1"></i>Aprobar
                                 </button>
-                                <button onclick="rechazarPropuesta('${p.id}')" 
+                                <button onclick="window.rechazarPropuesta('${p.id}')" 
                                         class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
                                     <i class="fas fa-times mr-1"></i>Rechazar
                                 </button>
@@ -903,27 +857,27 @@
                 `).join('');
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error cargando propuestas:', error);
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
             }
         }
 
         // =============================================
-        // APROBAR PROPUESTA
+        // APROBAR PROPUESTA (Y RECHAZAR LAS DEMÁS)
         // =============================================
         window.aprobarPropuesta = async function(propuestaId, servicioId, taskerId) {
             if (!confirm('¿Estás seguro de aprobar esta propuesta? Las demás serán rechazadas automáticamente.')) return;
             
             mostrarCarga();
             try {
-                const { error: aprobarError } = await supabase
+                const { error: aprobarError } = await adminSupabase
                     .from('propuestas')
                     .update({ status: 'aceptada', updated_at: new Date() })
                     .eq('id', propuestaId);
 
                 if (aprobarError) throw aprobarError;
 
-                const { error: rechazarError } = await supabase
+                const { error: rechazarError } = await adminSupabase
                     .from('propuestas')
                     .update({ status: 'rechazada', updated_at: new Date() })
                     .eq('servicio_id', servicioId)
@@ -931,7 +885,7 @@
 
                 if (rechazarError) throw rechazarError;
 
-                const { error: servicioError } = await supabase
+                const { error: servicioError } = await adminSupabase
                     .from('servicios')
                     .update({ 
                         status: 'asignado',
@@ -942,25 +896,52 @@
 
                 if (servicioError) throw servicioError;
 
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: taskerId,
+                        tipo: 'propuesta',
+                        titulo: '¡Propuesta aceptada!',
+                        mensaje: 'Tu propuesta ha sido aprobada por el administrador. Ya puedes comenzar a trabajar.'
+                    }]);
+
+                const { data: servicio } = await adminSupabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioId)
+                    .single();
+
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Tasker asignado!',
+                        mensaje: 'Un profesional ha sido asignado a tu servicio. Ya puedes contactarlo.'
+                    }]);
+
                 notificar('Propuesta aprobada exitosamente', 'success');
                 
                 await cargarPropuestas();
                 await cargarServicios();
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error al aprobar propuesta:', error);
                 alert('Error: ' + error.message);
             } finally {
                 ocultarCarga();
             }
         };
 
+        // =============================================
+        // RECHAZAR PROPUESTA
+        // =============================================
         window.rechazarPropuesta = async function(propuestaId) {
             if (!confirm('¿Estás seguro de rechazar esta propuesta?')) return;
             
             mostrarCarga();
             try {
-                const { error } = await supabase
+                const { error } = await adminSupabase
                     .from('propuestas')
                     .update({ status: 'rechazada', updated_at: new Date() })
                     .eq('id', propuestaId);
@@ -971,7 +952,7 @@
                 await cargarPropuestas();
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error al rechazar propuesta:', error);
                 alert('Error: ' + error.message);
             } finally {
                 ocultarCarga();
@@ -984,7 +965,7 @@
         async function cargarServicios() {
             const tbody = document.getElementById('serviciosTable');
             try {
-                const { data: servicios, error } = await supabase
+                const { data: servicios, error } = await adminSupabase
                     .from('servicios')
                     .select('*')
                     .order('created_at', { ascending: false })
@@ -999,7 +980,7 @@
 
                 const serviciosCompletos = await Promise.all(servicios.map(async (s) => {
                     if (s.cliente_id) {
-                        const { data: cliente } = await supabase
+                        const { data: cliente } = await adminSupabase
                             .from('profiles')
                             .select('full_name')
                             .eq('id', s.cliente_id)
@@ -1007,7 +988,7 @@
                         s.cliente_nombre = cliente?.full_name || 'Cliente';
                     }
                     if (s.tasker_id) {
-                        const { data: tasker } = await supabase
+                        const { data: tasker } = await adminSupabase
                             .from('profiles')
                             .select('full_name')
                             .eq('id', s.tasker_id)
@@ -1037,7 +1018,7 @@
                 `).join('');
 
             } catch (e) {
-                console.error('Error:', e);
+                console.error('Error en cargarServicios:', e);
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar servicios</td></tr>';
             }
         }
@@ -1048,7 +1029,7 @@
         async function cargarPagos() {
             const tbody = document.getElementById('pagosTable');
             try {
-                const { data: pagos, error } = await supabase
+                const { data: pagos, error } = await adminSupabase
                     .from('pagos')
                     .select('*')
                     .eq('status', 'completado')
@@ -1064,7 +1045,7 @@
 
                 const pagosCompletos = await Promise.all(pagos.map(async (p) => {
                     if (p.servicio_id) {
-                        const { data: servicio } = await supabase
+                        const { data: servicio } = await adminSupabase
                             .from('servicios')
                             .select('subcategoria')
                             .eq('id', p.servicio_id)
@@ -1072,7 +1053,7 @@
                         p.servicio_nombre = servicio?.subcategoria || 'Servicio';
                     }
                     if (p.cliente_id) {
-                        const { data: cliente } = await supabase
+                        const { data: cliente } = await adminSupabase
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.cliente_id)
@@ -1080,7 +1061,7 @@
                         p.cliente_nombre = cliente?.full_name || 'Cliente';
                     }
                     if (p.tasker_id) {
-                        const { data: tasker } = await supabase
+                        const { data: tasker } = await adminSupabase
                             .from('profiles')
                             .select('full_name')
                             .eq('id', p.tasker_id)
@@ -1102,278 +1083,88 @@
                 `).join('');
 
             } catch (e) {
-                console.error('Error:', e);
+                console.error('Error en cargarPagos:', e);
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
             }
         }
 
         // =============================================
-        // GANANCIAS - FUNCIONES OPTIMIZADAS
+        // GANANCIAS
         // =============================================
-        
-        // Cargar primeras ganancias
-        async function cargarPrimerasGanancias() {
-            paginaGanancias = 0;
+        async function cargarGanancias() {
             try {
-                const { data: pagos, error, count } = await supabase
-                    .from('pagos')
-                    .select('*', { count: 'exact' })
-                    .eq('status', 'completado')
-                    .order('fecha_pago', { ascending: false })
-                    .range(0, LIMITE_GANANCIAS - 1);
-
-                if (error) throw error;
-
-                todasLasGanancias = pagos || [];
-                document.getElementById('totalRegistrosGanancias').textContent = `${todasLasGanancias.length} registros`;
-                
-                await cargarDetallesGanancias();
-                actualizarResumenGanancias();
-                actualizarVistaGanancias();
-                
-            } catch (e) {
-                console.error('Error:', e);
-            }
-        }
-
-        // Cargar detalles de clientes y taskers
-        async function cargarDetallesGanancias() {
-            for (let p of todasLasGanancias) {
-                if (p.servicio_id) {
-                    const { data: servicio } = await supabase
-                        .from('servicios')
-                        .select('subcategoria')
-                        .eq('id', p.servicio_id)
-                        .maybeSingle();
-                    p.servicio_nombre = servicio?.subcategoria || 'Servicio';
-                }
-                if (p.cliente_id) {
-                    const { data: cliente } = await supabase
-                        .from('profiles')
-                        .select('full_name')
-                        .eq('id', p.cliente_id)
-                        .maybeSingle();
-                    p.cliente_nombre = cliente?.full_name || 'Cliente';
-                }
-                if (p.tasker_id) {
-                    const { data: tasker } = await supabase
-                        .from('profiles')
-                        .select('full_name')
-                        .eq('id', p.tasker_id)
-                        .maybeSingle();
-                    p.tasker_nombre = tasker?.full_name || 'Tasker';
-                }
-            }
-        }
-
-        // Actualizar resumen de ganancias
-        function actualizarResumenGanancias() {
-            const total = todasLasGanancias.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-            const hoy = new Date();
-            const mes = todasLasGanancias.filter(p => {
-                const fecha = new Date(p.fecha_pago);
-                return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
-            }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-            const dia = todasLasGanancias.filter(p => {
-                const fecha = new Date(p.fecha_pago);
-                return fecha.toDateString() === hoy.toDateString();
-            }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-
-            document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
-            document.getElementById('gananciasMes').textContent = `$${mes.toFixed(2)}`;
-            document.getElementById('gananciasHoy').textContent = `$${dia.toFixed(2)}`;
-        }
-
-        // Actualizar vista según dispositivo
-        function actualizarVistaGanancias() {
-            if (esMovil) {
-                renderTarjetasGanancias();
-            } else {
-                renderTablaGanancias();
-            }
-        }
-
-        // Renderizar tarjetas para móvil
-        function renderTarjetasGanancias() {
-            const contenedor = document.getElementById('vistaMovilGanancias');
-            contenedor.innerHTML = '';
-            
-            todasLasGanancias.forEach(ganancia => {
-                const fecha = new Date(ganancia.fecha_pago).toLocaleDateString();
-                const monto = ganancia.comision_taskers?.toFixed(2);
-                
-                contenedor.innerHTML += `
-                    <div class="p-3 hover:bg-slate-50 transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-medium text-gray-800">${ganancia.servicio_nombre || 'Servicio'}</p>
-                                <p class="text-xs text-gray-500">${fecha}</p>
-                                <p class="text-xs text-gray-600">${ganancia.cliente_nombre || ''} → ${ganancia.tasker_nombre || ''}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-green-600">$${monto}</p>
-                                <p class="text-xs text-gray-500">Total: $${ganancia.monto_total?.toFixed(2)}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // Renderizar tabla para desktop
-        function renderTablaGanancias() {
-            const tbody = document.getElementById('gananciasTable');
-            tbody.innerHTML = '';
-            
-            todasLasGanancias.forEach(ganancia => {
-                const fecha = new Date(ganancia.fecha_pago).toLocaleDateString();
-                
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-3">${fecha}</td>
-                        <td class="p-3">${ganancia.servicio_nombre || ''}</td>
-                        <td class="p-3">${ganancia.cliente_nombre || ''}</td>
-                        <td class="p-3">${ganancia.tasker_nombre || ''}</td>
-                        <td class="p-3 font-bold">$${ganancia.monto_total?.toFixed(2)}</td>
-                        <td class="p-3 text-green-600 font-bold">$${ganancia.comision_taskers?.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Cargar más ganancias
-        window.cargarMasGanancias = async function() {
-            paginaGanancias++;
-            const desde = paginaGanancias * LIMITE_GANANCIAS;
-            const hasta = desde + LIMITE_GANANCIAS - 1;
-            
-            mostrarCarga();
-            
-            try {
-                const { data, error } = await supabase
+                const { data: pagos, error } = await adminSupabase
                     .from('pagos')
                     .select('*')
                     .eq('status', 'completado')
-                    .order('fecha_pago', { ascending: false })
-                    .range(desde, hasta);
+                    .order('fecha_pago', { ascending: false });
 
                 if (error) throw error;
 
-                if (data && data.length > 0) {
-                    todasLasGanancias = [...todasLasGanancias, ...data];
-                    await cargarDetallesGanancias();
-                    actualizarVistaGanancias();
-                    document.getElementById('totalRegistrosGanancias').textContent = `${todasLasGanancias.length} registros`;
-                    
-                    if (data.length < LIMITE_GANANCIAS) {
-                        document.getElementById('contenedorCargarMas').innerHTML = 
-                            '<p class="text-sm text-gray-500">No hay más registros</p>';
+                const total = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const hoy = new Date();
+                const mes = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const dia = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.toDateString() === hoy.toDateString();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
+                document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('gananciasMes').textContent = `$${mes.toFixed(2)}`;
+                document.getElementById('gananciasHoy').textContent = `$${dia.toFixed(2)}`;
+
+                const pagosCompletos = await Promise.all((pagos || []).map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('subcategoria')
+                            .eq('id', p.servicio_id)
+                            .maybeSingle();
+                        p.servicio_nombre = servicio?.subcategoria || 'Servicio';
                     }
-                } else {
-                    document.getElementById('contenedorCargarMas').innerHTML = 
-                        '<p class="text-sm text-gray-500">No hay más registros</p>';
-                }
-            } catch (e) {
-                console.error('Error:', e);
-                alert('Error al cargar más registros');
-            } finally {
-                ocultarCarga();
-            }
-        };
+                    if (p.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.cliente_id)
+                            .maybeSingle();
+                        p.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.tasker_id)
+                            .maybeSingle();
+                        p.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return p;
+                }));
 
-        // Recargar ganancias
-        window.recargarGanancias = function() {
-            cargarPrimerasGanancias();
-        };
-
-        // =============================================
-        // PROYECCIÓN MENSUAL
-        // =============================================
-        window.calcularProyeccion = async function() {
-            const container = document.getElementById('proyeccionContainer');
-            container.innerHTML = `
-                <div class="col-span-4 text-center py-4">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                </div>
-            `;
-            
-            try {
-                const fechaLimite = new Date();
-                fechaLimite.setMonth(fechaLimite.getMonth() - 3);
-                
-                const { data, error } = await supabase
-                    .from('pagos')
-                    .select('monto_total, comision_taskers, fecha_pago')
-                    .eq('status', 'completado')
-                    .gte('fecha_pago', fechaLimite.toISOString());
-
-                if (error) throw error;
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-4 text-center py-4 text-gray-500">
-                            No hay datos suficientes
-                        </div>
-                    `;
+                const tbody = document.getElementById('gananciasTable');
+                if (!pagosCompletos || pagosCompletos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>';
                     return;
                 }
+                tbody.innerHTML = pagosCompletos.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-3">${p.servicio_nombre || ''}</td>
+                        <td class="p-3">${p.cliente_nombre || ''}</td>
+                        <td class="p-3">${p.tasker_nombre || ''}</td>
+                        <td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
+                    </tr>
+                `).join('');
 
-                // Agrupar por mes
-                const meses = {};
-                data.forEach(item => {
-                    const fecha = new Date(item.fecha_pago);
-                    const mesKey = `${fecha.getFullYear()}-${fecha.getMonth() + 1}`;
-                    const mesNombre = fecha.toLocaleDateString('es', { month: 'long' });
-                    
-                    if (!meses[mesKey]) {
-                        meses[mesKey] = {
-                            nombre: mesNombre,
-                            total: 0,
-                            comision: 0
-                        };
-                    }
-                    meses[mesKey].total += item.monto_total || 0;
-                    meses[mesKey].comision += item.comision_taskers || 0;
-                });
-
-                // Calcular promedios
-                const valores = Object.values(meses);
-                const promedioComision = valores.reduce((sum, m) => sum + m.comision, 0) / valores.length;
-
-                // Mostrar resultados
-                let html = '';
-                
-                // Últimos 3 meses
-                valores.slice(-3).forEach(mes => {
-                    html += `
-                        <div class="bg-slate-50 p-3 rounded-lg">
-                            <p class="text-xs text-gray-500 capitalize">${mes.nombre}</p>
-                            <p class="text-sm font-bold text-blue-600">$${mes.comision.toFixed(2)}</p>
-                            <p class="text-xs text-gray-400">Total: $${mes.total.toFixed(2)}</p>
-                        </div>
-                    `;
-                });
-                
-                // Proyección
-                html += `
-                    <div class="bg-purple-50 p-3 rounded-lg border-2 border-purple-200">
-                        <p class="text-xs text-purple-600 font-bold">PRÓXIMO MES</p>
-                        <p class="text-sm font-bold text-purple-800">$${promedioComision.toFixed(2)}</p>
-                        <p class="text-xs text-purple-600">Proyección estimada</p>
-                    </div>
-                `;
-                
-                container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error:', error);
-                container.innerHTML = `
-                    <div class="col-span-4 text-center py-4 text-red-500">
-                        Error al calcular proyección
-                    </div>
-                `;
+                actualizarGraficaGanancias(pagos);
+            } catch (e) {
+                console.error('Error en cargarGanancias:', e);
             }
-        };
+        }
 
         // =============================================
         // GRÁFICAS
@@ -1382,36 +1173,40 @@
             const ctx = document.getElementById('activityChart').getContext('2d');
             activityChart = new Chart(ctx, {
                 type: 'line',
-                data: { 
-                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], 
-                    datasets: [{ 
-                        label: 'Servicios', 
-                        data: [0,0,0,0,0,0], 
-                        borderColor: '#3b82f6', 
-                        backgroundColor: 'rgba(59,130,246,0.1)', 
-                        tension: 0.4, 
-                        fill: true 
-                    }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
-                    animation: false 
-                }
+                data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Servicios', data: [0,0,0,0,0,0], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
             });
+            const ctx2 = document.getElementById('gananciasChart').getContext('2d');
+            gananciasChart = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Tus Ganancias (15%)', data: [0,0,0,0,0,0], backgroundColor: '#3b82f6', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
+            });
+        }
+
+        function actualizarGraficaGanancias(pagos) {
+            if (!gananciasChart || !pagos) return;
+            const meses = [], valores = [];
+            for (let i = 5; i >= 0; i--) {
+                const fecha = new Date(); fecha.setMonth(fecha.getMonth() - i);
+                meses.push(fecha.toLocaleDateString('es', { month: 'short' }));
+                valores.push(pagos.filter(p => { const pf = new Date(p.fecha_pago); return pf.getMonth() === fecha.getMonth() && pf.getFullYear() === fecha.getFullYear(); }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0));
+            }
+            gananciasChart.data.labels = meses;
+            gananciasChart.data.datasets[0].data = valores;
+            gananciasChart.update();
         }
 
         // =============================================
         // NAVEGACIÓN
         // =============================================
-        window.mostrarSeccion = function(seccion) {
+        window.mostrarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('seccion-' + seccion).classList.add('active');
-            document.getElementById('link-' + seccion)?.classList.add('active');
+            document.getElementById('seccion-' + sec).classList.add('active');
+            document.getElementById('link-' + sec)?.classList.add('active');
             
-            const titulos = { 
+            const tit = { 
                 dashboard:'Dashboard', 
                 taskers:'Taskers Pendientes', 
                 propuestas:'Propuestas Pendientes',
@@ -1420,17 +1215,14 @@
                 ganancias:'Mis Ganancias' 
             };
             
-            document.getElementById('section-title').textContent = titulos[seccion] || 'Admin';
-            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${titulos[seccion].toLowerCase()}`;
+            document.getElementById('section-title').textContent = tit[sec] || 'Admin';
+            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${tit[sec].toLowerCase()}`;
             
-            if (seccion === 'taskers') cargarTaskers();
-            if (seccion === 'propuestas') cargarPropuestas();
-            if (seccion === 'servicios') cargarServicios();
-            if (seccion === 'pagos') cargarPagos();
-            if (seccion === 'ganancias') {
-                cargarPrimerasGanancias();
-                calcularProyeccion();
-            }
+            if (sec === 'taskers') cargarTaskers();
+            if (sec === 'propuestas') cargarPropuestas();
+            if (sec === 'servicios') cargarServicios();
+            if (sec === 'pagos') cargarPagos();
+            if (sec === 'ganancias') cargarGanancias();
             
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
@@ -1441,7 +1233,7 @@
         window.cerrarSesionAdmin = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
-                await supabase.auth.signOut();
+                await adminSupabase.auth.signOut();
                 window.location.href = 'index.html';
             }
         };
