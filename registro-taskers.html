@@ -2,8 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Registro Profesional | Tasker's México</title>
+    
+    <!-- Anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,11 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* Fondo con gradiente animado */
         .bg-animated {
             background: linear-gradient(-45deg, #0f172a, #1e3a8a, #3b82f6, #2563eb);
             background-size: 400% 400%;
@@ -30,7 +32,6 @@
             100% { background-position: 0% 50%; }
         }
         
-        /* Tarjeta de registro con efecto glass */
         .glass-card {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
@@ -38,23 +39,15 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
-        /* Animación de entrada */
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .animate-slideUp {
             animation: slideUp 0.6s ease-out;
         }
         
-        /* Input focus effects */
         .input-focus {
             transition: all 0.3s ease;
             border: 2px solid transparent;
@@ -66,7 +59,6 @@
             box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
         }
         
-        /* File upload styles */
         .file-upload {
             border: 2px dashed #e2e8f0;
             transition: all 0.3s ease;
@@ -85,7 +77,6 @@
             background: #f0fdf4;
         }
         
-        /* Botón con efecto de onda */
         .btn-ripple {
             position: relative;
             overflow: hidden;
@@ -112,17 +103,10 @@
         }
         
         @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
+            0% { transform: scale(0, 0); opacity: 0.5; }
+            100% { transform: scale(20, 20); opacity: 0; }
         }
         
-        /* Progress steps */
         .step {
             display: flex;
             align-items: center;
@@ -147,40 +131,49 @@
             color: white;
         }
         
-        /* Responsive adjustments */
         @media (max-width: 640px) {
-            .glass-card {
-                margin: 1rem;
-                padding: 1.5rem;
-            }
-            .step {
-                width: 30px;
-                height: 30px;
-                font-size: 0.875rem;
-            }
+            .glass-card { margin: 1rem; padding: 1.5rem; }
+            .step { width: 30px; height: 30px; font-size: 0.875rem; }
+        }
+        
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body class="bg-animated min-h-screen flex items-center justify-center p-4">
 
-    <!-- Fondo con partículas (decorativo) -->
+    <!-- Fondo decorativo -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
     </div>
 
-    <!-- Navbar simplificado -->
+    <!-- Navbar -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
         <div class="container mx-auto px-4 sm:px-6">
             <div class="flex justify-between items-center h-16 sm:h-20">
-                <!-- Logo -->
                 <a href="index.html" class="flex items-center gap-2 sm:gap-3">
                     <img src="logo-taskers.png" alt="Tasker's México" class="h-8 sm:h-10 w-auto">
                     <span class="text-white font-bold text-lg sm:text-xl hidden sm:inline">Tasker's</span>
                 </a>
-                
-                <!-- Botón volver -->
                 <a href="index.html" class="flex items-center gap-2 text-white/80 hover:text-white transition bg-white/10 px-3 sm:px-4 py-2 rounded-xl">
                     <i class="fas fa-arrow-left text-sm sm:text-base"></i>
                     <span class="text-sm sm:text-base hidden sm:inline">Volver al inicio</span>
@@ -226,8 +219,7 @@
                     <!-- Nombre completo -->
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                            <i class="fas fa-user mr-2"></i>
-                            Nombre completo *
+                            <i class="fas fa-user mr-2"></i> Nombre completo *
                         </label>
                         <input type="text" id="full_name" required 
                             class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
@@ -237,8 +229,7 @@
                     <!-- Email -->
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                            <i class="fas fa-envelope mr-2"></i>
-                            Correo electrónico *
+                            <i class="fas fa-envelope mr-2"></i> Correo electrónico *
                         </label>
                         <input type="email" id="email" required 
                             class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
@@ -248,8 +239,7 @@
                     <!-- Teléfono -->
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                            <i class="fas fa-phone mr-2"></i>
-                            Teléfono de contacto *
+                            <i class="fas fa-phone mr-2"></i> Teléfono de contacto *
                         </label>
                         <input type="tel" id="phone" required 
                             class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
@@ -259,20 +249,38 @@
                     <!-- Contraseña -->
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                            <i class="fas fa-lock mr-2"></i>
-                            Contraseña *
+                            <i class="fas fa-lock mr-2"></i> Contraseña *
                         </label>
                         <input type="password" id="password" required minlength="6"
                             class="input-focus w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
                             placeholder="Mínimo 6 caracteres">
                         <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                            <i class="fas fa-info-circle"></i>
-                            La contraseña debe tener al menos 6 caracteres
+                            <i class="fas fa-info-circle"></i> La contraseña debe tener al menos 6 caracteres
                         </p>
                     </div>
                 </div>
 
-                <!-- Sección 2: Documentación -->
+                <!-- Sección 2: Especialidades (NUEVO) -->
+                <div class="space-y-4 pt-4">
+                    <div class="flex items-center gap-2 border-b pb-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tools text-blue-600"></i>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-700">Especialidades y precios</h2>
+                    </div>
+                    
+                    <p class="text-sm text-slate-500 bg-blue-50 p-3 rounded-lg">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        Selecciona las especialidades en las que eres experto. Los precios de diagnóstico son fijos según la especialidad.
+                    </p>
+
+                    <div id="especialidadesContainer" class="space-y-3 max-h-80 overflow-y-auto">
+                        <!-- Las especialidades se cargarán dinámicamente desde Supabase -->
+                        <p class="text-slate-400 text-center py-4">Cargando especialidades...</p>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Documentación -->
                 <div class="space-y-4 pt-4">
                     <div class="flex items-center gap-2 border-b pb-2">
                         <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -317,7 +325,7 @@
                     </div>
                 </div>
 
-                <!-- Sección 3: Términos -->
+                <!-- Sección 4: Términos -->
                 <div class="pt-4">
                     <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
                         <input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
@@ -373,13 +381,29 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN SUPABASE
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-
-        // Variable global de Supabase
         let supabaseClient = null;
+
+        // Precios de diagnóstico por especialidad (base)
+        const preciosDiagnostico = {
+            'Plomería': 250, 'Electricidad': 250, 'Carpintería': 200, 'Albañilería': 300,
+            'Pintura': 200, 'Impermeabilización': 350, 'Cerrajería': 200, 'Herrería': 250,
+            'Aluminio y Vidrio': 250, 'Limpieza de Hogar': 200, 'Limpieza de Oficinas': 250,
+            'Lavado de Salas/Alfombras': 300, 'Limpieza Post-Obra': 350, 'Sanitización': 250,
+            'Limpieza de Vidrios': 200, 'Limpieza Profunda': 300, 'Mecánica Automotriz': 350,
+            'Reparación de llantas': 200, 'Mudanzas': 300, 'Reparación de línea blanca': 350,
+            'Soporte Técnico': 300, 'Fumigación': 350, 'Chefs': 400,
+            'Cuidado de Niños': 200, 'Cuidado de Enfermos': 250, 'Cuidado de Adultos Mayores': 250,
+            'Paseo de Mascotas': 150, 'Entrenamiento Canino': 250, 'Enfermería a domicilio': 300,
+            'Barbería': 150, 'Manicura y Pedicura': 200, 'Maquillaje Profesional': 300,
+            'Estilismo y Tintes': 300, 'Masajes Relajantes': 350, 'Depilación': 200,
+            'Microblading': 400, 'Tratamientos faciales': 300
+        };
+
+        let especialidadesDisponibles = [];
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
@@ -387,16 +411,60 @@
                 if (typeof window.supabase === 'undefined') {
                     throw new Error('La biblioteca de Supabase no se cargó correctamente');
                 }
-
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('✅ Supabase inicializado');
+                cargarEspecialidades();
                 configurarEventListeners();
-                
             } catch (error) {
                 console.error('❌ Error:', error);
                 mostrarError('Error al inicializar: ' + error.message);
             }
         });
+
+        async function cargarEspecialidades() {
+            try {
+                const { data: subcategorias, error } = await supabaseClient
+                    .from('subcategorias')
+                    .select('id, nombre, categoria_id')
+                    .eq('activo', true)
+                    .order('nombre');
+
+                if (error) throw error;
+
+                especialidadesDisponibles = subcategorias || [];
+                
+                const container = document.getElementById('especialidadesContainer');
+                if (!especialidadesDisponibles.length) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay especialidades disponibles</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${especialidadesDisponibles.map(esp => {
+                            const precio = preciosDiagnostico[esp.nombre] || 250;
+                            return `
+                            <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" name="especialidad" value="${esp.nombre}" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                                <div class="flex-1">
+                                    <p class="font-medium text-slate-700">${esp.nombre}</p>
+                                    <p class="text-xs text-slate-400">Diagnóstico: <span class="font-medium text-blue-600">$${precio}</span></p>
+                                </div>
+                            </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                        <i class="fas fa-info-circle"></i>
+                        Selecciona todas las especialidades en las que eres experto. Podrás ofrecer diagnóstico y reparación.
+                    </p>
+                `;
+            } catch (error) {
+                console.error('Error cargando especialidades:', error);
+                document.getElementById('especialidadesContainer').innerHTML = 
+                    '<p class="text-red-400 text-center py-4">Error al cargar especialidades</p>';
+            }
+        }
 
         function configurarEventListeners() {
             // Manejo de archivos
@@ -409,7 +477,6 @@
                         
                         if (this.files && this.files[0]) {
                             const file = this.files[0];
-                            // Validar tamaño
                             if (file.size > 5 * 1024 * 1024) {
                                 mostrarError(`El archivo ${id} no debe exceder 5MB`);
                                 this.value = '';
@@ -417,7 +484,6 @@
                                 nameSpan.classList.add('hidden');
                                 return;
                             }
-                            
                             div.classList.add('has-file');
                             nameSpan.textContent = '✓ ' + file.name.substring(0, 30) + (file.name.length > 30 ? '...' : '');
                             nameSpan.classList.remove('hidden');
@@ -429,7 +495,6 @@
                 }
             });
 
-            // Manejar envío del formulario
             document.getElementById('registroForm').addEventListener('submit', handleRegistro);
         }
 
@@ -450,6 +515,13 @@
                     throw new Error('Debes aceptar los términos y condiciones');
                 }
 
+                // Validar especialidades seleccionadas
+                const checkboxes = document.querySelectorAll('input[name="especialidad"]:checked');
+                if (checkboxes.length === 0) {
+                    throw new Error('Debes seleccionar al menos una especialidad');
+                }
+                const especialidadesSeleccionadas = Array.from(checkboxes).map(cb => cb.value);
+
                 // Validar archivos
                 const files = {
                     photo: document.getElementById('file_photo').files[0],
@@ -469,7 +541,6 @@
                     throw new Error('Correo electrónico inválido');
                 }
 
-                // Deshabilitar botón
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
                 showLoading();
@@ -483,7 +554,8 @@
                         data: {
                             full_name: document.getElementById('full_name').value.trim(),
                             phone: document.getElementById('phone').value.trim(),
-                            role: 'tasker'
+                            role: 'tasker',
+                            especialidades: especialidadesSeleccionadas
                         }
                     }
                 });
@@ -501,8 +573,6 @@
                 for (let [key, file] of Object.entries(files)) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${userId}/${key}_${Date.now()}.${fileExt}`;
-                    
-                    console.log(`Subiendo ${key}...`);
                     
                     const { error: uploadError } = await supabaseClient.storage
                         .from('taskers-documents')
@@ -538,14 +608,13 @@
                         photo_url: fileUrls.photo,
                         document_ine_url: fileUrls.ine,
                         document_penal_url: fileUrls.penal,
+                        especialidades: especialidadesSeleccionadas,
                         created_at: new Date(),
                         updated_at: new Date()
                     }]);
 
                 if (profileError) {
                     console.error('Error perfil:', profileError);
-                    
-                    // Si falla el perfil, intentar limpiar el usuario de auth
                     await supabaseClient.auth.admin.deleteUser(userId);
                     
                     if (profileError.message.includes('duplicate key')) {
@@ -557,11 +626,11 @@
 
                 // 4. ÉXITO
                 console.log('✅ Registro completado');
-                mostrarExito('¡Registro exitoso! Redirigiendo al login...');
+                mostrarExito('¡Registro exitoso! Tu cuenta está en revisión. Serás notificado cuando sea aprobada.');
                 
                 setTimeout(() => {
                     window.location.href = 'login.html?registered=tasker';
-                }, 2000);
+                }, 3000);
 
             } catch (error) {
                 console.error('🔥 Error:', error);
@@ -573,9 +642,6 @@
             }
         }
 
-        // =============================================
-        // FUNCIONES DE UTILIDAD
-        // =============================================
         function showLoading() {
             document.getElementById('loadingModal').classList.remove('hidden');
             document.getElementById('loadingModal').classList.add('flex');
@@ -591,10 +657,7 @@
             const errorText = document.getElementById('errorText');
             errorText.textContent = mensaje;
             errorDiv.classList.remove('hidden');
-            
-            setTimeout(() => {
-                errorDiv.classList.add('hidden');
-            }, 5000);
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
         }
 
         function mostrarExito(mensaje) {
@@ -602,48 +665,8 @@
             const successText = document.getElementById('successText');
             successText.textContent = mensaje;
             successDiv.classList.remove('hidden');
-            
-            setTimeout(() => {
-                successDiv.classList.add('hidden');
-            }, 3000);
+            setTimeout(() => successDiv.classList.add('hidden'), 5000);
         }
     </script>
-
-    <!-- Estilos adicionales -->
-    <style>
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-        
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-            animation-delay: 4s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .animate-slideIn {
-            animation: slideIn 0.3s ease-out;
-        }
-    </style>
 </body>
 </html>
