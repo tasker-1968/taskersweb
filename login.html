@@ -2,8 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Iniciar Sesión | Tasker's México</title>
+    
+    <!-- Anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,14 +17,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .bg-animated {
             background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #2563eb, #1e40af);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
+            min-height: 100vh;
         }
         
         @keyframes gradient {
@@ -83,12 +87,9 @@
         }
         
         @media (max-width: 640px) {
-            .glass-card {
-                margin: 1rem;
-                padding: 1.5rem;
-            }
+            .glass-card { margin: 1rem; padding: 1.5rem; }
         }
-
+        
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
             33% { transform: translate(30px, -50px) scale(1.1); }
@@ -96,29 +97,30 @@
             100% { transform: translate(0px, 0px) scale(1); }
         }
         
-        .animate-blob {
-            animation: blob 7s infinite;
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
         }
         
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-            animation-delay: 4s;
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body class="bg-animated min-h-screen flex items-center justify-center p-4">
 
-    <!-- Fondo con partículas (decorativo) -->
+    <!-- Fondo decorativo -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
     </div>
 
-    <!-- Logo flotante (solo visible en desktop) -->
+    <!-- Logo flotante (desktop) -->
     <div class="fixed top-8 left-8 hidden lg:block animate-slideUp">
         <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20">
             <img src="logo-taskers.png" alt="Tasker's México" class="h-10 w-auto">
@@ -127,10 +129,10 @@
         </div>
     </div>
 
-    <!-- Tarjeta de Login Principal -->
+    <!-- Tarjeta de Login -->
     <div class="glass-card rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 animate-slideUp">
         
-        <!-- Logo en móvil (solo visible en móvil) -->
+        <!-- Logo móvil -->
         <div class="flex justify-center mb-6 lg:hidden">
             <img src="logo-taskers.png" alt="Tasker's México" class="h-12 w-auto">
         </div>
@@ -169,14 +171,14 @@
 
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <input type="checkbox" id="remember" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
                     <span class="text-slate-600">Recordar mi cuenta</span>
                 </label>
                 <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline transition">¿Olvidaste tu contraseña?</a>
             </div>
 
             <button type="submit" id="loginBtn" 
-                class="btn-ripple w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 relative overflow-hidden">
+                class="btn-ripple w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
                 <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
             </button>
         </form>
@@ -219,7 +221,7 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN SUPABASE
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
@@ -238,7 +240,7 @@
         }
 
         // =============================================
-        // FUNCIÓN DE LOGIN CORREGIDA (CON maybeSingle)
+        // FUNCIÓN DE LOGIN
         // =============================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -262,6 +264,13 @@
                     throw new Error('Por favor completa todos los campos');
                 }
 
+                // Guardar en localStorage si "recordar" está marcado
+                if (document.getElementById('remember').checked) {
+                    localStorage.setItem('remembered_email', email);
+                } else {
+                    localStorage.removeItem('remembered_email');
+                }
+
                 // 1. Login en Auth
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email, password
@@ -269,28 +278,25 @@
 
                 if (error) throw error;
 
-                // 2. Obtener perfil del usuario (CON maybeSingle)
+                // 2. Obtener perfil del usuario
                 const { data: profile, error: profileError } = await supabaseClient
                     .from('profiles')
-                    .select('role')
+                    .select('role, status')
                     .eq('id', data.user.id)
                     .maybeSingle();
 
-                // Si hay error en la consulta (no confundir con "no encontrado")
                 if (profileError) {
                     console.error('Error al consultar perfil:', profileError);
-                    
-                    if (profileError.message.includes('permission denied') || 
-                        profileError.code === '42501') {
+                    if (profileError.message.includes('permission denied')) {
                         alert('Error de permisos. Contacta al administrador.');
                         return;
                     }
                     throw profileError;
                 }
 
-                // 3. Si no hay perfil, crearlo automáticamente
+                // 3. Si no hay perfil, crearlo automáticamente (solo para clientes)
                 if (!profile) {
-                    console.warn('Usuario sin perfil en profiles, creando uno por defecto...');
+                    console.warn('Usuario sin perfil, creando perfil por defecto...');
                     
                     const { error: insertError } = await supabaseClient
                         .from('profiles')
@@ -310,25 +316,28 @@
                         return;
                     }
 
-                    // Reintentar obtener el perfil
-                    const { data: newProfile } = await supabaseClient
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', data.user.id)
-                        .maybeSingle();
-
-                    if (newProfile) {
-                        let redirectUrl = 'dashboard-cliente.html';
-                        if (newProfile.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
-                        if (newProfile.role === 'admin') redirectUrl = 'admin.html';
-
-                        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Perfil creado. Redirigiendo...';
-                        setTimeout(() => window.location.href = redirectUrl, 1000);
-                        return;
-                    }
+                    // Redirigir a dashboard cliente
+                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>Perfil creado. Redirigiendo...';
+                    setTimeout(() => window.location.href = 'dashboard-cliente.html', 1000);
+                    return;
                 }
 
-                // 4. Redirigir según el rol (perfil existente)
+                // 4. Verificar estado del tasker (si aplica)
+                if (profile.role === 'tasker' && profile.status === 'pending') {
+                    alert('⚠️ Tu cuenta está en revisión. Serás notificado cuando sea aprobada por el administrador.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    return;
+                }
+
+                if (profile.role === 'tasker' && profile.status === 'rejected') {
+                    alert('❌ Tu cuenta ha sido rechazada. Contacta con soporte para más información.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    return;
+                }
+
+                // 5. Redirigir según el rol
                 let redirectUrl = 'dashboard-cliente.html';
                 if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
                 if (profile?.role === 'admin') redirectUrl = 'admin.html';
@@ -379,15 +388,33 @@
             }
         }
 
-        // Animación título
-        const title = document.querySelector('h1');
-        if (title) {
-            title.style.opacity = '0';
-            setTimeout(() => {
-                title.style.transition = 'opacity 0.5s ease';
-                title.style.opacity = '1';
-            }, 200);
+        // =============================================
+        // RECUPERAR EMAIL GUARDADO
+        // =============================================
+        function loadRememberedEmail() {
+            const rememberedEmail = localStorage.getItem('remembered_email');
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('remember').checked = true;
+            }
         }
+
+        // =============================================
+        // INICIALIZAR
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRememberedEmail();
+            
+            // Animación título
+            const title = document.querySelector('h1');
+            if (title) {
+                title.style.opacity = '0';
+                setTimeout(() => {
+                    title.style.transition = 'opacity 0.5s ease';
+                    title.style.opacity = '1';
+                }, 200);
+            }
+        });
     </script>
 </body>
 </html>
