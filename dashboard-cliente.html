@@ -79,10 +79,12 @@
             display: inline-block;
         }
         
-        .badge-pendiente { background: #fef3c7; color: #92400e; }
+        .badge-diagnostico { background: #fef3c7; color: #92400e; }
+        .badge-cotizacion { background: #dbeafe; color: #1e40af; }
         .badge-asignado { background: #dbeafe; color: #1e40af; }
         .badge-progreso { background: #ede9fe; color: #5b21b6; }
         .badge-completado { background: #d1fae5; color: #065f46; }
+        .badge-pagado { background: #d1fae5; color: #065f46; }
         .badge-cancelado { background: #fee2e2; color: #991b1b; }
         
         .mensaje-cliente {
@@ -102,7 +104,6 @@
         
         /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
-            /* Sidebar oculto por defecto */
             .sidebar-moderno {
                 position: fixed !important;
                 left: -280px !important;
@@ -115,12 +116,10 @@
                 box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
-            /* Sidebar visible */
             .sidebar-moderno.abierto {
                 left: 0 !important;
             }
             
-            /* Overlay */
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -139,7 +138,6 @@
                 opacity: 1 !important;
             }
             
-            /* Botón menú siempre visible */
             #btnMenuMovil {
                 display: flex !important;
                 z-index: 10000 !important;
@@ -156,7 +154,6 @@
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
-            /* Ajustes de contenido */
             .ml-12 {
                 margin-left: 3.5rem !important;
             }
@@ -177,7 +174,6 @@
                 font-size: 1.5rem !important;
             }
             
-            /* Tablas horizontales */
             .table-container {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
@@ -190,33 +186,20 @@
                 min-width: 500px !important;
             }
             
-            /* Botones más grandes para touch */
-            button, 
-            .enlace-moderno,
-            [onclick] {
+            button, .enlace-moderno, [onclick] {
                 min-height: 44px !important;
                 min-width: 44px !important;
             }
             
-            /* Inputs sin zoom */
             input, select, textarea {
                 font-size: 16px !important;
             }
         }
         
-        /* Ajustes para tablets */
         @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 {
-                gap: 1rem;
-            }
-            
-            .tarjeta-stats {
-                padding: 1.25rem;
-            }
-            
-            .tarjeta-stats p.text-3xl {
-                font-size: 2rem;
-            }
+            .grid-cols-2 { gap: 1rem; }
+            .tarjeta-stats { padding: 1.25rem; }
+            .tarjeta-stats p.text-3xl { font-size: 2rem; }
         }
         
         .animate-spin {
@@ -228,13 +211,27 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Prevenir scroll cuando el menú está abierto */
         body.menu-open {
             overflow: hidden !important;
         }
         
-        /* Debug - eliminar después */
-        .debug { border: 2px solid red; }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .cotizacion-card {
+            transition: all 0.2s ease;
+        }
+        
+        .cotizacion-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -255,29 +252,31 @@
         </div>
     </div>
 
+    <!-- Modal de cotización -->
+    <div id="modalCotizacion" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-slate-800">Cotización Recibida</h3>
+                    <button onclick="cerrarModalCotizacion()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div id="contenidoCotizacion" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de pago -->
-    <div id="modalPago" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-6">
+    <div id="modalPago" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-slate-800">Confirmar Pago</h3>
-                <button onclick="cerrarModalPago()" class="text-slate-400 hover:text-slate-600 transition">
+                <button onclick="cerrarModalPago()" class="text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <div id="contenidoModalPago" class="space-y-4"></div>
-        </div>
-    </div>
-
-    <!-- Modal de servicio -->
-    <div id="modalServicio" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
-                <h3 class="text-xl font-bold text-slate-800">Detalles del Servicio</h3>
-                <button onclick="cerrarModalServicio()" class="text-slate-400 hover:text-slate-600 transition">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-            <div id="contenidoModalServicio" class="space-y-4"></div>
         </div>
     </div>
 
@@ -347,18 +346,18 @@
                 <section id="seccion-inicio" class="seccion-contenido activo">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
                         <div class="tarjeta-stats border-l-blue-500">
-                            <p class="text-slate-500 text-sm">Servicios Activos</p>
-                            <p id="statsActivos" class="text-3xl font-bold text-slate-800 mt-1">0</p>
+                            <p class="text-slate-500 text-sm">Diagnósticos Activos</p>
+                            <p id="statsDiagnosticos" class="text-3xl font-bold text-slate-800 mt-1">0</p>
+                        </div>
+                        <div class="tarjeta-stats border-l-yellow-500">
+                            <p class="text-slate-500 text-sm">Cotizaciones Pendientes</p>
+                            <p id="statsCotizaciones" class="text-3xl font-bold text-slate-800 mt-1">0</p>
                         </div>
                         <div class="tarjeta-stats border-l-green-500">
-                            <p class="text-slate-500 text-sm">Completados</p>
+                            <p class="text-slate-500 text-sm">Trabajos Completados</p>
                             <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-1">0</p>
                         </div>
                         <div class="tarjeta-stats border-l-purple-500">
-                            <p class="text-slate-500 text-sm">En Progreso</p>
-                            <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-1">0</p>
-                        </div>
-                        <div class="tarjeta-stats border-l-yellow-500">
                             <p class="text-slate-500 text-sm">Total Pagado</p>
                             <p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-1">$0</p>
                         </div>
@@ -375,12 +374,13 @@
                     </div>
                 </section>
 
-                <!-- NUEVO SERVICIO -->
+                <!-- NUEVO SERVICIO (Diagnóstico) -->
                 <section id="seccion-nuevo-servicio" class="seccion-contenido">
                     <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
-                        <p class="text-slate-500 text-sm mb-6">Recibe propuestas de profesionales verificados</p>
-                        <form id="formNuevoServicio" class="space-y-5">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Diagnóstico</h3>
+                        <p class="text-slate-500 text-sm mb-6">Paga el diagnóstico, recibe cotización y aprueba la reparación</p>
+                        
+                        <form id="formDiagnostico" class="space-y-5">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-2">Categoría</label>
@@ -389,45 +389,66 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">Subcategoría</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Servicio</label>
                                     <select id="subcategoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" disabled>
                                         <option value="">Primero selecciona categoría</option>
                                     </select>
                                 </div>
                             </div>
+                            
                             <div>
-                                <textarea id="descripcion" required rows="4" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Describe lo que necesitas..."></textarea>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Describe el problema</label>
+                                <textarea id="descripcion" required rows="4" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" 
+                                    placeholder="Describe detalladamente lo que necesitas..."></textarea>
                             </div>
+                            
                             <div class="grid grid-cols-2 gap-4">
-                                <div><input type="text" id="cp" required maxlength="5" class="w-full p-3 border rounded-xl" placeholder="C.P."></div>
-                                <div><input type="text" id="colonia" class="w-full p-3 border rounded-xl" placeholder="Colonia"></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Código Postal</label>
+                                    <input type="text" id="cp" required maxlength="5" class="w-full p-3 border rounded-xl" placeholder="C.P.">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Colonia</label>
+                                    <input type="text" id="colonia" class="w-full p-3 border rounded-xl" placeholder="Colonia">
+                                </div>
                             </div>
+                            
                             <div>
-                                <input type="number" id="monto" required min="100" step="100" class="w-full p-3 border rounded-xl" placeholder="Presupuesto máximo">
-                                <p class="text-xs text-slate-500 mt-2">Comisión Tasker's: 15%</p>
-                            </div>
-                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Fecha preferida</label>
                                 <input type="datetime-local" id="fecha" class="w-full p-3 border rounded-xl">
                             </div>
+                            
+                            <div id="precioDiagnosticoDisplay" class="bg-blue-50 p-4 rounded-xl hidden">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-slate-600">Costo del diagnóstico:</span>
+                                    <span id="precioDiagnosticoValor" class="text-xl font-bold text-blue-600">$0</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                                    <i class="fas fa-info-circle"></i>
+                                    El diagnóstico es pagado por separado. Si aceptas la reparación, este costo se descuenta.
+                                </p>
+                            </div>
+                            
                             <div class="flex items-start gap-3">
                                 <input type="checkbox" id="terminos" required class="mt-1">
-                                <label class="text-sm text-slate-600">Acepto términos y condiciones</label>
+                                <label class="text-sm text-slate-600">Acepto términos y condiciones. El pago del diagnóstico es no reembolsable.</label>
                             </div>
+                            
                             <button type="submit" id="btnPublicar" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition">
-                                Publicar Solicitud
+                                Pagar Diagnóstico y Solicitar
                             </button>
                         </form>
                     </div>
                 </section>
 
-                <!-- MIS SERVICIOS -->
+                <!-- MIS SERVICIOS (Diagnósticos, Cotizaciones, Trabajos) -->
                 <section id="seccion-mis-servicios" class="seccion-contenido">
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Mis Servicios</h3>
                         <select id="filtroStatus" onchange="window.cargarMisServicios()" class="p-2 border rounded-lg text-sm">
                             <option value="todos">Todos</option>
-                            <option value="pendiente_pago">Pendientes de pago</option>
-                            <option value="publicado">Buscando tasker</option>
+                            <option value="diagnostico_pendiente">Diagnósticos Pendientes</option>
+                            <option value="cotizacion_enviada">Cotizaciones Recibidas</option>
                             <option value="asignado">Asignados</option>
                             <option value="en_progreso">En progreso</option>
                             <option value="completado">Completados</option>
@@ -505,69 +526,64 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN ÚNICA - VARIABLE RENOMBRADA
+        // CONFIGURACIÓN SUPABASE
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // =============================================
-        // GLOBALES
-        // =============================================
+        // Precios de diagnóstico por especialidad
+        const preciosDiagnostico = {
+            'Plomería': 250, 'Electricidad': 250, 'Carpintería': 200, 'Albañilería': 300,
+            'Pintura': 200, 'Impermeabilización': 350, 'Cerrajería': 200, 'Herrería': 250,
+            'Aluminio y Vidrio': 250, 'Limpieza de Hogar': 200, 'Limpieza de Oficinas': 250,
+            'Lavado de Salas/Alfombras': 300, 'Limpieza Post-Obra': 350, 'Sanitización': 250,
+            'Limpieza de Vidrios': 200, 'Limpieza Profunda': 300, 'Mecánica Automotriz': 350,
+            'Reparación de llantas': 200, 'Mudanzas': 300, 'Reparación de línea blanca': 350,
+            'Soporte Técnico': 300, 'Fumigación': 350, 'Chefs': 400,
+            'Cuidado de Niños': 200, 'Cuidado de Enfermos': 250, 'Cuidado de Adultos Mayores': 250,
+            'Paseo de Mascotas': 150, 'Entrenamiento Canino': 250, 'Enfermería a domicilio': 300,
+            'Barbería': 150, 'Manicura y Pedicura': 200, 'Maquillaje Profesional': 300,
+            'Estilismo y Tintes': 300, 'Masajes Relajantes': 350, 'Depilación': 200,
+            'Microblading': 400, 'Tratamientos faciales': 300
+        };
+
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
 
-        // =============================================
-        // FUNCIONES DE UTILIDAD
-        // =============================================
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white`; n.innerText = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
-        // =============================================
-        // AUTENTICACIÓN
-        // =============================================
         async function verificarAuth(r = 'login.html') {
             try { const { data: { session } } = await clienteSupabase.auth.getSession(); if (!session) { window.location.href = r; return null; } return session; }
             catch { window.location.href = r; return null; }
         }
 
         // =============================================
-        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // MENÚ MÓVIL
         // =============================================
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
             
-            if (!menuBtn || !sidebar || !overlay) {
-                console.error('❌ Elementos del menú no encontrados');
-                return;
-            }
-
-            console.log('✅ Menú móvil inicializado');
-
-            // Abrir menú
+            if (!menuBtn || !sidebar || !overlay) return;
+            
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('🔵 Abriendo menú');
-                
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
-
-            // Cerrar con overlay
+            
             overlay.addEventListener('click', function() {
-                console.log('⚫ Cerrando menú');
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
-
-            // Cerrar con enlaces
+            
             const links = document.querySelectorAll('.enlace-moderno');
             links.forEach(link => {
                 link.addEventListener('click', function() {
@@ -579,26 +595,22 @@
                 });
             });
         }
-
-        // Función para cerrar menú manualmente
+        
         function cerrarMenuMovil() {
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
-            
             if (sidebar && overlay) {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             }
         }
+        
+        window.addEventListener('resize', function() { if (window.innerWidth >= 768) cerrarMenuMovil(); });
 
-        // Detectar cambios de tamaño
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                cerrarMenuMovil();
-            }
-        });
-
+        // =============================================
+        // CARGAR USUARIO
+        // =============================================
         async function cargarUsuario() {
             mostrarCarga();
             try {
@@ -628,17 +640,10 @@
                     .select('id, nombre')
                     .eq('activo', true)
                     .order('orden');
-
-                if (error) {
-                    console.error('Error al cargar categorías:', error);
-                    return;
-                }
-
+                if (error) throw error;
                 const selectCategoria = document.getElementById('categoria');
                 if (!selectCategoria) return;
-
                 selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
-                
                 if (cats && cats.length > 0) {
                     cats.forEach(cat => {
                         const option = document.createElement('option');
@@ -646,72 +651,78 @@
                         option.textContent = cat.nombre;
                         selectCategoria.appendChild(option);
                     });
-                } else {
-                    console.warn('No hay categorías en Supabase');
                 }
-            } catch (error) {
-                console.error('Error en cargarCategorias:', error);
-            }
+            } catch (error) { console.error('Error en cargarCategorias:', error); }
         }
 
         document.getElementById('categoria')?.addEventListener('change', async function() {
             const subSelect = document.getElementById('subcategoria');
+            const precioDiv = document.getElementById('precioDiagnosticoDisplay');
             if (!subSelect) return;
-
             const categoriaId = this.value;
-            
             if (!categoriaId) {
                 subSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
                 subSelect.disabled = true;
+                precioDiv.classList.add('hidden');
                 return;
             }
-
             subSelect.innerHTML = '<option value="">Cargando...</option>';
             subSelect.disabled = true;
-
             try {
                 const { data: subs, error } = await clienteSupabase
                     .from('subcategorias')
                     .select('id, nombre')
                     .eq('categoria_id', categoriaId)
                     .eq('activo', true);
-
                 if (error) throw error;
-
-                subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-                
+                subSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
                 if (subs && subs.length > 0) {
                     subs.forEach(sub => {
                         const option = document.createElement('option');
-                        option.value = sub.id;
+                        option.value = sub.nombre;
                         option.textContent = sub.nombre;
+                        const precio = preciosDiagnostico[sub.nombre] || 250;
+                        option.setAttribute('data-precio', precio);
                         subSelect.appendChild(option);
                     });
                     subSelect.disabled = false;
                 } else {
-                    subSelect.innerHTML = '<option value="">No hay subcategorías</option>';
+                    subSelect.innerHTML = '<option value="">No hay servicios disponibles</option>';
                 }
+                subSelect.onchange = function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const precio = selectedOption.getAttribute('data-precio');
+                    if (precio) {
+                        document.getElementById('precioDiagnosticoValor').textContent = `$${precio}`;
+                        precioDiv.classList.remove('hidden');
+                    } else {
+                        precioDiv.classList.add('hidden');
+                    }
+                };
             } catch (error) {
                 console.error('Error cargando subcategorías:', error);
                 subSelect.innerHTML = '<option value="">Error al cargar</option>';
             }
         });
 
+        // =============================================
+        // DASHBOARD INICIO
+        // =============================================
         async function cargarDashboard() {
             try {
-                const { data: s } = await clienteSupabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id).order('created_at',false);
+                const { data: s } = await clienteSupabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', false);
                 if (!s) return;
                 const stats = {
-                    activos: s.filter(x=>['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length,
-                    completados: s.filter(x=>x.status==='completado').length,
-                    progreso: s.filter(x=>x.status==='en_progreso').length,
-                    pagado: s.filter(x=>x.status==='completado').reduce((a,b)=>a+(b.monto_final||0),0)
+                    diagnosticos: s.filter(x => x.status === 'diagnostico_pendiente').length,
+                    cotizaciones: s.filter(x => x.status === 'cotizacion_enviada').length,
+                    completados: s.filter(x => x.status === 'completado' || x.status === 'pagado').length,
+                    pagado: s.filter(x => x.status === 'pagado').reduce((a,b)=>a+(b.monto_final || b.monto_ofertado || 0),0)
                 };
-                document.getElementById('statsActivos').textContent = stats.activos;
+                document.getElementById('statsDiagnosticos').textContent = stats.diagnosticos;
+                document.getElementById('statsCotizaciones').textContent = stats.cotizaciones;
                 document.getElementById('statsCompletados').textContent = stats.completados;
-                document.getElementById('statsProgreso').textContent = stats.progreso;
                 document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
-
+                
                 const rec = s.slice(0,5);
                 const c = document.getElementById('listaRecientes');
                 if (!rec.length) { c.innerHTML = '<p class="text-center py-4 text-slate-400">No hay servicios</p>'; return; }
@@ -719,176 +730,398 @@
             } catch (e) { console.error(e); }
         }
 
-        document.getElementById('formNuevoServicio')?.addEventListener('submit', async (e) => {
+        // =============================================
+        // SOLICITAR DIAGNÓSTICO
+        // =============================================
+        document.getElementById('formDiagnostico')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnPublicar');
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
+            const subSelect = document.getElementById('subcategoria');
+            const selectedOption = subSelect.options[subSelect.selectedIndex];
+            const servicio = subSelect.value;
+            const precioDiagnostico = parseInt(selectedOption.getAttribute('data-precio')) || 250;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+            
             try {
-                const data = {
-                    cliente_id: usuarioActual.id,
-                    categoria: document.getElementById('categoria').value,
-                    subcategoria: document.getElementById('subcategoria').value,
-                    descripcion: document.getElementById('descripcion').value,
-                    ubicacion: document.getElementById('colonia').value ? `${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}` : `CP ${document.getElementById('cp').value}`,
-                    cp: document.getElementById('cp').value,
-                    monto_ofertado: parseFloat(document.getElementById('monto').value),
-                    fecha_solicitada: document.getElementById('fecha').value || null,
-                    status: 'pendiente_pago', pago_status: 'pendiente', created_at: new Date()
-                };
-                const { data: serv } = await clienteSupabase.from('servicios').insert([data]).select().maybeSingle();
-                await mostrarModalPago(serv);
-            } catch (e) { alert('Error: '+e.message); btn.disabled = false; btn.innerHTML = 'Publicar Solicitud'; }
+                const descripcion = document.getElementById('descripcion').value;
+                const cp = document.getElementById('cp').value;
+                const colonia = document.getElementById('colonia').value;
+                const fecha = document.getElementById('fecha').value;
+                
+                const { data: servicioData, error: servError } = await clienteSupabase
+                    .from('servicios')
+                    .insert([{
+                        cliente_id: usuarioActual.id,
+                        categoria: document.getElementById('categoria').value,
+                        subcategoria: servicio,
+                        descripcion: `[DIAGNÓSTICO] ${descripcion}`,
+                        ubicacion: colonia ? `${colonia}, CP ${cp}` : `CP ${cp}`,
+                        cp: cp,
+                        monto_ofertado: precioDiagnostico,
+                        status: 'diagnostico_pendiente',
+                        tipo_servicio: 'diagnostico',
+                        fecha_solicitada: fecha || null,
+                        created_at: new Date()
+                    }])
+                    .select()
+                    .single();
+                
+                if (servError) throw servError;
+                
+                const { error: pagoError } = await clienteSupabase
+                    .from('pagos')
+                    .insert([{
+                        servicio_id: servicioData.id,
+                        cliente_id: usuarioActual.id,
+                        monto_total: precioDiagnostico,
+                        comision_taskers: precioDiagnostico * 0.15,
+                        monto_tasker: precioDiagnostico * 0.85,
+                        status: 'retenido',
+                        fecha_pago: new Date()
+                    }]);
+                
+                if (pagoError) throw pagoError;
+                
+                alert('✅ Diagnóstico solicitado. En breve un tasker será asignado.');
+                window.cambiarSeccion('mis-servicios');
+                window.cargarMisServicios();
+                
+            } catch (e) {
+                alert('Error: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Pagar Diagnóstico y Solicitar';
+            }
         });
 
-        async function mostrarModalPago(serv) {
-            const m = document.getElementById('modalPago');
-            const c = document.getElementById('contenidoModalPago');
-            const total = serv.monto_ofertado;
-            c.innerHTML = `<div class="text-center"><i class="fas fa-lock text-4xl text-green-600 mb-4"></i><h4 class="font-bold">Pago Seguro</h4><p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago</p></div><div class="bg-slate-50 p-4 rounded-xl"><div class="flex justify-between"><span>Total:</span><span class="font-bold">$${total.toFixed(2)}</span></div><div class="flex justify-between text-gray-500"><span>Comisión 15%:</span><span>$${(total*0.15).toFixed(2)}</span></div></div><div class="flex gap-3 mt-4"><button onclick="cerrarModalPago()" class="flex-1 border py-3 rounded-xl">Cancelar</button><button onclick="procesarPago('${serv.id}',${total})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">Pagar ahora</button></div>`;
-            m.classList.remove('hidden'); m.classList.add('flex');
-        }
-
-        window.procesarPago = async (id, m) => {
-            mostrarCarga();
-            try {
-                await clienteSupabase.from('servicios').update({ status:'publicado', pago_status:'completado', updated_at:new Date() }).eq('id',id);
-                await clienteSupabase.from('pagos').insert([{ servicio_id:id, cliente_id:usuarioActual.id, monto_total:m, comision_taskers:m*0.15, monto_tasker:m*0.85, status:'completado', fecha_pago:new Date() }]);
-                alert('Pago exitoso'); cerrarModalPago(); window.cambiarSeccion('mis-servicios'); window.cargarMisServicios();
-            } catch (e) { alert('Error: '+e.message); } finally { ocultarCarga(); }
-        };
-        function cerrarModalPago() { document.getElementById('modalPago').classList.add('hidden'); document.getElementById('modalPago').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
-
+        // =============================================
+        // MIS SERVICIOS (COMPLETO)
+        // =============================================
         window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const contenedor = document.getElementById('contenedorServicios');
             if (!contenedor) return;
-
+            
             try {
                 let query = clienteSupabase
                     .from('servicios')
                     .select('*')
                     .eq('cliente_id', usuarioActual.id)
                     .order('created_at', { ascending: false });
-
-                if (filtro !== 'todos') {
-                    query = query.eq('status', filtro);
-                }
-
+                if (filtro !== 'todos') query = query.eq('status', filtro);
                 const { data: servicios, error: servError } = await query;
                 if (servError) throw servError;
-
                 if (!servicios || servicios.length === 0) {
                     contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
                     return;
                 }
-
-                const serviciosConTasker = await Promise.all(servicios.map(async (servicio) => {
+                
+                const serviciosConDatos = await Promise.all(servicios.map(async (servicio) => {
                     if (servicio.tasker_id) {
-                        const { data: tasker, error: taskerError } = await clienteSupabase
+                        const { data: tasker } = await clienteSupabase
                             .from('profiles')
                             .select('full_name, photo_url, calificacion_promedio')
                             .eq('id', servicio.tasker_id)
                             .maybeSingle();
-                        
-                        if (!taskerError && tasker) {
-                            servicio.tasker_info = tasker;
-                        }
+                        if (tasker) servicio.tasker_info = tasker;
+                    }
+                    if (servicio.status === 'cotizacion_enviada') {
+                        const { data: cotizacion } = await clienteSupabase
+                            .from('cotizaciones_adicionales')
+                            .select('*')
+                            .eq('servicio_id', servicio.id)
+                            .eq('aceptado', false)
+                            .maybeSingle();
+                        if (cotizacion) servicio.cotizacion_pendiente = cotizacion;
                     }
                     return servicio;
                 }));
-
-                contenedor.innerHTML = serviciosConTasker.map(s => {
+                
+                contenedor.innerHTML = serviciosConDatos.map(s => {
+                    const esDiagnostico = s.status === 'diagnostico_pendiente';
+                    const esCotizacion = s.status === 'cotizacion_enviada';
+                    const esAsignado = s.status === 'asignado';
+                    const esProgreso = s.status === 'en_progreso';
+                    const esCompletado = s.status === 'completado';
+                    const esPagado = s.status === 'pagado';
                     const tasker = s.tasker_info;
-                    const puedeConfirmar = s.status === 'en_progreso';
-                    const tieneTasker = s.tasker_id && tasker;
-                    const estaAsignado = s.status === 'asignado';
-
+                    const cotizacion = s.cotizacion_pendiente;
+                    
                     return `
                     <div class="bg-white rounded-xl shadow-sm p-5">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-slate-600">${s.descripcion || ''}</p>
+                                <p class="text-sm text-slate-600 mt-1">${s.descripcion?.replace('[DIAGNÓSTICO] ', '') || ''}</p>
                             </div>
                             <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span>
                         </div>
                         <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
-                            <div><p class="text-slate-500">$${(s.monto_ofertado || 0).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">$${(s.monto_ofertado || 0).toFixed(2)}</p><p class="text-xs text-slate-400">Diagnóstico</p></div>
                             <div><p class="text-slate-500">${s.ubicacion || ''}</p></div>
                             <div><p class="text-slate-500">${new Date(s.created_at).toLocaleDateString()}</p></div>
                         </div>
                         
-                        ${tieneTasker ? `
+                        ${cotizacion ? `
+                        <div class="border-t pt-4 mt-4 bg-yellow-50 -mx-5 px-5 py-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-yellow-800">📋 Cotización Recibida</p>
+                                    <p class="text-sm text-yellow-700">${cotizacion.descripcion}</p>
+                                    <p class="text-lg font-bold text-yellow-800 mt-1">$${cotizacion.precio_adicional}</p>
+                                    <p class="text-xs text-yellow-600">Tiempo adicional: ${cotizacion.tiempo_adicional} min</p>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <button onclick="aceptarCotizacion('${s.id}', ${cotizacion.precio_adicional})" 
+                                            class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+                                        <i class="fas fa-check mr-1"></i>Aceptar
+                                    </button>
+                                    <button onclick="rechazarCotizacion('${s.id}')" 
+                                            class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">
+                                        <i class="fas fa-times mr-1"></i>Rechazar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${tasker && (esAsignado || esProgreso || esCompletado) ? `
                         <div class="border-t pt-4 mt-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-slate-300" 
-                                         style="background-image: url('${tasker.photo_url || ''}'); background-size: cover;">
-                                    </div>
+                                    <div class="w-10 h-10 rounded-full bg-slate-300" style="background-image: url('${tasker.photo_url || ''}'); background-size: cover;"></div>
                                     <div>
                                         <p class="font-medium text-slate-800">${tasker.full_name || 'Tasker'}</p>
                                         <p class="text-xs text-slate-500">⭐ ${tasker.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
                                     </div>
                                 </div>
-                                <button onclick="abrirChat('${s.id}','${s.tasker_id}')" 
-                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-                                    <i class="fas fa-comment mr-2"></i>Chat con tasker
+                                <button onclick="abrirChat('${s.id}','${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                    <i class="fas fa-comment mr-2"></i>Chat
                                 </button>
                             </div>
                         </div>
-                        ` : s.status === 'publicado' ? `
-                        <div class="border-t pt-4 mt-4 text-center text-slate-500">
-                            <i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...
+                        ` : ''}
+                        
+                        ${esAsignado ? `
+                        <div class="border-t pt-4 mt-4">
+                            <p class="text-sm text-blue-600 text-center"><i class="fas fa-clock mr-2"></i>Esperando que el tasker inicie el trabajo</p>
                         </div>
                         ` : ''}
                         
-                        ${puedeConfirmar ? `
+                        ${esProgreso ? `
                         <div class="border-t pt-4 mt-4">
                             <button onclick="confirmarFinalizacion('${s.id}')" 
                                     class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
-                                <i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO
+                                <i class="fas fa-check-circle mr-2"></i>Confirmar Completado
                             </button>
                         </div>
                         ` : ''}
                         
-                        ${estaAsignado && !tieneTasker ? `
-                        <div class="border-t pt-4 mt-4 text-center text-blue-600">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>Asignando tasker...
+                        ${esCompletado && !s.calificacion_cliente ? `
+                        <div class="border-t pt-4 mt-4">
+                            <button onclick="calificarYLiberarPago('${s.id}', '${s.tasker_id}')" 
+                                    class="w-full bg-yellow-600 text-white py-3 rounded-lg font-bold hover:bg-yellow-700">
+                                <i class="fas fa-star mr-2"></i>Calificar y Liberar Pago
+                            </button>
+                            <p class="text-xs text-slate-500 text-center mt-2">Califica al tasker para liberar su pago</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${esPagado ? `
+                        <div class="border-t pt-4 mt-4">
+                            <p class="text-sm text-green-600 text-center"><i class="fas fa-check-circle mr-2"></i>Servicio completado y pago liberado</p>
                         </div>
                         ` : ''}
                     </div>
                     `;
                 }).join('');
-
+                
             } catch (error) {
                 console.error('Error en cargarMisServicios:', error);
                 contenedor.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
             }
         };
-
-        window.confirmarFinalizacion = async (id) => {
-            if (!confirm('¿Servicio completado?')) return;
+        
+        // =============================================
+        // ACEPTAR COTIZACIÓN
+        // =============================================
+        window.aceptarCotizacion = async function(servicioId, precioAdicional) {
+            if (!confirm(`¿Aceptar la cotización por $${precioAdicional}? El diagnóstico se descontará del total.`)) return;
             mostrarCarga();
             try {
-                await clienteSupabase.from('servicios').update({ status:'completado', fecha_completado:new Date() }).eq('id',id);
-                const { data: d } = await clienteSupabase.from('servicios').select('tasker_id').eq('id',id).single();
-                await clienteSupabase.from('notificaciones').insert([{ usuario_id:d.tasker_id, tipo:'pago', titulo:'Servicio completado', mensaje:'El cliente confirmó' }]);
-                alert('¡Gracias!'); window.cargarMisServicios();
+                const { data: servicio } = await clienteSupabase
+                    .from('servicios')
+                    .select('monto_ofertado')
+                    .eq('id', servicioId)
+                    .single();
+                
+                const diagnosticoPagado = servicio.monto_ofertado;
+                const totalFinal = diagnosticoPagado + precioAdicional;
+                
+                await clienteSupabase
+                    .from('cotizaciones_adicionales')
+                    .update({ aceptado: true, updated_at: new Date() })
+                    .eq('servicio_id', servicioId);
+                
+                const { error: pagoError } = await clienteSupabase
+                    .from('pagos')
+                    .insert([{
+                        servicio_id: servicioId,
+                        cliente_id: usuarioActual.id,
+                        monto_total: precioAdicional,
+                        comision_taskers: precioAdicional * 0.15,
+                        monto_tasker: precioAdicional * 0.85,
+                        status: 'retenido',
+                        fecha_pago: new Date(),
+                        diagnostico_previo: diagnosticoPagado
+                    }]);
+                
+                if (pagoError) throw pagoError;
+                
+                await clienteSupabase
+                    .from('servicios')
+                    .update({ 
+                        status: 'asignado',
+                        monto_final: totalFinal,
+                        updated_at: new Date()
+                    })
+                    .eq('id', servicioId);
+                
+                const { data: servicioData } = await clienteSupabase
+                    .from('servicios')
+                    .select('tasker_id')
+                    .eq('id', servicioId)
+                    .single();
+                
+                if (servicioData?.tasker_id) {
+                    await clienteSupabase
+                        .from('notificaciones')
+                        .insert([{
+                            usuario_id: servicioData.tasker_id,
+                            tipo: 'cotizacion',
+                            titulo: '¡Cotización aceptada!',
+                            mensaje: 'El cliente ha aceptado tu cotización. Puedes iniciar el trabajo.'
+                        }]);
+                }
+                
+                alert('✅ Cotización aceptada. El tasker comenzará el trabajo pronto.');
+                window.cargarMisServicios();
+                window.cargarDashboard();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
+        };
+        
+        window.rechazarCotizacion = async function(servicioId) {
+            if (!confirm('¿Rechazar esta cotización? El diagnóstico ya fue pagado y no es reembolsable.')) return;
+            mostrarCarga();
+            try {
+                await clienteSupabase
+                    .from('servicios')
+                    .update({ status: 'cancelado', updated_at: new Date() })
+                    .eq('id', servicioId);
+                alert('Cotización rechazada. El servicio ha sido cancelado.');
+                window.cargarMisServicios();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
+        };
+        
+        window.confirmarFinalizacion = async (id) => {
+            if (!confirm('¿El trabajo ha sido completado a tu satisfacción?')) return;
+            mostrarCarga();
+            try {
+                await clienteSupabase
+                    .from('servicios')
+                    .update({ status: 'completado', fecha_completado: new Date() })
+                    .eq('id', id);
+                const { data: d } = await clienteSupabase.from('servicios').select('tasker_id').eq('id', id).single();
+                await clienteSupabase
+                    .from('notificaciones')
+                    .insert([{ 
+                        usuario_id: d.tasker_id, 
+                        tipo: 'pago', 
+                        titulo: 'Servicio completado', 
+                        mensaje: 'El cliente confirmó la finalización. Espera su calificación.' 
+                    }]);
+                alert('✅ Gracias por confirmar. Ahora puedes calificar al tasker.');
+                window.cargarMisServicios();
             } catch (e) { alert('Error'); } finally { ocultarCarga(); }
         };
-
+        
+        window.calificarYLiberarPago = async (servicioId, taskerId) => {
+            const calificacion = prompt("¡Gracias por completar el servicio! Por favor, califica al tasker del 1 al 5:", "5");
+            if (!calificacion) return;
+            const puntaje = parseInt(calificacion);
+            if (isNaN(puntaje) || puntaje < 1 || puntaje > 5) {
+                alert("Por favor ingresa un número entre 1 y 5.");
+                return;
+            }
+            if (!confirm("Al calificar, se liberará el pago al tasker. ¿Confirmas?")) return;
+            mostrarCarga();
+            try {
+                const { data: tasker } = await clienteSupabase
+                    .from('profiles')
+                    .select('calificacion_promedio, total_calificaciones')
+                    .eq('id', taskerId)
+                    .single();
+                const totalCalificaciones = (tasker.total_calificaciones || 0) + 1;
+                const nuevoPromedio = ((tasker.calificacion_promedio || 0) * (tasker.total_calificaciones || 0) + puntaje) / totalCalificaciones;
+                await clienteSupabase
+                    .from('profiles')
+                    .update({ calificacion_promedio: nuevoPromedio, total_calificaciones: totalCalificaciones, updated_at: new Date() })
+                    .eq('id', taskerId);
+                await clienteSupabase
+                    .from('servicios')
+                    .update({ status: 'pagado', calificacion_cliente: puntaje, updated_at: new Date() })
+                    .eq('id', servicioId);
+                await clienteSupabase
+                    .from('pagos')
+                    .update({ status: 'liberado', fecha_liberacion: new Date() })
+                    .eq('servicio_id', servicioId);
+                await clienteSupabase
+                    .from('notificaciones')
+                    .insert([{ 
+                        usuario_id: taskerId, 
+                        tipo: 'pago', 
+                        titulo: '¡Pago liberado!', 
+                        mensaje: `Has recibido una calificación de ${puntaje}/5 estrellas y tu pago ha sido liberado.` 
+                    }]);
+                alert("✅ ¡Calificación enviada y pago liberado! Gracias por usar Tasker's.");
+                window.cargarMisServicios();
+                window.cargarDashboard();
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+            } finally { ocultarCarga(); }
+        };
+        
+        // =============================================
+        // CHAT
+        // =============================================
         window.cargarConversaciones = async function() {
             const c = document.getElementById('listaConversaciones');
             try {
-                const { data: chats } = await clienteSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time',false);
+                const { data: chats } = await clienteSupabase
+                    .from('chats')
+                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
+                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+                    .order('ultimo_mensaje_time', false);
                 if (!chats?.length) { c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>'; return; }
                 c.innerHTML = chats.map(ch => {
                     const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300"></div><div><p class="font-medium">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
+                    return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300" style="background-image: url('${otro.photo_url||''}'); background-size: cover;"></div><div><p class="font-medium">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
                 }).join('');
             } catch (e) { console.error(e); }
         };
-
+        
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
             chatActual = { id, oid, nombre, avatar, info };
             document.getElementById('cabeceraChat').classList.remove('hidden');
@@ -900,102 +1133,139 @@
             if (suscripcionChat) suscripcionChat.unsubscribe();
             suscripcionChat = clienteSupabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
         };
-
+        
         async function cargarMensajes(id) {
             const c = document.getElementById('mensajesChat');
             try {
-                const { data: msgs } = await clienteSupabase.from('mensajes').select('*').eq('chat_id',id).order('created_at');
+                const { data: msgs } = await clienteSupabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
                 if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
-                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3 rounded-2xl"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
                 c.scrollTop = c.scrollHeight;
             } catch (e) { console.error(e); }
         }
-
+        
         function agregarMensaje(m) {
             const c = document.getElementById('mensajesChat');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+            c.innerHTML += `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3 rounded-2xl"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
             c.scrollTop = c.scrollHeight;
         }
-
+        
         document.getElementById('formMensaje')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!chatActual) { alert('Selecciona un chat'); return; }
             const txt = document.getElementById('textoMensaje').value.trim();
             if (!txt) return;
             try {
-                await clienteSupabase.from('mensajes').insert([{ chat_id:chatActual.id, remitente_id:usuarioActual.id, mensaje:txt, created_at:new Date() }]);
-                await clienteSupabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date(), ultimo_mensaje_leido:false }).eq('id',chatActual.id);
+                await clienteSupabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
+                await clienteSupabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
                 document.getElementById('textoMensaje').value = '';
             } catch (e) { console.error(e); alert('Error al enviar'); }
         });
-
+        
         window.abrirChat = async (sid, tid) => {
             try {
-                const { data: ex } = await clienteSupabase.from('chats').select('*').eq('servicio_id',sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
+                const { data: ex } = await clienteSupabase.from('chats').select('*').eq('servicio_id', sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
                 let cid;
-                if (ex) { cid = ex.id; } else { const { data: n } = await clienteSupabase.from('chats').insert([{ servicio_id:sid, usuario1_id:usuarioActual.id, usuario2_id:tid }]).select().single(); cid = n.id; }
-                const { data: t } = await clienteSupabase.from('profiles').select('full_name,photo_url').eq('id',tid).single();
+                if (ex) { cid = ex.id; } else { const { data: n } = await clienteSupabase.from('chats').insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }]).select().single(); cid = n.id; }
+                const { data: t } = await clienteSupabase.from('profiles').select('full_name,photo_url').eq('id', tid).single();
                 window.cambiarSeccion('chat'); await cargarConversaciones(); await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
             } catch (e) { console.error(e); alert('Error al abrir chat'); }
         };
-
+        
+        // =============================================
+        // PAGOS
+        // =============================================
         window.cargarPagos = async function() {
             const t = document.getElementById('tablaPagos');
             try {
-                const { data: p } = await clienteSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',usuarioActual.id).order('fecha_pago',false);
+                const { data: p } = await clienteSupabase
+                    .from('pagos')
+                    .select('*, servicio:servicio_id(subcategoria)')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('fecha_pago', false);
                 if (!p?.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>'; return; }
-                t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado badge-completado">Completado</span></td></tr>`).join('');
+                t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado ${x.status === 'liberado' ? 'badge-completado' : 'badge-pendiente'}">${x.status === 'liberado' ? 'Liberado' : 'Retenido'}</span></td></tr>`).join('');
             } catch (e) { console.error(e); }
         };
-
+        
+        // =============================================
+        // PERFIL
+        // =============================================
         document.getElementById('formPerfil')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await clienteSupabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value, updated_at:new Date() }).eq('id',usuarioActual.id);
-                notificar('Perfil actualizado','success'); await cargarUsuario();
-            } catch (e) { alert('Error: '+e.message); }
+                await clienteSupabase
+                    .from('profiles')
+                    .update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, updated_at: new Date() })
+                    .eq('id', usuarioActual.id);
+                notificar('Perfil actualizado','success');
+                await cargarUsuario();
+            } catch (e) { alert('Error: ' + e.message); }
         });
-
+        
         window.subirFotoPerfil = async function() {
             const i = document.getElementById('fotoPerfil');
             if (!i.files?.[0]) return;
             mostrarCarga();
             try {
-                const f = i.files[0]; if (f.size>2*1024*1024) throw new Error('Máx 2MB');
+                const f = i.files[0];
+                if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
-                await clienteSupabase.storage.from('profiles-photos').upload(n,f);
+                await clienteSupabase.storage.from('profiles-photos').upload(n, f);
                 const { data: { publicUrl } } = clienteSupabase.storage.from('profiles-photos').getPublicUrl(n);
-                await clienteSupabase.from('profiles').update({ photo_url:publicUrl }).eq('id',usuarioActual.id);
+                await clienteSupabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
                 document.getElementById('avatarHeader').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('avatarPerfil').style.backgroundImage = `url('${publicUrl}')`;
                 notificar('Foto actualizada','success');
-            } catch (e) { alert('Error: '+e.message); } finally { ocultarCarga(); }
+            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
-
+        
         function obtenerClase(s) {
-            return { pendiente_pago:'badge-pendiente', publicado:'badge-pendiente', asignado:'badge-asignado', en_progreso:'badge-progreso', completado:'badge-completado', cancelado:'badge-cancelado' }[s] || 'badge-pendiente';
+            const clases = { 
+                diagnostico_pendiente: 'badge-diagnostico', 
+                cotizacion_enviada: 'badge-cotizacion', 
+                asignado: 'badge-asignado', 
+                en_progreso: 'badge-progreso', 
+                completado: 'badge-completado',
+                pagado: 'badge-pagado',
+                cancelado: 'badge-cancelado' 
+            };
+            return clases[s] || 'badge-pendiente';
         }
+        
         function obtenerTexto(s) {
-            return { pendiente_pago:'Pendiente pago', publicado:'Buscando', asignado:'Asignado', en_progreso:'En progreso', completado:'Completado', cancelado:'Cancelado' }[s] || s;
+            const textos = { 
+                diagnostico_pendiente: 'Diagnóstico Pendiente', 
+                cotizacion_enviada: 'Cotización Recibida', 
+                asignado: 'Asignado', 
+                en_progreso: 'En progreso', 
+                completado: 'Completado',
+                pagado: 'Pagado',
+                cancelado: 'Cancelado' 
+            };
+            return textos[s] || s;
         }
-
+        
+        // =============================================
+        // NAVEGACIÓN
+        // =============================================
         window.cambiarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s=>s.classList.remove('activo'));
             document.querySelectorAll('.enlace-moderno').forEach(l=>l.classList.remove('activo'));
             document.getElementById('seccion-'+sec).classList.add('activo');
             document.getElementById('link-'+sec)?.classList.add('activo');
-            const tit = { inicio:'Inicio', 'nuevo-servicio':'Solicitar Servicio', 'mis-servicios':'Mis Servicios', chat:'Mensajes', pagos:'Mis Pagos', perfil:'Mi Perfil' };
+            const tit = { inicio:'Inicio', 'nuevo-servicio':'Solicitar Diagnóstico', 'mis-servicios':'Mis Servicios', chat:'Mensajes', pagos:'Mis Pagos', perfil:'Mi Perfil' };
             document.getElementById('tituloSeccion').textContent = tit[sec];
             document.getElementById('subtituloSeccion').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            if (sec==='mis-servicios') window.cargarMisServicios();
-            if (sec==='chat') window.cargarConversaciones();
-            if (sec==='pagos') window.cargarPagos();
-            if (window.innerWidth<768) cerrarMenuMovil();
+            if (sec === 'mis-servicios') window.cargarMisServicios();
+            if (sec === 'chat') window.cargarConversaciones();
+            if (sec === 'pagos') window.cargarPagos();
+            if (window.innerWidth < 768) cerrarMenuMovil();
         };
-
+        
         window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
-
+        
         function configurarRealtime() {
             clienteSupabase.channel('mensajes').on('postgres_changes',{ event:'INSERT', schema:'public', table:'mensajes' }, p => {
                 if (p.new.remitente_id !== usuarioActual?.id) {
@@ -1004,7 +1274,7 @@
                 }
             }).subscribe();
         }
-
+        
         window.cerrarSesionCliente = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
@@ -1012,7 +1282,7 @@
                 window.location.href = 'index.html';
             }
         };
-
+        
         // =============================================
         // INICIALIZACIÓN
         // =============================================
@@ -1021,9 +1291,8 @@
             await cargarCategorias();
             await cargarDashboard();
             configurarRealtime();
-            iniciarMenuMovil(); // Inicializar menú móvil
+            iniciarMenuMovil();
         });
     </script>
-    <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
 </body>
 </html>
