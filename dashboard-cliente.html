@@ -491,10 +491,9 @@
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th></tr>
-                                </thead>
+                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th> </thead>
                                 <tbody id="tablaPagos"></tbody>
-                            </table>
+                             </table>
                         </div>
                     </div>
                 </section>
@@ -551,6 +550,7 @@
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
+        let formularioEnviando = false; // 🔴 BANDERA ANTI-DUPLICADO
 
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
@@ -731,15 +731,25 @@
         }
 
         // =============================================
-        // SOLICITAR DIAGNÓSTICO
+        // SOLICITAR DIAGNÓSTICO - CON BANDERA ANTI-DUPLICADO
         // =============================================
         document.getElementById('formDiagnostico')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // 🔴 EVITAR ENVÍOS MÚLTIPLES
+            if (formularioEnviando) {
+                console.log('⚠️ Formulario ya está siendo procesado, ignorando...');
+                return;
+            }
+            
             const btn = document.getElementById('btnPublicar');
             const subSelect = document.getElementById('subcategoria');
             const selectedOption = subSelect.options[subSelect.selectedIndex];
             const servicio = subSelect.value;
             const precioDiagnostico = parseInt(selectedOption.getAttribute('data-precio')) || 250;
+            
+            // 🔴 MARCAR COMO ENVIANDO
+            formularioEnviando = true;
             
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
@@ -749,6 +759,8 @@
                 const cp = document.getElementById('cp').value;
                 const colonia = document.getElementById('colonia').value;
                 const fecha = document.getElementById('fecha').value;
+                
+                console.log('📤 Enviando solicitud de diagnóstico...');
                 
                 const { data: servicioData, error: servError } = await clienteSupabase
                     .from('servicios')
@@ -770,6 +782,8 @@
                 
                 if (servError) throw servError;
                 
+                console.log('✅ Servicio creado:', servicioData.id);
+                
                 const { error: pagoError } = await clienteSupabase
                     .from('pagos')
                     .insert([{
@@ -784,14 +798,20 @@
                 
                 if (pagoError) throw pagoError;
                 
+                console.log('✅ Pago creado correctamente');
+                
                 alert('✅ Diagnóstico solicitado. En breve un tasker será asignado.');
                 window.cambiarSeccion('mis-servicios');
                 window.cargarMisServicios();
                 
             } catch (e) {
+                console.error('❌ Error:', e);
                 alert('Error: ' + e.message);
                 btn.disabled = false;
                 btn.innerHTML = 'Pagar Diagnóstico y Solicitar';
+            } finally {
+                // 🔴 RESTABLECER BANDERA
+                formularioEnviando = false;
             }
         });
 
@@ -1184,8 +1204,8 @@
                     .select('*, servicio:servicio_id(subcategoria)')
                     .eq('cliente_id', usuarioActual.id)
                     .order('fecha_pago', false);
-                if (!p?.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>'; return; }
-                t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado ${x.status === 'liberado' ? 'badge-completado' : 'badge-pendiente'}">${x.status === 'liberado' ? 'Liberado' : 'Retenido'}</span></td></tr>`).join('');
+                if (!p?.length) { t.innerHTML = '乔<td colspan="5" class="text-center p-4 text-slate-400">No hay pagos<\/td><\/tr>'; return; }
+                t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}<\/td><td class="p-4">${x.servicio?.subcategoria||''}<\/td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}<\/td><td class="p-4">$${x.comision_taskers?.toFixed(2)}<\/td><td class="p-4"><span class="badge-estado ${x.status === 'liberado' ? 'badge-completado' : 'badge-pendiente'}">${x.status === 'liberado' ? 'Liberado' : 'Retenido'}<\/span><\/td><\/tr>`).join('');
             } catch (e) { console.error(e); }
         };
         
