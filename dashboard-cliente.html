@@ -493,7 +493,7 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th> </thead>
                                 <tbody id="tablaPagos"></tbody>
-                             </table>
+                              </table>
                         </div>
                     </div>
                 </section>
@@ -550,7 +550,7 @@
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
-        let formularioEnviando = false; // 🔴 BANDERA ANTI-DUPLICADO
+        let formularioEnviando = false;
 
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
@@ -736,7 +736,6 @@
         document.getElementById('formDiagnostico')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // 🔴 EVITAR ENVÍOS MÚLTIPLES
             if (formularioEnviando) {
                 console.log('⚠️ Formulario ya está siendo procesado, ignorando...');
                 return;
@@ -748,9 +747,7 @@
             const servicio = subSelect.value;
             const precioDiagnostico = parseInt(selectedOption.getAttribute('data-precio')) || 250;
             
-            // 🔴 MARCAR COMO ENVIANDO
             formularioEnviando = true;
-            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
             
@@ -759,8 +756,6 @@
                 const cp = document.getElementById('cp').value;
                 const colonia = document.getElementById('colonia').value;
                 const fecha = document.getElementById('fecha').value;
-                
-                console.log('📤 Enviando solicitud de diagnóstico...');
                 
                 const { data: servicioData, error: servError } = await clienteSupabase
                     .from('servicios')
@@ -782,8 +777,6 @@
                 
                 if (servError) throw servError;
                 
-                console.log('✅ Servicio creado:', servicioData.id);
-                
                 const { error: pagoError } = await clienteSupabase
                     .from('pagos')
                     .insert([{
@@ -798,19 +791,15 @@
                 
                 if (pagoError) throw pagoError;
                 
-                console.log('✅ Pago creado correctamente');
-                
                 alert('✅ Diagnóstico solicitado. En breve un tasker será asignado.');
                 window.cambiarSeccion('mis-servicios');
                 window.cargarMisServicios();
                 
             } catch (e) {
-                console.error('❌ Error:', e);
                 alert('Error: ' + e.message);
                 btn.disabled = false;
                 btn.innerHTML = 'Pagar Diagnóstico y Solicitar';
             } finally {
-                // 🔴 RESTABLECER BANDERA
                 formularioEnviando = false;
             }
         });
@@ -1076,6 +1065,9 @@
             } catch (e) { alert('Error'); } finally { ocultarCarga(); }
         };
         
+        // =============================================
+        // CALIFICAR Y LIBERAR PAGO - CORREGIDO
+        // =============================================
         window.calificarYLiberarPago = async (servicioId, taskerId) => {
             const calificacion = prompt("¡Gracias por completar el servicio! Por favor, califica al tasker del 1 al 5:", "5");
             if (!calificacion) return;
@@ -1087,25 +1079,59 @@
             if (!confirm("Al calificar, se liberará el pago al tasker. ¿Confirmas?")) return;
             mostrarCarga();
             try {
-                const { data: tasker } = await clienteSupabase
+                // Obtener datos del tasker con maybeSingle para evitar errores si no existe
+                const { data: tasker, error: taskerError } = await clienteSupabase
                     .from('profiles')
                     .select('calificacion_promedio, total_calificaciones')
                     .eq('id', taskerId)
-                    .single();
-                const totalCalificaciones = (tasker.total_calificaciones || 0) + 1;
-                const nuevoPromedio = ((tasker.calificacion_promedio || 0) * (tasker.total_calificaciones || 0) + puntaje) / totalCalificaciones;
-                await clienteSupabase
+                    .maybeSingle();
+                
+                if (taskerError) throw taskerError;
+                
+                // Valores por defecto si son null
+                const calificacionActual = tasker?.calificacion_promedio || 0;
+                const totalCalificacionesActual = tasker?.total_calificaciones || 0;
+                
+                // Calcular nuevo promedio
+                const totalCalificaciones = totalCalificacionesActual + 1;
+                const nuevoPromedio = ((calificacionActual * totalCalificacionesActual) + puntaje) / totalCalificaciones;
+                
+                // Actualizar perfil del tasker
+                const { error: updateTaskerError } = await clienteSupabase
                     .from('profiles')
-                    .update({ calificacion_promedio: nuevoPromedio, total_calificaciones: totalCalificaciones, updated_at: new Date() })
+                    .update({ 
+                        calificacion_promedio: nuevoPromedio, 
+                        total_calificaciones: totalCalificaciones, 
+                        updated_at: new Date() 
+                    })
                     .eq('id', taskerId);
-                await clienteSupabase
+                
+                if (updateTaskerError) throw updateTaskerError;
+                
+                // Actualizar servicio a pagado
+                const { error: updateServicioError } = await clienteSupabase
                     .from('servicios')
-                    .update({ status: 'pagado', calificacion_cliente: puntaje, updated_at: new Date() })
+                    .update({ 
+                        status: 'pagado', 
+                        calificacion_cliente: puntaje, 
+                        updated_at: new Date() 
+                    })
                     .eq('id', servicioId);
-                await clienteSupabase
+                
+                if (updateServicioError) throw updateServicioError;
+                
+                // Actualizar pago a liberado
+                const { error: updatePagoError } = await clienteSupabase
                     .from('pagos')
-                    .update({ status: 'liberado', fecha_liberacion: new Date() })
+                    .update({ 
+                        status: 'liberado', 
+                        fecha_liberacion: new Date() 
+                    })
                     .eq('servicio_id', servicioId);
+                
+                if (updatePagoError) throw updatePagoError;
+                
+                // Notificar al tasker
                 await clienteSupabase
                     .from('notificaciones')
                     .insert([{ 
@@ -1114,13 +1140,17 @@
                         titulo: '¡Pago liberado!', 
                         mensaje: `Has recibido una calificación de ${puntaje}/5 estrellas y tu pago ha sido liberado.` 
                     }]);
+                
                 alert("✅ ¡Calificación enviada y pago liberado! Gracias por usar Tasker's.");
                 window.cargarMisServicios();
                 window.cargarDashboard();
+                
             } catch (error) {
                 console.error("Error:", error);
                 alert("Error: " + error.message);
-            } finally { ocultarCarga(); }
+            } finally { 
+                ocultarCarga(); 
+            }
         };
         
         // =============================================
