@@ -184,6 +184,7 @@
     </div>
 
     <script>
+        // SOLO UNA DECLARACIÓN DE SUPABASE
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -193,40 +194,32 @@
         let gananciasChart = null;
 
         // ============================================
-        // FUNCIONES GLOBALES (definidas ANTES de usarlas)
+        // FUNCIONES GLOBALES
         // ============================================
         
         function mostrarSeccion(seccion) {
             console.log('Mostrando sección:', seccion);
             
-            // Ocultar todas las secciones
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
-            // Mostrar la seleccionada
             const seccionEl = document.getElementById('seccion-' + seccion);
             if (seccionEl) seccionEl.classList.add('active');
             
-            // Actualizar active en sidebar
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             if (seccion === 'dashboard') document.getElementById('btnDashboard')?.classList.add('active');
             if (seccion === 'taskers') document.getElementById('btnTaskers')?.classList.add('active');
             if (seccion === 'servicios') document.getElementById('btnServicios')?.classList.add('active');
             if (seccion === 'pagos') document.getElementById('btnPagos')?.classList.add('active');
             if (seccion === 'ganancias') document.getElementById('btnGanancias')?.classList.add('active');
             
-            // Actualizar título
             const titulos = { dashboard:'Dashboard', taskers:'Taskers Pendientes', servicios:'Servicios', pagos:'Pagos', ganancias:'Mis Ganancias' };
             document.getElementById('section-title').innerText = titulos[seccion] || 'Admin';
             document.getElementById('section-subtitle').innerHTML = `Panel de control de ${(titulos[seccion] || 'admin').toLowerCase()}`;
             
-            // Cargar datos según sección
             if (seccion === 'taskers') cargarTaskers();
             if (seccion === 'servicios') cargarServicios();
             if (seccion === 'pagos') cargarPagos();
             if (seccion === 'ganancias') cargarGanancias();
             
-            // Cerrar menú móvil
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar')?.classList.remove('abierto');
                 document.getElementById('overlayMenu')?.classList.add('hidden');
@@ -240,11 +233,8 @@
             }
         }
         
-        // Exponer funciones globalmente para que los botones las encuentren
         window.mostrarSeccion = mostrarSeccion;
         window.cerrarSesion = cerrarSesion;
-        window.aprobarTasker = null;
-        window.rechazarTasker = null;
         
         // ============================================
         // MENÚ MÓVIL
@@ -259,7 +249,7 @@
         }
         
         // ============================================
-        // ASIGNAR EVENTOS A LOS BOTONES DEL SIDEBAR
+        // ASIGNAR EVENTOS
         // ============================================
         function asignarEventosBotones() {
             document.getElementById('btnDashboard')?.addEventListener('click', () => mostrarSeccion('dashboard'));
