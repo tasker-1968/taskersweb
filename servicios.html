@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Servicio | Tasker's México</title>
     
     <!-- Anti-caché -->
@@ -10,25 +10,28 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS y Fuentes -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fuente Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { font-family: 'Inter', sans-serif; }
         
         .hero-gradient {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #0A2540 0%, #1B4F72 50%, #2E86C1 100%);
         }
         
         .fade-in {
-            animation: fadeIn 0.6s ease-out;
+            animation: fadeIn 0.5s ease-out;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
@@ -37,433 +40,777 @@
         }
         
         .service-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -8px rgba(27, 79, 114, 0.2);
         }
         
-        @media (max-width: 640px) {
-            .hero-gradient {
-                border-radius: 1.5rem;
-            }
-        }
-        
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .btn-ripple {
-            position: relative;
-            overflow: hidden;
+        .btn-primary {
+            background: #1B4F72;
             transition: all 0.3s ease;
         }
         
-        .btn-ripple::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
+        .btn-primary:hover {
+            background: #2E86C1;
+            transform: translateY(-2px);
         }
         
-        .btn-ripple:hover::after {
-            animation: ripple 0.6s ease-out;
+        .btn-outline-primary {
+            border: 2px solid #1B4F72;
+            color: #1B4F72;
+            transition: all 0.3s ease;
         }
         
-        @keyframes ripple {
-            0% { transform: scale(0, 0); opacity: 0.5; }
-            100% { transform: scale(20, 20); opacity: 0; }
+        .btn-outline-primary:hover {
+            background: #1B4F72;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .benefit-item {
+            transition: all 0.2s ease;
+        }
+        
+        .benefit-item:hover {
+            transform: translateX(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-gradient {
+                border-radius: 1.5rem;
+                margin: 1rem;
+            }
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            button, a, [onclick] {
+                min-height: 44px;
+            }
         }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
-        <div class="container mx-auto px-4 sm:px-6">
-            <div class="flex justify-between items-center h-16 sm:h-20">
+    <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex justify-between items-center h-16 md:h-20">
                 <a href="index.html" class="flex items-center gap-2">
-                    <img src="logo-taskers.png" alt="Tasker's" class="h-8 sm:h-10 w-auto">
-                    <span class="text-blue-600 font-bold text-lg hidden sm:inline">Tasker's</span>
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-8 md:h-10 w-auto">
+                    <span class="text-[#1B4F72] font-bold text-lg hidden sm:inline">Tasker's México</span>
                 </a>
-                <div id="navButtons" class="flex items-center gap-3"></div>
+                <div class="flex items-center gap-3">
+                    <a href="login.html" class="text-[#1B4F72] hover:text-[#2E86C1] font-semibold text-sm md:text-base transition">Iniciar sesión</a>
+                    <a href="registro-clientes.html" class="btn-primary text-white px-4 py-2 rounded-full text-sm md:text-base hover:bg-[#2E86C1] transition shadow-md">
+                        Registrarse
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-4xl">
+    <main class="container mx-auto px-4 md:px-6 py-6 md:py-10 max-w-5xl">
         
         <div id="contenido-servicio" class="fade-in">
-            <div class="text-center py-12">
-                <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
-                <p class="text-slate-500 mt-4">Cargando información del servicio...</p>
-            </div>
+            <!-- El contenido se carga dinámicamente -->
         </div>
 
-        <div id="servicios-relacionados" class="mt-12"></div>
+        <!-- Servicios relacionados -->
+        <div id="servicios-relacionados" class="mt-10 md:mt-12">
+            <!-- Se llena con JavaScript -->
+        </div>
     </main>
 
-    <!-- Modal de Diagnóstico -->
-    <div id="diagnosticoModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-slate-800">Solicitar Diagnóstico</h3>
-                    <button onclick="cerrarDiagnosticoModal()" class="text-slate-400 hover:text-slate-600">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-                <div id="diagnosticoContenido" class="space-y-4"></div>
-            </div>
+    <!-- Footer simplificado -->
+    <footer class="bg-slate-900 text-slate-400 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2026 Tasker's México. Todos los derechos reservados.</p>
         </div>
-    </div>
+    </footer>
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE
+        // SUPABASE (para verificar si el usuario está logueado)
         // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Precios de diagnóstico por especialidad
-        const preciosDiagnostico = {
-            'Plomería': 250,
-            'Electricidad': 250,
-            'Carpintería': 200,
-            'Albañilería': 300,
-            'Pintura': 200,
-            'Impermeabilización': 350,
-            'Cerrajería': 200,
-            'Herrería': 250,
-            'Aluminio y Vidrio': 250,
-            'Limpieza de Hogar': 200,
-            'Limpieza de Oficinas': 250,
-            'Lavado de Salas/Alfombras': 300,
-            'Limpieza Post-Obra': 350,
-            'Sanitización': 250,
-            'Limpieza de Vidrios': 200,
-            'Limpieza Profunda': 300,
-            'Mecánica Automotriz': 350,
-            'Reparación de llantas': 200,
-            'Mudanzas': 300,
-            'Reparación de línea blanca': 350,
-            'Soporte Técnico': 300,
-            'Fumigación': 350,
-            'Chefs': 400
+        // =============================================
+        // BASE DE DATOS DE SERVICIOS (DESCRIPCIONES DETALLADAS)
+        // =============================================
+        const descripciones = {
+            // Mantenimiento
+            'Plomería': {
+                titulo: 'Servicio Profesional de Plomería',
+                descripcion: '¿Tienes una fuga, tubería tapada o necesitas instalar nuevos accesorios? Nuestros plomeros certificados resolverán cualquier problema con garantía y profesionalismo. Servicio disponible 24/7 para emergencias.',
+                icono: 'fa-wrench',
+                categoria: 'Mantenimiento',
+                precioBase: 350,
+                tiempoPromedio: '1-2 horas',
+                beneficios: [
+                    'Técnicos certificados con experiencia',
+                    'Diagnóstico gratuito sin compromiso',
+                    'Garantía de 30 días en reparaciones',
+                    'Presupuesto escrito detallado',
+                    'Servicio de emergencia 24/7',
+                    'Materiales de primera calidad'
+                ]
+            },
+            'Carpintería': {
+                titulo: 'Carpintería Profesional a Domicilio',
+                descripcion: 'Desde reparación de muebles hasta fabricación de cocinas integrales. Trabajamos con maderas finas y materiales de primera calidad. Diseño personalizado según tus necesidades.',
+                icono: 'fa-hammer',
+                categoria: 'Mantenimiento',
+                precioBase: 400,
+                tiempoPromedio: '2-4 horas',
+                beneficios: [
+                    'Diseño 3D personalizado',
+                    'Materiales de alta calidad certificados',
+                    'Acabados profesionales garantizados',
+                    'Entrega en tiempo récord',
+                    'Presupuesto sin costo',
+                    'Garantía de 1 año'
+                ]
+            },
+            'Albañilería': {
+                titulo: 'Albañilería y Construcción',
+                descripcion: 'Reparaciones, remodelaciones y construcciones nuevas. Nuestros maestros albañiles tienen años de experiencia en todo tipo de proyectos, desde pequeños arreglos hasta obras completas.',
+                icono: 'fa-trowel',
+                categoria: 'Mantenimiento',
+                precioBase: 500,
+                tiempoPromedio: '3-6 horas',
+                beneficios: [
+                    'Presupuesto detallado por escrito',
+                    'Materiales incluidos en cotización',
+                    'Limpieza garantizada al finalizar',
+                    'Supervisión profesional continua',
+                    'Permisos y licencias gestionados',
+                    'Garantía de 6 meses'
+                ]
+            },
+            'Pintura': {
+                titulo: 'Pintura Interior y Exterior',
+                descripcion: 'Dale vida a tus espacios con nuestros servicios de pintura profesional. Usamos pinturas de alta durabilidad y técnicas especializadas. Asesoría en colores y acabados.',
+                icono: 'fa-paint-roller',
+                categoria: 'Mantenimiento',
+                precioBase: 300,
+                tiempoPromedio: '2-5 horas',
+                beneficios: [
+                    'Asesoría profesional de colores',
+                    'Preparación completa de superficies',
+                    'Acabados perfectos y duraderos',
+                    'Limpieza total al finalizar',
+                    'Pinturas ecológicas disponibles',
+                    'Garantía de 2 años'
+                ]
+            },
+            'Electricidad': {
+                titulo: 'Instalaciones y Reparaciones Eléctricas',
+                descripcion: 'Electricistas certificados para todo tipo de trabajos: instalaciones nuevas, reparaciones, mantenimiento preventivo y correctivo. Seguridad y calidad garantizada.',
+                icono: 'fa-bolt',
+                categoria: 'Mantenimiento',
+                precioBase: 380,
+                tiempoPromedio: '1-3 horas',
+                beneficios: [
+                    'Técnicos certificados por CFE',
+                    'Trabajos con normativa vigente NOM',
+                    'Garantía por escrito en instalaciones',
+                    'Atención de emergencias 24/7',
+                    'Materiales certificados',
+                    'Seguro de responsabilidad civil'
+                ]
+            },
+            'Impermeabilización': {
+                titulo: 'Impermeabilización de Azoteas y Muros',
+                descripcion: 'Protege tu hogar de filtraciones y humedad. Aplicamos materiales de alta resistencia con garantía de hasta 5 años. Estudio previo de humedad incluido.',
+                icono: 'fa-cloud-rain',
+                categoria: 'Mantenimiento',
+                precioBase: 600,
+                tiempoPromedio: '3-5 horas',
+                beneficios: [
+                    'Materiales de primera calidad',
+                    'Garantía por escrito de 5 años',
+                    'Preparación profesional de superficies',
+                    'Resultados duraderos garantizados',
+                    'Estudio de humedad incluido',
+                    'Trabajo limpio y ordenado'
+                ]
+            },
+            'Cerrajería': {
+                titulo: 'Cerrajería Profesional 24/7',
+                descripcion: 'Cambio de chapas, apertura de puertas, instalación de cerraduras de seguridad. Servicio de emergencia las 24 horas, los 365 días del año.',
+                icono: 'fa-key',
+                categoria: 'Mantenimiento',
+                precioBase: 280,
+                tiempoPromedio: '30-60 min',
+                beneficios: [
+                    'Servicio urgente en menos de 30 min',
+                    'Sistemas de seguridad de alta gama',
+                    'Apertura sin daños garantizada',
+                    'Asesoramiento profesional en seguridad',
+                    'Presupuesto inmediato',
+                    'Técnicos certificados'
+                ]
+            },
+            'Herrería': {
+                titulo: 'Herrería Artística y Funcional',
+                descripcion: 'Diseño y fabricación de estructuras metálicas: puertas, ventanas, barandales, protectores y más. Trabajo artesanal con calidad industrial.',
+                icono: 'fa-fire',
+                categoria: 'Mantenimiento',
+                precioBase: 550,
+                tiempoPromedio: '3-6 horas',
+                beneficios: [
+                    'Diseños 100% personalizados',
+                    'Materiales resistentes a la intemperie',
+                    'Acabados de alta calidad',
+                    'Instalación profesional incluida',
+                    'Garantía contra oxidación',
+                    'Mantenimiento incluido'
+                ]
+            },
+            'Aluminio y Vidrio': {
+                titulo: 'Aluminio y Vidrio a la Medida',
+                descripcion: 'Fabricación e instalación de ventanas, cancelería, espejos y más. Materiales de alta calidad con acabados impecables y durabilidad garantizada.',
+                icono: 'fa-window-maximize',
+                categoria: 'Mantenimiento',
+                precioBase: 450,
+                tiempoPromedio: '2-4 horas',
+                beneficios: [
+                    'Medición exacta sin costo',
+                    'Instalación profesional garantizada',
+                    'Variedad de diseños y colores',
+                    'Garantía de 3 años en materiales',
+                    'Vidrios templados disponibles',
+                    'Ahorro energético garantizado'
+                ]
+            },
+            
+            // Limpieza
+            'Limpieza de Hogar': {
+                titulo: 'Limpieza Profesional para tu Hogar',
+                descripcion: 'Personal capacitado y con los mejores productos para dejar tu casa impecable. Servicio regular o limpieza profunda. Nos adaptamos a tu horario.',
+                icono: 'fa-broom',
+                categoria: 'Limpieza',
+                precioBase: 320,
+                tiempoPromedio: '2-4 horas',
+                beneficios: [
+                    'Productos biodegradables y seguros',
+                    'Personal de confianza verificado',
+                    'Seguro de responsabilidad incluido',
+                    'Resultados 100% garantizados',
+                    'Frecuencia a tu elección',
+                    'Materiales profesionales incluidos'
+                ]
+            },
+            'Limpieza de Oficinas': {
+                titulo: 'Limpieza para Empresas y Oficinas',
+                descripcion: 'Mantén tu espacio de trabajo impecable con nuestro servicio profesional. Frecuencia diaria, semanal o mensual. Personal uniformado y discreto.',
+                icono: 'fa-building',
+                categoria: 'Limpieza',
+                precioBase: 450,
+                tiempoPromedio: '2-3 horas',
+                beneficios: [
+                    'Horarios flexibles (incluso nocturnos)',
+                    'Personal uniformado y capacitado',
+                    'Materiales profesionales incluidos',
+                    'Certificaciones ISO disponibles',
+                    'Contrato personalizable',
+                    'Supervisión garantizada'
+                ]
+            },
+            'Lavado de Salas/Alfombras': {
+                titulo: 'Lavado Profesional de Tapicería',
+                descripcion: 'Eliminamos manchas, ácaros y malos olores de tus muebles y alfombras. Equipo especializado y productos de alta calidad. Secado rápido garantizado.',
+                icono: 'fa-couch',
+                categoria: 'Limpieza',
+                precioBase: 380,
+                tiempoPromedio: '1-3 horas',
+                beneficios: [
+                    'Secado rápido en 2-3 horas',
+                    'Eliminación de alérgenos y ácaros',
+                    'Productos hipoalergénicos certificados',
+                    'Garantía de servicio por escrito',
+                    'Equipo de última generación',
+                    'Protección de pisos y muebles'
+                ]
+            },
+            'Limpieza Post-Obra': {
+                titulo: 'Limpieza Después de Remodelaciones',
+                descripcion: 'Deja tu casa como nueva después de una obra. Eliminamos polvo, escombros y residuos de construcción. Servicio completo y profesional.',
+                icono: 'fa-hard-hat',
+                categoria: 'Limpieza',
+                precioBase: 550,
+                tiempoPromedio: '4-6 horas',
+                beneficios: [
+                    'Equipo especializado industrial',
+                    'Manejo y disposición de residuos',
+                    'Resultados profesionales garantizados',
+                    'Servicio rápido y eficiente',
+                    'Productos de alta potencia',
+                    'Inspección final incluida'
+                ]
+            },
+            'Sanitización': {
+                titulo: 'Sanitización Profesional',
+                descripcion: 'Eliminamos virus, bacterias y gérmenes de tus espacios. Protocolos avalados por autoridades sanitarias. Ideal para hogares, oficinas y comercios.',
+                icono: 'fa-spray-can',
+                categoria: 'Limpieza',
+                precioBase: 420,
+                tiempoPromedio: '1-2 horas',
+                beneficios: [
+                    'Productos certificados por COFEPRIS',
+                    'Personal capacitado y uniformado',
+                    'Efectividad garantizada del 99.9%',
+                    'Ambiente seguro para niños y mascotas',
+                    'Certificado de sanitización',
+                    'Equipo de fumigación profesional'
+                ]
+            },
+            'Limpieza de Vidrios': {
+                titulo: 'Limpieza de Ventanales y Vidrios',
+                descripcion: 'Vidrios impecables sin rayas ni manchas. Servicio para casas, oficinas y comercios. Equipo profesional y técnicas de altura seguras.',
+                icono: 'fa-window-restore',
+                categoria: 'Limpieza',
+                precioBase: 280,
+                tiempoPromedio: '1-2 horas',
+                beneficios: [
+                    'Sin rayones ni residuos',
+                    'Productos especializados anti-cal',
+                    'Trabajo en alturas seguro',
+                    'Resultados brillantes garantizados',
+                    'Equipo de osmosis profesional',
+                    'Protección de marcos y pisos'
+                ]
+            },
+            'Limpieza Profunda': {
+                titulo: 'Limpieza Integral a Fondo',
+                descripcion: 'Servicio completo que incluye cada rincón de tu hogar o negocio. Ideal para mudanzas o limpiezas periódicas. Cobertura total garantizada.',
+                icono: 'fa-star',
+                categoria: 'Limpieza',
+                precioBase: 520,
+                tiempoPromedio: '4-8 horas',
+                beneficios: [
+                    'Cobertura total de espacios',
+                    'Desinfección profunda incluida',
+                    'Personal especializado y verificado',
+                    'Satisfacción 100% garantizada',
+                    'Productos de alta calidad',
+                    'Checklist de limpieza incluido'
+                ]
+            },
+            
+            // Cuidados
+            'Cuidado de Niños': {
+                titulo: 'Niñeras Profesionales Certificadas',
+                descripcion: 'Personal capacitado en cuidado infantil, primeros auxilios y actividades recreativas. Tu tranquilidad es nuestra prioridad. Disponibilidad inmediata.',
+                icono: 'fa-child',
+                categoria: 'Cuidados',
+                precioBase: 250,
+                tiempoPromedio: 'Por hora',
+                beneficios: [
+                    'Certificación en primeros auxilios',
+                    'Verificación de antecedentes completa',
+                    'Actividades educativas y recreativas',
+                    'Reportes diarios con fotos',
+                    'Seguro de responsabilidad civil',
+                    'Atención personalizada'
+                ]
+            },
+            'Cuidado de Enfermos': {
+                titulo: 'Acompañamiento y Cuidado de Enfermos',
+                descripcion: 'Personal con experiencia en cuidados paliativos, administración de medicamentos y apoyo emocional. Disponibilidad 24/7 para tu tranquilidad.',
+                icono: 'fa-hospital',
+                categoria: 'Cuidados',
+                precioBase: 300,
+                tiempoPromedio: 'Por hora',
+                beneficios: [
+                    'Personal certificado y con experiencia',
+                    'Atención 100% personalizada',
+                    'Apoyo las 24 horas del día',
+                    'Respeto y dignidad garantizados',
+                    'Coordinación médica disponible',
+                    'Reportes a familiares'
+                ]
+            },
+            'Cuidado de Adultos Mayores': {
+                titulo: 'Cuidado Especializado para Adultos Mayores',
+                descripcion: 'Acompañamiento, asistencia personal y cuidados específicos para la tercera edad. Personal con vocación y experiencia en geriatría.',
+                icono: 'fa-hand-holding-heart',
+                categoria: 'Cuidados',
+                precioBase: 280,
+                tiempoPromedio: 'Por hora',
+                beneficios: [
+                    'Atención personalizada y respetuosa',
+                    'Estimulación cognitiva incluida',
+                    'Apoyo emocional y compañía',
+                    'Reportes diarios a familiares',
+                    'Asistencia en medicamentos',
+                    'Actividades recreativas'
+                ]
+            },
+            'Paseo de Mascotas': {
+                titulo: 'Paseadores de Mascotas Profesionales',
+                descripcion: 'Ejercicio y diversión para tu mejor amigo. Paseos grupales o individuales, con reporte y fotos. Seguro de responsabilidad incluido.',
+                icono: 'fa-dog',
+                categoria: 'Cuidados',
+                precioBase: 180,
+                tiempoPromedio: '30-60 min',
+                beneficios: [
+                    'Paseos seguros en áreas designadas',
+                    'Socialización controlada con otras mascotas',
+                    'Reporte con fotos y mapa de ruta',
+                    'Atención veterinaria de respaldo',
+                    'Agua y premios incluidos',
+                    'Seguro de responsabilidad'
+                ]
+            },
+            'Entrenamiento Canino': {
+                titulo: 'Entrenamiento Profesional para Perros',
+                descripcion: 'Educación canina con técnicas de refuerzo positivo. Mejora la convivencia y el comportamiento de tu mascota. Resultados garantizados.',
+                icono: 'fa-paw',
+                categoria: 'Cuidados',
+                precioBase: 400,
+                tiempoPromedio: '1 hora por sesión',
+                beneficios: [
+                    'Métodos positivos sin castigo',
+                    'Resultados garantizados en 8 sesiones',
+                    'Seguimiento personalizado',
+                    'Socialización con otros perros',
+                    'Técnicas de modificación de conducta',
+                    'Certificado de entrenamiento'
+                ]
+            },
+            'Enfermería a domicilio': {
+                titulo: 'Enfermería Profesional a Domicilio',
+                descripcion: 'Atención de enfermería especializada: curación de heridas, administración de medicamentos, cuidados post-operatorios y rehabilitación básica.',
+                icono: 'fa-user-nurse',
+                categoria: 'Cuidados',
+                precioBase: 350,
+                tiempoPromedio: 'Por hora',
+                beneficios: [
+                    'Personal titulado y con cédula',
+                    'Equipo profesional esterilizado',
+                    'Atención las 24 horas disponible',
+                    'Coordinación con médicos tratantes',
+                    'Reporte médico diario',
+                    'Material de curación incluido'
+                ]
+            },
+            
+            // Especializados (varios ejemplos)
+            'Mecánica Automotriz': {
+                titulo: 'Mecánica Automotriz a Domicilio',
+                descripcion: 'Reparaciones y mantenimiento en la comodidad de tu hogar. Diagnóstico computarizado y servicio garantizado. Ahorra tiempo y dinero.',
+                icono: 'fa-car',
+                categoria: 'Especializados',
+                precioBase: 450,
+                tiempoPromedio: '1-3 horas',
+                beneficios: [
+                    'Diagnóstico computarizado gratis',
+                    'Piezas originales garantizadas',
+                    'Garantía por escrito de 6 meses',
+                    'Servicio express a domicilio',
+                    'Mecánicos certificados',
+                    'Facturación disponible'
+                ]
+            },
+            'Mudanzas': {
+                titulo: 'Mudanzas y Fletes Profesionales',
+                descripcion: 'Servicio completo de mudanza con personal capacitado, equipo de protección y vehículos adecuados. Presupuesto sin compromiso.',
+                icono: 'fa-truck-moving',
+                categoria: 'Especializados',
+                precioBase: 800,
+                tiempoPromedio: '3-8 horas',
+                beneficios: [
+                    'Presupuesto detallado sin costo',
+                    'Seguro de carga incluido',
+                    'Personal capacitado y uniformado',
+                    'Desarmado y armado de muebles',
+                    'Material de embalaje incluido',
+                    'Servicio de almacenaje disponible'
+                ]
+            },
+            'Soporte Técnico': {
+                titulo: 'Soporte Técnico a Domicilio',
+                descripcion: 'Técnicos en computación, redes y electrónica. Reparación de equipos, instalación de software, recuperación de datos y más.',
+                icono: 'fa-laptop',
+                categoria: 'Especializados',
+                precioBase: 380,
+                tiempoPromedio: '1-2 horas',
+                beneficios: [
+                    'Diagnóstico gratuito en sitio',
+                    'Reparación express el mismo día',
+                    'Garantía de 3 meses en reparaciones',
+                    'Servicio a domicilio sin recargo',
+                    'Técnicos certificados',
+                    'Respaldo de datos incluido'
+                ]
+            },
+            'Fumigación': {
+                titulo: 'Fumigación y Control de Plagas',
+                descripcion: 'Eliminación profesional de plagas con productos de alta efectividad y seguros para personas y mascotas. Garantía extendida.',
+                icono: 'fa-bug',
+                categoria: 'Especializados',
+                precioBase: 550,
+                tiempoPromedio: '1-2 horas',
+                beneficios: [
+                    'Productos certificados por COFEPRIS',
+                    'Personal capacitado y uniformado',
+                    'Garantía extendida de 6 meses',
+                    'Métodos ecológicos disponibles',
+                    'Certificado de fumigación',
+                    'Estudio previo de plaga'
+                ]
+            },
+            
+            // Belleza
+            'Barbería': {
+                titulo: 'Barbería Profesional a Domicilio',
+                descripcion: 'Cortes de cabello, afeitado clásico y arreglo de barba con estilistas profesionales. Comodidad y calidad en tu hogar.',
+                icono: 'fa-cut',
+                categoria: 'Belleza',
+                precioBase: 250,
+                tiempoPromedio: '45-60 min',
+                beneficios: [
+                    'Estilistas certificados',
+                    'Productos profesionales de barbería',
+                    'Tendencias actuales y clásicos',
+                    'Comodidad sin salir de casa',
+                    'Toallas y material desechable',
+                    'Asepsia garantizada'
+                ]
+            },
+            'Masajes Relajantes': {
+                titulo: 'Masajes Relajantes y Terapéuticos',
+                descripcion: 'Terapeutas certificados para aliviar estrés, dolores musculares y mejorar tu bienestar. Múltiples técnicas disponibles.',
+                icono: 'fa-spa',
+                categoria: 'Belleza',
+                precioBase: 400,
+                tiempoPromedio: '60 min',
+                beneficios: [
+                    'Técnicas especializadas (sueco, deportivo)',
+                    'Ambiente relajante creado en tu hogar',
+                    'Aceites esenciales de calidad',
+                    'Resultados inmediatos',
+                    'Terapeutas certificados',
+                    'Camilla profesional incluida'
+                ]
+            }
         };
 
         // =============================================
-        // VERIFICAR AUTENTICACIÓN
+        // OBTENER SERVICIO DE LA URL
         // =============================================
-        async function checkAuth() {
+        function obtenerServicioDeURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const servicio = urlParams.get('sub') || '';
+            const categoria = urlParams.get('cat') || 'General';
+            return { nombre: decodeURIComponent(servicio), categoria };
+        }
+
+        // =============================================
+        // VERIFICAR SESIÓN PARA MOSTRAR BOTONES
+        // =============================================
+        async function verificarSesion() {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
-                const navButtons = document.getElementById('navButtons');
-                
-                if (session) {
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', session.user.id)
-                        .single();
-                    
-                    let dashboardLink = 'dashboard-cliente.html';
-                    if (profile?.role === 'tasker') dashboardLink = 'dashboard-tasker.html';
-                    if (profile?.role === 'admin') dashboardLink = 'admin.html';
-                    
-                    navButtons.innerHTML = `
-                        <a href="${dashboardLink}" class="text-blue-600 hover:text-blue-800 font-semibold text-sm sm:text-base">Mi Panel</a>
-                        <button onclick="cerrarSesion()" class="text-red-600 hover:text-red-800 font-semibold text-sm sm:text-base">Salir</button>
-                    `;
-                    return true;
-                } else {
-                    navButtons.innerHTML = `
-                        <a href="login.html" class="text-blue-600 hover:text-blue-800 font-semibold text-sm sm:text-base">Iniciar sesión</a>
-                        <a href="registro-clientes.html" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm sm:text-base hover:bg-blue-700 transition shadow-lg">Registrarse</a>
-                    `;
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error en auth:', error);
+                return !!session;
+            } catch {
                 return false;
             }
         }
 
-        window.cerrarSesion = async function() {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        };
-
         // =============================================
-        // CARGAR SERVICIO
+        // CARGAR CONTENIDO DEL SERVICIO
         // =============================================
-        function cargarServicio() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const servicio = urlParams.get('sub') || 'Servicio';
-            
-            const precioDiagnostico = preciosDiagnostico[servicio] || 250;
-            const iconoMap = {
-                'Plomería': 'fa-wrench', 'Electricidad': 'fa-bolt', 'Carpintería': 'fa-hammer',
-                'Albañilería': 'fa-trowel', 'Pintura': 'fa-paint-roller', 'Cerrajería': 'fa-key',
-                'Mecánica Automotriz': 'fa-car', 'Mudanzas': 'fa-truck', 'Soporte Técnico': 'fa-laptop',
-                'Chefs': 'fa-utensils', 'Limpieza de Hogar': 'fa-broom'
+        async function cargarServicio() {
+            const { nombre, categoria } = obtenerServicioDeURL();
+            const info = descripciones[nombre] || {
+                titulo: nombre + ' Profesional',
+                descripcion: 'Servicio profesional de ' + nombre.toLowerCase() + ' con personal altamente capacitado y verificado por Tasker\'s México. Calidad y confianza garantizada.',
+                icono: 'fa-briefcase',
+                categoria: categoria,
+                precioBase: 350,
+                tiempoPromedio: '1-3 horas',
+                beneficios: [
+                    'Personal verificado con antecedentes',
+                    'Garantía de servicio por escrito',
+                    'Precios justos y transparentes',
+                    'Resultados 100% garantizados',
+                    'Atención personalizada',
+                    'Seguimiento post-servicio'
+                ]
             };
-            const icono = iconoMap[servicio] || 'fa-briefcase';
-            
+
+            const estaLogueado = await verificarSesion();
             const contenido = document.getElementById('contenido-servicio');
             
             contenido.innerHTML = `
-                <div class="hero-gradient rounded-3xl p-6 sm:p-8 text-white mb-8 shadow-xl">
+                <!-- Hero del servicio -->
+                <div class="hero-gradient rounded-2xl md:rounded-3xl p-6 md:p-8 text-white mb-6 md:mb-8 shadow-xl">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="bg-white/20 p-3 rounded-2xl">
-                            <i class="fas ${icono} text-2xl sm:text-3xl"></i>
+                            <i class="fas ${info.icono} text-2xl md:text-3xl"></i>
                         </div>
                         <div>
-                            <h1 class="text-2xl sm:text-3xl font-bold">${servicio}</h1>
-                            <p class="text-sm text-blue-200 mt-1">Diagnóstico + Cotización</p>
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full">${info.categoria}</span>
+                            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mt-2">${info.titulo}</h1>
                         </div>
                     </div>
                 </div>
 
+                <!-- Grid principal -->
                 <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Columna izquierda: descripción y beneficios -->
                     <div class="md:col-span-2">
-                        <div class="bg-white rounded-2xl shadow-sm p-6">
-                            <h2 class="text-xl font-bold text-slate-800 mb-4">¿Cómo funciona?</h2>
+                        <div class="bg-white rounded-2xl shadow-sm p-5 md:p-6">
+                            <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-[#1B4F72]"></i>
+                                ¿En qué consiste este servicio?
+                            </h2>
+                            <p class="text-slate-600 leading-relaxed">
+                                ${info.descripcion}
+                            </p>
                             
-                            <div class="space-y-4">
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="text-blue-600 font-bold">1</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Solicita diagnóstico</h3>
-                                        <p class="text-sm text-slate-500">Paga el diagnóstico ($${precioDiagnostico}) y agenda la visita del profesional</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="text-blue-600 font-bold">2</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Recibe diagnóstico y cotización</h3>
-                                        <p class="text-sm text-slate-500">El tasker evalúa el problema y te envía una cotización detallada</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="text-blue-600 font-bold">3</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Aprueba y ejecuta</h3>
-                                        <p class="text-sm text-slate-500">Si aceptas, pagas el adicional y el tasker realiza el trabajo</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="text-blue-600 font-bold">4</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Califica y libera pago</h3>
-                                        <p class="text-sm text-slate-500">Al finalizar, califica al tasker y se libera su pago</p>
-                                    </div>
-                                </div>
+                            <div class="mt-6">
+                                <h3 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    Beneficios exclusivos:
+                                </h3>
+                                <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    ${info.beneficios.map(b => `
+                                        <li class="benefit-item flex items-center gap-2 text-sm text-slate-600 p-2 hover:bg-slate-50 rounded-lg transition">
+                                            <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                            ${b}
+                                        </li>
+                                    `).join('')}
+                                </ul>
                             </div>
-                            
-                            <div class="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                                <div class="flex gap-2 text-sm text-yellow-800">
-                                    <i class="fas fa-info-circle mt-0.5"></i>
-                                    <p>El diagnóstico es pagado por separado. Si decides continuar con la reparación, el costo del diagnóstico se descuenta del total.</p>
+
+                            <div class="mt-6 pt-4 border-t border-slate-100">
+                                <div class="flex flex-wrap gap-4 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-clock text-[#1B4F72]"></i>
+                                        <span class="text-slate-600">Tiempo estimado: <strong>${info.tiempoPromedio}</strong></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-dollar-sign text-[#1B4F72]"></i>
+                                        <span class="text-slate-600">Precio base desde: <strong>$${info.precioBase}</strong></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-shield-alt text-[#1B4F72]"></i>
+                                        <span class="text-slate-600">Profesional verificado</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Columna derecha: CTA -->
                     <div>
-                        <div class="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
-                            <div class="text-center mb-6">
-                                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-stethoscope text-2xl text-blue-600"></i>
+                        <div class="bg-white rounded-2xl shadow-sm p-5 md:p-6 sticky top-24">
+                            <div class="text-center mb-5">
+                                <div class="w-16 h-16 bg-[#1B4F72]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-plus text-2xl text-[#1B4F72]"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-slate-800">Diagnóstico</h3>
-                                <p class="text-3xl font-bold text-blue-600 mt-2">$${precioDiagnostico}</p>
-                                <p class="text-xs text-slate-500">Pago único, no reembolsable</p>
+                                <h3 class="text-lg font-bold text-slate-800">¿Necesitas este servicio?</h3>
+                                <p class="text-sm text-slate-500 mt-2">
+                                    Contrata profesionales verificados y recibe propuestas en minutos.
+                                </p>
                             </div>
 
                             <div class="space-y-3">
-                                <button onclick="solicitarDiagnostico('${servicio}', ${precioDiagnostico})" 
-                                        id="btnDiagnostico"
-                                        class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
-                                    <i class="fas fa-clinic-medical mr-2"></i>Solicitar diagnóstico
-                                </button>
-                                <a href="login.html" class="block w-full text-center border border-blue-600 text-blue-600 py-3 rounded-xl font-bold hover:bg-blue-50 transition">
-                                    Ya tengo cuenta
-                                </a>
+                                ${estaLogueado ? `
+                                    <a href="dashboard-cliente.html" 
+                                       class="block w-full btn-primary text-white text-center py-3 rounded-xl font-bold transition shadow-md">
+                                        <i class="fas fa-tachometer-alt mr-2"></i>Ir a mi panel
+                                    </a>
+                                    <button onclick="solicitarServicio()" 
+                                       class="block w-full bg-green-600 text-white text-center py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-md">
+                                        <i class="fas fa-plus-circle mr-2"></i>Solicitar este servicio
+                                    </button>
+                                ` : `
+                                    <a href="registro-clientes.html" 
+                                       class="block w-full btn-primary text-white text-center py-3 rounded-xl font-bold transition shadow-md">
+                                        <i class="fas fa-user-plus mr-2"></i>Crear cuenta como cliente
+                                    </a>
+                                    <a href="login.html" 
+                                       class="block w-full btn-outline-primary text-center py-3 rounded-xl font-bold transition">
+                                        <i class="fas fa-sign-in-alt mr-2"></i>Ya tengo cuenta
+                                    </a>
+                                `}
+                            </div>
+
+                            <div class="mt-5 pt-4 border-t border-slate-100">
+                                <div class="flex items-start gap-2 text-xs text-slate-400">
+                                    <i class="fas fa-shield-alt text-[#1B4F72] mt-0.5"></i>
+                                    <span>Todos nuestros profesionales pasan por verificación de identidad y antecedentes penales.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-            
-            // Verificar autenticación para mostrar/ocultar botones
-            setTimeout(async () => {
-                const isLoggedIn = await checkAuth();
-                const btn = document.getElementById('btnDiagnostico');
-                if (!isLoggedIn && btn) {
-                    btn.onclick = () => window.location.href = 'login.html';
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Inicia sesión para solicitar';
-                }
-            }, 100);
         }
 
         // =============================================
-        // SOLICITAR DIAGNÓSTICO
+        // SERVICIOS RELACIONADOS
         // =============================================
-        window.solicitarDiagnostico = async function(servicio, precioDiagnostico) {
-            const session = await supabaseClient.auth.getSession();
-            if (!session.data.session) {
-                window.location.href = 'login.html';
+        function cargarRelacionados() {
+            const { nombre, categoria } = obtenerServicioDeURL();
+            const serviciosMismaCategoria = Object.entries(descripciones)
+                .filter(([key, val]) => val.categoria === categoria && key !== nombre)
+                .slice(0, 4);
+
+            const relacionadosDiv = document.getElementById('servicios-relacionados');
+            
+            if (serviciosMismaCategoria.length === 0) {
+                relacionadosDiv.innerHTML = '';
                 return;
             }
-            
-            const modal = document.getElementById('diagnosticoModal');
-            const contenido = document.getElementById('diagnosticoContenido');
-            
-            contenido.innerHTML = `
-                <form id="formDiagnostico" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Descripción del problema</label>
-                        <textarea id="descripcionProblema" rows="3" required 
-                            class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
-                            placeholder="Describe detalladamente el problema que necesitas resolver..."></textarea>
+
+            relacionadosDiv.innerHTML = `
+                <div class="border-t border-slate-200 pt-6 mt-6">
+                    <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-th-large text-[#1B4F72]"></i>
+                        Otros servicios que te pueden interesar
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        ${serviciosMismaCategoria.map(([key, val]) => `
+                            <a href="?cat=${encodeURIComponent(categoria)}&sub=${encodeURIComponent(key)}" 
+                               class="service-card bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition text-center block">
+                                <div class="w-10 h-10 bg-[#1B4F72]/10 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas ${val.icono} text-[#1B4F72] text-lg"></i>
+                                </div>
+                                <h4 class="font-medium text-sm text-slate-800">${key}</h4>
+                                <p class="text-xs text-slate-500 mt-1">Desde $${val.precioBase}</p>
+                            </a>
+                        `).join('')}
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Código Postal</label>
-                            <input type="text" id="cpDiagnostico" required maxlength="5" class="w-full p-3 border rounded-xl">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Colonia</label>
-                            <input type="text" id="coloniaDiagnostico" class="w-full p-3 border rounded-xl">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Fecha deseada</label>
-                        <input type="datetime-local" id="fechaDiagnostico" class="w-full p-3 border rounded-xl">
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-xl">
-                        <div class="flex justify-between text-sm">
-                            <span>Diagnóstico:</span>
-                            <span class="font-bold">$${precioDiagnostico}</span>
-                        </div>
-                        <div class="flex justify-between text-sm mt-2 text-slate-500">
-                            <span>Comisión Tasker's (15%):</span>
-                            <span>$${(precioDiagnostico * 0.15).toFixed(2)}</span>
-                        </div>
-                        <div class="border-t mt-3 pt-3 flex justify-between font-bold">
-                            <span>Total a pagar:</span>
-                            <span class="text-blue-600">$${precioDiagnostico}</span>
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
-                        Pagar $${precioDiagnostico} y solicitar
-                    </button>
-                </form>
+                </div>
             `;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            document.getElementById('formDiagnostico').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await procesarDiagnostico(servicio, precioDiagnostico);
-            });
-        };
-        
-        window.cerrarDiagnosticoModal = function() {
-            const modal = document.getElementById('diagnosticoModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
-        
-        async function procesarDiagnostico(servicio, precioDiagnostico) {
-            const btn = document.querySelector('#formDiagnostico button');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
-            
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) throw new Error('No estás autenticado');
-                
-                const descripcion = document.getElementById('descripcionProblema').value;
-                const cp = document.getElementById('cpDiagnostico').value;
-                const colonia = document.getElementById('coloniaDiagnostico').value;
-                const fecha = document.getElementById('fechaDiagnostico').value;
-                
-                // Crear servicio como diagnóstico
-                const { data: servicioData, error: servError } = await supabaseClient
-                    .from('servicios')
-                    .insert([{
-                        cliente_id: session.user.id,
-                        subcategoria: servicio,
-                        descripcion: `[DIAGNÓSTICO] ${descripcion}`,
-                        ubicacion: colonia ? `${colonia}, CP ${cp}` : `CP ${cp}`,
-                        cp: cp,
-                        monto_ofertado: precioDiagnostico,
-                        status: 'diagnostico_pendiente',
-                        tipo_servicio: 'diagnostico',
-                        fecha_solicitada: fecha || null,
-                        created_at: new Date()
-                    }])
-                    .select()
-                    .single();
-                
-                if (servError) throw servError;
-                
-                // Registrar pago del diagnóstico
-                const { error: pagoError } = await supabaseClient
-                    .from('pagos')
-                    .insert([{
-                        servicio_id: servicioData.id,
-                        cliente_id: session.user.id,
-                        monto_total: precioDiagnostico,
-                        comision_taskers: precioDiagnostico * 0.15,
-                        monto_tasker: precioDiagnostico * 0.85,
-                        status: 'retenido',
-                        fecha_pago: new Date()
-                    }]);
-                
-                if (pagoError) throw pagoError;
-                
-                alert('✅ Diagnóstico solicitado. En breve un tasker se pondrá en contacto.');
-                cerrarDiagnosticoModal();
-                window.location.href = 'dashboard-cliente.html';
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
         }
+
+        // =============================================
+        // SOLICITAR SERVICIO (REDIRIGIR AL DASHBOARD)
+        // =============================================
+        window.solicitarServicio = function() {
+            const { nombre, categoria } = obtenerServicioDeURL();
+            // Guardar en sessionStorage para pre-llenar el formulario
+            sessionStorage.setItem('servicioSolicitado', JSON.stringify({
+                nombre: nombre,
+                categoria: categoria
+            }));
+            window.location.href = 'dashboard-cliente.html?seccion=nuevo-servicio';
+        };
 
         // =============================================
         // INICIALIZAR
         // =============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            cargarServicio();
-            checkAuth();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarServicio();
+            cargarRelacionados();
         });
     </script>
 </body>
