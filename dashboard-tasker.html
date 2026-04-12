@@ -2,25 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Panel Tasker | Tasker's Profesional</title>
     
+    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .sidebar-tasker {
-            background: linear-gradient(180deg, #0A2540 0%, #1B4F72 100%);
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
             transition: left 0.3s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
@@ -28,24 +29,22 @@
         .sidebar-link {
             transition: all 0.2s ease;
             border-left: 3px solid transparent;
-            border-radius: 0 12px 12px 0;
-            margin: 4px 0;
         }
         
         .sidebar-link:hover {
-            background: rgba(46, 134, 193, 0.2);
-            border-left-color: #2E86C1;
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #fbbf24;
         }
         
         .sidebar-link.active {
-            background: rgba(46, 134, 193, 0.3);
-            border-left-color: #2E86C1;
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #fbbf24;
             color: white;
         }
         
         .seccion-contenido {
             display: none;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.4s ease-out;
         }
         
         .seccion-contenido.active {
@@ -53,107 +52,80 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         .chat-message {
-            max-width: 75%;
+            max-width: 70%;
             animation: slideIn 0.3s ease-out;
         }
         
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
         .chat-tasker {
-            background: linear-gradient(135deg, #1B4F72, #2E86C1);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
             margin-left: auto;
-            border-radius: 20px 20px 4px 20px;
+            border-bottom-right-radius: 4px;
         }
         
         .chat-client {
             background: #f1f5f9;
             color: #1e293b;
-            border-radius: 20px 20px 20px 4px;
+            border-bottom-left-radius: 4px;
         }
         
         .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            @apply px-3 py-1 rounded-full text-xs font-bold;
         }
         
-        .status-disponible { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-        .status-asignado { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
-        .status-progreso { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
-        .status-completado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .status-disponible { 
+            background: #d1fae5; 
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .status-asignado { 
+            background: #dbeafe; 
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        .status-progreso { 
+            background: #ede9fe; 
+            color: #5b21b6;
+            border: 1px solid #c4b5fd;
+        }
+        .status-completado { 
+            background: #f1f5f9; 
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
         
         .stat-card {
             transition: all 0.3s ease;
-            border-left: 4px solid #1B4F72;
+            border-left: 4px solid transparent;
         }
         
         .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(27, 79, 114, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
-        #map {
-            height: 280px;
-            width: 100%;
-            border-radius: 16px;
-            z-index: 1;
+        .service-card {
+            transition: all 0.3s ease;
         }
         
-        @media (min-width: 768px) {
-            #map { height: 350px; }
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
         
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 34px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-slider {
-            background-color: #10b981;
-        }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(24px);
-        }
-        
+        /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
+            /* Sidebar oculto por defecto */
             .sidebar-tasker {
                 position: fixed !important;
                 left: -280px !important;
@@ -161,9 +133,17 @@
                 bottom: 0 !important;
                 z-index: 9999 !important;
                 width: 280px !important;
+                display: flex !important;
                 transition: left 0.3s ease !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
-            .sidebar-tasker.abierto { left: 0 !important; }
+            
+            /* Sidebar visible */
+            .sidebar-tasker.abierto {
+                left: 0 !important;
+            }
+            
+            /* Overlay */
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -173,191 +153,624 @@
                 background: rgba(0, 0, 0, 0.5) !important;
                 z-index: 9998 !important;
                 display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
             }
-            #overlayMenu.visible { display: block !important; }
+            
+            #overlayMenu.visible {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            
+            /* Botón menú siempre visible */
             #btnMenuMovil {
                 display: flex !important;
+                z-index: 10000 !important;
                 position: fixed !important;
                 top: 1rem !important;
                 left: 1rem !important;
-                background: #1B4F72 !important;
+                background: #3b82f6 !important;
                 color: white !important;
                 width: 48px !important;
                 height: 48px !important;
-                border-radius: 14px !important;
+                border-radius: 12px !important;
                 align-items: center !important;
                 justify-content: center !important;
-                z-index: 10000 !important;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
-            .ml-12 { margin-left: 3.5rem !important; }
-            .p-6 { padding: 1rem !important; }
-            .grid-cols-2 { gap: 0.75rem !important; }
-            .stat-card { padding: 0.875rem !important; }
-            .stat-card p.text-3xl { font-size: 1.5rem !important; }
-            button, .sidebar-link, [onclick] { min-height: 44px !important; }
-            input, select, textarea { font-size: 16px !important; }
-            .chat-message { max-width: 85% !important; }
+            
+            /* Ajustes de contenido */
+            .ml-12 {
+                margin-left: 3.5rem !important;
+            }
+            
+            .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .grid-cols-2 {
+                gap: 0.75rem !important;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Tablas horizontales */
+            .table-container {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                margin: 0 -1rem !important;
+                padding: 0 1rem !important;
+                width: calc(100% + 2rem) !important;
+            }
+            
+            table {
+                min-width: 600px !important;
+            }
+            
+            /* Botones más grandes para touch */
+            button, 
+            .sidebar-link,
+            [onclick] {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+            
+            /* Inputs sin zoom */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+            
+            /* Ajustes de chat */
+            .chat-message {
+                max-width: 85% !important;
+            }
         }
         
-        .custom-marker {
-            background: #1B4F72;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        /* Ajustes para tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-2 {
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 2rem;
+            }
         }
         
-        .animate-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .file-upload {
+            border: 2px dashed #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
         
-        body.menu-open { overflow: hidden !important; }
-        .animate-slideIn { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .file-upload.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Prevenir scroll cuando el menú está abierto */
+        body.menu-open {
+            overflow: hidden !important;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
 
-    <button id="btnMenuMovil" class="hidden md:hidden"><i class="fas fa-bars text-xl"></i></button>
-    <div id="overlayMenu" class="hidden md:hidden"></div>
+    <!-- Botón menú móvil -->
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
 
-    <div id="loadingModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl shadow-xl text-center"><i class="fas fa-spinner fa-spin text-3xl text-[#1B4F72] mb-3"></i><p class="text-gray-600 font-medium">Cargando...</p></div>
+    <!-- Overlay para móvil -->
+    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
+
+    <!-- Modal de carga -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600 font-medium">Cargando...</p>
+        </div>
     </div>
 
-    <div id="propuestaModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3><button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button></div>
+    <!-- Modal de propuesta -->
+    <div id="propuestaModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3>
+                <button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
             <form id="propuestaForm" class="space-y-4">
-                <div><label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label><input type="number" id="propuestaMonto" required min="100" step="100" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle text-[#1B4F72]"></i> Recibirás el 85% (comisión Tasker's: 15%)</p></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label><textarea id="propuestaMensaje" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Describe por qué eres la mejor opción..."></textarea></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label><select id="propuestaTiempo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><option value="60">1 hora</option><option value="120">2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option><option value="300">5 horas</option><option value="360">6+ horas</option></select></div>
-                <button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">Enviar Propuesta</button>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label>
+                    <input type="number" id="propuestaMonto" required min="100" step="100"
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                        Recibirás el 85% (comisión Tasker's: 15%)
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label>
+                    <textarea id="propuestaMensaje" rows="3" 
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        placeholder="Describe por qué eres la mejor opción..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label>
+                    <select id="propuestaTiempo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <option value="60">1 hora</option>
+                        <option value="120">2 horas</option>
+                        <option value="180">3 horas</option>
+                        <option value="240">4 horas</option>
+                        <option value="300">5 horas</option>
+                        <option value="360">6+ horas</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                    Enviar Propuesta
+                </button>
             </form>
         </div>
     </div>
 
-    <div id="retiroModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3><button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button></div>
+    <!-- Modal de retiro -->
+    <div id="retiroModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3>
+                <button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
             <form id="retiroForm" class="space-y-4">
-                <div><label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label><input type="number" id="retiroMonto" required min="100" step="100" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label><select id="retiroMetodo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><option value="transferencia">Transferencia bancaria</option><option value="paypal">PayPal</option></select></div>
-                <div id="datosBancarios"><label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label><input type="text" id="retiroClabe" maxlength="18" class="w-full p-3 border rounded-xl"></div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">Solicitar Retiro</button>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label>
+                    <input type="number" id="retiroMonto" required min="100" step="100"
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label>
+                    <select id="retiroMetodo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <option value="transferencia">Transferencia bancaria</option>
+                        <option value="paypal">PayPal</option>
+                    </select>
+                </div>
+                <div id="datosBancarios">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label>
+                    <input type="text" id="retiroClabe" maxlength="18" 
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
+                    Solicitar Retiro
+                </button>
             </form>
         </div>
     </div>
 
     <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
         <aside id="sidebar" class="sidebar-tasker w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
-            <div class="p-5 border-b border-white/10"><div class="flex items-center gap-3"><img src="logo-taskers.png" alt="Tasker's" class="h-9 w-auto"><div><div class="text-lg font-bold text-white">Tasker's</div><div class="text-xs text-[#2E86C1]">Panel Profesional</div></div></div><div id="userInfo" class="mt-4 text-sm bg-white/10 p-3 rounded-xl"></div></div>
-            <nav class="flex-1 mt-4 space-y-1 px-3">
-                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio"><i class="fas fa-home w-6"></i><span>Inicio</span></a>
-                <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles"><i class="fas fa-search w-6"></i><span>Servicios Disponibles</span></a>
-                <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos"><i class="fas fa-briefcase w-6"></i><span>Mis Trabajos</span></a>
-                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat"><i class="fas fa-comments w-6"></i><span>Mensajes</span><span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span></a>
-                <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas"><i class="fas fa-wallet w-6"></i><span>Finanzas</span></a>
-                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil"><i class="fas fa-user w-6"></i><span>Mi Perfil</span></a>
+            <div class="p-6 border-b border-white/20">
+                <div class="flex items-center gap-3">
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
+                    <div>
+                        <div class="text-xl font-bold text-white">Tasker's</div>
+                        <div class="text-xs text-yellow-400">Panel Profesional</div>
+                    </div>
+                </div>
+                <div id="userInfo" class="mt-4 text-sm text-blue-100 bg-white/10 p-3 rounded-lg">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+            
+            <nav class="flex-1 mt-6 space-y-1 px-3">
+                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio">
+                    <i class="fas fa-home w-6"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles">
+                    <i class="fas fa-search w-6"></i>
+                    <span>Servicios Disponibles</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos">
+                    <i class="fas fa-briefcase w-6"></i>
+                    <span>Mis Trabajos</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat">
+                    <i class="fas fa-comments w-6"></i>
+                    <span>Mensajes</span>
+                    <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas">
+                    <i class="fas fa-wallet w-6"></i>
+                    <span>Finanzas</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil">
+                    <i class="fas fa-user w-6"></i>
+                    <span>Mi Perfil</span>
+                </a>
+                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </nav>
-            <div class="p-4 border-t border-white/10"><button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i>Cerrar Sesión</button></div>
+            
+            <div class="p-4 border-t border-white/20">
+                <button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
+                </button>
+            </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
-            <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200 p-4 sticky top-0 z-10 flex justify-between items-center">
-                <div class="ml-12 md:ml-0"><h2 id="section-title" class="text-lg md:text-xl font-bold text-slate-800">Inicio</h2><p id="section-subtitle" class="text-xs md:text-sm text-slate-500">Bienvenido a tu panel profesional</p></div>
-                <div class="flex items-center gap-3">
-                    <span id="verificationBadge" class="hidden px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> Pendiente</span>
-                    <div class="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1"><span class="text-xs text-slate-600">En línea</span><label class="toggle-switch"><input type="checkbox" id="onlineToggle" onchange="toggleModoOnline()"><span class="toggle-slider"></span></label></div>
-                    <button onclick="window.mostrarSeccion('chat')" class="relative"><i class="fas fa-comments text-slate-600 text-lg md:text-xl hover:text-[#1B4F72] transition"></i><span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span></button>
-                    <div id="headerAvatar" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72] cursor-pointer" onclick="window.mostrarSeccion('perfil')"></div>
+            <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
+                <div class="ml-12 md:ml-0">
+                    <h2 id="section-title" class="text-xl font-bold text-slate-800">Inicio</h2>
+                    <p id="section-subtitle" class="text-sm text-slate-500">Bienvenido a tu panel profesional</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="verificationBadge" class="hidden px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                        <i class="fas fa-clock mr-1"></i> Pendiente verificación
+                    </span>
+                    <button onclick="window.mostrarSeccion('chat')" class="relative">
+                        <i class="fas fa-comments text-slate-600 text-xl hover:text-blue-600 transition"></i>
+                        <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
+                    </button>
+                    <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-500 cursor-pointer" onclick="window.mostrarSeccion('perfil')"></div>
                 </div>
             </header>
 
-            <div class="p-4 md:p-6">
+            <div class="p-6">
                 <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido active">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-6">
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Ganancias del mes</p><p id="statsGanancias" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0</p></div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Trabajos completados</p><p id="statsCompletados" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">En progreso</p><p id="statsProgreso" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Calificación</p><p id="statsCalificacion" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0.0</p></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-slate-500 text-sm">Ganancias del mes</p>
+                            <p id="statsGanancias" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-slate-500 text-sm">Trabajos completados</p>
+                            <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-slate-500 text-sm">En progreso</p>
+                            <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-slate-500 text-sm">Calificación</p>
+                            <p id="statsCalificacion" class="text-3xl font-bold text-slate-800 mt-2">0.0</p>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-semibold text-slate-800 mb-4"><i class="fas fa-calendar-alt text-[#1B4F72] mr-2"></i>Próximos trabajos</h3><div id="proximosTrabajos" class="space-y-3"><p class="text-slate-400 text-center py-6">Cargando...</p></div></div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Próximos trabajos</h3>
+                        <div id="proximosTrabajos" class="space-y-3">
+                            <p class="text-slate-400 text-center py-4">Cargando...</p>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- SERVICIOS DISPONIBLES -->
                 <section id="seccion-disponibles" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5"><h3 class="text-xl md:text-2xl font-bold text-slate-800">Servicios Disponibles</h3><select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border rounded-lg text-sm"><option value="">Todas las categorías</option></select></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">Servicios Disponibles</h3>
+                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                    </div>
                     <div id="disponiblesContainer" class="space-y-4"></div>
                 </section>
 
                 <!-- MIS TRABAJOS -->
                 <section id="seccion-mis-trabajos" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5"><h3 class="text-xl md:text-2xl font-bold text-slate-800">Mis Trabajos</h3><select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border rounded-lg text-sm"><option value="todos">Todos</option><option value="asignado">Asignados</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">Mis Trabajos</h3>
+                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option value="todos">Todos</option>
+                            <option value="asignado">Asignados</option>
+                            <option value="en_progreso">En progreso</option>
+                            <option value="completado">Completados</option>
+                        </select>
+                    </div>
                     <div id="misTrabajosContainer" class="space-y-4"></div>
                 </section>
 
                 <!-- CHAT -->
                 <section id="seccion-chat" class="seccion-contenido">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 h-[calc(100vh-180px)]">
-                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col"><div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-semibold"><i class="fas fa-comments mr-2"></i>Conversaciones</h3></div><div id="conversacionesLista" class="overflow-y-auto flex-1 p-2"></div></div>
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm flex flex-col"><div id="chatHeader" class="p-4 border-b bg-slate-50 hidden"><div class="flex items-center gap-3"><div id="chatClienteAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72]"></div><div><h4 id="chatClienteNombre" class="font-bold text-slate-800"></h4><p id="chatServicioInfo" class="text-xs text-slate-500"></p></div></div></div><div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3"></div><div id="chatInput" class="p-4 border-t bg-slate-50 hidden"><form id="mensajeForm" class="flex gap-2"><input type="text" id="mensajeTexto" class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Escribe tu mensaje..."><button type="submit" class="bg-[#1B4F72] text-white px-5 py-3 rounded-xl hover:bg-[#2E86C1] transition"><i class="fas fa-paper-plane"></i></button></form><p class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-shield-alt text-[#1B4F72] mr-1"></i>Todos los mensajes son monitoreados por seguridad</p></div></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                                <h3 class="font-bold">Conversaciones</h3>
+                            </div>
+                            <div id="conversacionesLista" class="overflow-y-auto h-full">
+                                <p class="text-slate-400 text-center p-4">Cargando...</p>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
+                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
+                                <div class="flex items-center gap-3">
+                                    <div id="chatClienteAvatar" class="w-12 h-12 rounded-full bg-slate-300 border-2 border-blue-500"></div>
+                                    <div>
+                                        <h4 id="chatClienteNombre" class="font-bold text-slate-800"></h4>
+                                        <p id="chatServicioInfo" class="text-xs text-slate-500"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                                <p class="text-slate-400 text-center py-8">Selecciona una conversación</p>
+                            </div>
+
+                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
+                                <form id="mensajeForm" class="flex gap-2">
+                                    <input type="text" id="mensajeTexto" 
+                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                        placeholder="Escribe tu mensaje...">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <p class="text-xs text-slate-400 mt-2 text-center">
+                                    <i class="fas fa-shield-alt mr-1 text-blue-600"></i>
+                                    Todos los mensajes son monitoreados. No compartas datos de contacto.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <!-- FINANZAS -->
                 <section id="seccion-finanzas" class="seccion-contenido">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6">
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Saldo disponible</p><p id="saldoActual" class="text-2xl md:text-3xl font-bold text-green-600 mt-1">$0.00</p><button onclick="abrirRetiroModal()" class="mt-4 w-full bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-money-bill-wave mr-2"></i>Retirar</button></div>
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Ganancias totales</p><p id="gananciasTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p></div>
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Comisiones pagadas</p><p id="comisionesTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <p class="text-slate-500 text-sm">Saldo disponible</p>
+                            <p id="saldoActual" class="text-3xl font-bold text-green-600 mt-2">$0.00</p>
+                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                <i class="fas fa-money-bill-wave mr-2"></i>Retirar
+                            </button>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <p class="text-slate-500 text-sm">Ganancias totales</p>
+                            <p id="gananciasTotales" class="text-3xl font-bold text-slate-800 mt-2">$0.00</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <p class="text-slate-500 text-sm">Comisiones pagadas</p>
+                            <p id="comisionesTotales" class="text-3xl font-bold text-slate-800 mt-2">$0.00</p>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-bold text-slate-800 mb-4">Historial de pagos</h3><div class="table-container overflow-x-auto"><table class="w-full min-w-[500px]"><thead class="bg-slate-50"><tr><th class="p-3 text-left text-sm">Fecha</th><th class="p-3 text-left text-sm">Servicio</th><th class="p-3 text-left text-sm">Monto</th><th class="p-3 text-left text-sm">Comisión</th><th class="p-3 text-left text-sm">Neto</th><th class="p-3 text-left text-sm">Estado</th></tr></thead><tbody id="pagosTableBody"><tr><td colspan="6" class="text-center p-6 text-slate-400">Cargando...</td></tr></tbody></table></div></div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Historial de pagos</h3>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Comisión</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Neto</th>
+                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagosTableBody">
+                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- PERFIL -->
                 <section id="seccion-perfil" class="seccion-contenido">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-6 md:p-8"><h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-6">Mi Perfil Profesional</h3><div class="flex flex-col items-center mb-6"><div class="relative"><div id="profileAvatar" class="w-28 h-28 rounded-full bg-slate-300 border-4 border-[#1B4F72]/20"></div><button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-[#1B4F72] text-white p-2 rounded-full hover:bg-[#2E86C1] transition"><i class="fas fa-camera text-sm"></i></button></div><input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()"><p class="text-xs text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p></div>
-                        <form id="perfilForm" class="space-y-4"><div><label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label><input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label><input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50 text-slate-500"></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label><input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label><textarea id="perfilDescripcion" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label><input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"></div><button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">Guardar Cambios</button></form></div>
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-6">Mi Perfil Profesional</h3>
+                        
+                        <div class="flex flex-col items-center mb-8">
+                            <div class="relative">
+                                <div id="profileAvatar" class="w-32 h-32 rounded-full bg-slate-300 border-4 border-blue-100"></div>
+                                <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
+                            <p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
+                        </div>
+
+                        <form id="perfilForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label>
+                                <input type="text" id="perfilNombre" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label>
+                                <input type="email" id="perfilEmail" readonly class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label>
+                                <input type="tel" id="perfilTelefono" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label>
+                                <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                    placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label>
+                                <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
                 </section>
+
+                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </div>
         </main>
     </div>
 
     <script>
+        // =============================================
+        // CONFIGURACIÓN ÚNICA - VARIABLE RENOMBRADA
+        // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         const taskerSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
         let servicioSeleccionado = null;
 
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
         function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
-        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-[#1B4F72]'} text-white max-w-xs`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
+        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white max-w-md`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN
+        // =============================================
+        async function verificarAuth(redirectUrl = 'login.html') {
+            try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; }
+            catch { window.location.href = redirectUrl; return null; }
+        }
+
+        // =============================================
+        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // =============================================
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
-            if (!menuBtn || !sidebar || !overlay) return;
-            menuBtn.onclick = function(e) { e.preventDefault(); sidebar.classList.add('abierto'); overlay.classList.add('visible'); document.body.classList.add('menu-open'); };
-            overlay.onclick = function() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); };
-            document.querySelectorAll('.sidebar-link').forEach(link => { link.onclick = function() { if (window.innerWidth < 768) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } }; });
-        }
-        function cerrarMenuMovil() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlayMenu'); if (sidebar && overlay) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } }
-        window.addEventListener('resize', function() { if (window.innerWidth >= 768) cerrarMenuMovil(); });
+            
+            if (!menuBtn || !sidebar || !overlay) {
+                console.error('❌ Elementos del menú no encontrados');
+                return;
+            }
 
-        async function verificarAuth(redirectUrl = 'login.html') { try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; } catch { window.location.href = redirectUrl; return null; } }
+            console.log('✅ Menú móvil inicializado');
+
+            // Abrir menú
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔵 Abriendo menú');
+                
+                sidebar.classList.add('abierto');
+                overlay.classList.add('visible');
+                document.body.classList.add('menu-open');
+            });
+
+            // Cerrar con overlay
+            overlay.addEventListener('click', function() {
+                console.log('⚫ Cerrando menú');
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            });
+
+            // Cerrar con enlaces
+            const links = document.querySelectorAll('.sidebar-link');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('abierto');
+                        overlay.classList.remove('visible');
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            });
+        }
+
+        // Función para cerrar menú manualmente
+        function cerrarMenuMovil() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            }
+        }
+
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                cerrarMenuMovil();
+            }
+        });
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarUsuario();
+            await cargarCategoriasFiltro();
+            await cargarDashboard();
+            await cargarFinanzas();
+            configurarRealtime();
+            iniciarMenuMovil(); // Inicializar menú móvil
+        });
+
+        function menuMovil() {
+            // Esta función se mantiene por compatibilidad
+        }
+        function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
 
         async function cargarUsuario() {
             mostrarCarga();
@@ -368,9 +781,13 @@
                 if (!perfil) throw new Error('Perfil no encontrado');
                 usuarioActual = perfil;
                 document.getElementById('userInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Tasker'}</p><p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>`;
-                if (perfil.photo_url) { document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`; document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`; }
-                if (perfil.status === 'pending') document.getElementById('verificationBadge').classList.remove('hidden');
-                if (perfil.online) document.getElementById('onlineToggle').checked = true;
+                if (perfil.photo_url) {
+                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                    document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                }
+                if (perfil.status === 'pending') {
+                    document.getElementById('verificationBadge').classList.remove('hidden');
+                }
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
@@ -379,15 +796,9 @@
             } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
         }
 
-        window.toggleModoOnline = async function() {
-            const toggle = document.getElementById('onlineToggle');
-            const isOnline = toggle.checked;
-            try {
-                await taskerSupabase.from('profiles').update({ online: isOnline, updated_at: new Date() }).eq('id', usuarioActual.id);
-                notificar(isOnline ? '✅ Ahora estás en línea' : '⭕ Has entrado en modo offline', 'success');
-            } catch (error) { toggle.checked = !isOnline; notificar('Error al cambiar estado', 'error'); }
-        };
-
+        // =============================================
+        // DASHBOARD INICIO
+        // =============================================
         async function cargarDashboard() {
             try {
                 const { data: trabajos } = await taskerSupabase.from('servicios').select('*').eq('tasker_id', usuarioActual.id).order('created_at', false);
@@ -395,18 +806,44 @@
                 const mesActual = ahora.getMonth();
                 const anioActual = ahora.getFullYear();
                 let ganancias = 0;
-                (trabajos || []).forEach(t => { if (t.status === 'completado') { const fecha = new Date(t.fecha_completado || t.created_at); if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) ganancias += (t.monto_final || t.monto_ofertado || 0) * 0.85; } });
+                (trabajos || []).forEach(t => {
+                    if (t.status === 'completado') {
+                        const fecha = new Date(t.fecha_completado || t.created_at);
+                        if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
+                            ganancias += (t.monto_final || 0) * 0.85;
+                        }
+                    }
+                });
                 document.getElementById('statsGanancias').textContent = `$${ganancias.toFixed(2)}`;
                 document.getElementById('statsCompletados').textContent = (trabajos || []).filter(t => t.status === 'completado').length;
                 document.getElementById('statsProgreso').textContent = (trabajos || []).filter(t => t.status === 'en_progreso').length;
                 document.getElementById('statsCalificacion').textContent = usuarioActual.calificacion_promedio?.toFixed(1) || '0.0';
+
                 const proximos = (trabajos || []).filter(t => ['asignado', 'en_progreso'].includes(t.status)).slice(0, 5);
                 const container = document.getElementById('proximosTrabajos');
-                if (proximos.length === 0) { container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>'; }
-                else { container.innerHTML = proximos.map(t => `<div class="border rounded-xl p-4 hover:bg-slate-50 transition"><div class="flex justify-between items-start flex-wrap gap-2"><div><h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${t.ubicacion || ''}</p></div><span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">${t.status === 'asignado' ? 'Asignado' : 'En progreso'}</span></div><div class="mt-3 flex justify-between items-center"><span class="text-sm font-bold text-[#1B4F72]">$${(t.monto_ofertado || 0).toFixed(2)}</span><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="text-sm bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full hover:bg-[#1B4F72]/20 transition"><i class="fas fa-comment mr-1"></i>Chat</button></div></div>`).join(''); }
+                if (proximos.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>';
+                } else {
+                    container.innerHTML = proximos.map(t => `
+                        <div class="border rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4>
+                                    <p class="text-sm text-slate-600">${t.ubicacion || ''}</p>
+                                </div>
+                                <span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">
+                                    ${t.status === 'asignado' ? 'Asignado' : 'En progreso'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
             } catch (e) { console.error(e); }
         }
 
+        // =============================================
+        // CATEGORÍAS PARA FILTRO
+        // =============================================
         async function cargarCategoriasFiltro() {
             try {
                 const { data: cats } = await taskerSupabase.from('categorias').select('*').eq('activo', true);
@@ -416,6 +853,9 @@
             } catch (e) { console.error(e); }
         }
 
+        // =============================================
+        // SERVICIOS DISPONIBLES
+        // =============================================
         window.cargarDisponibles = async function() {
             const container = document.getElementById('disponiblesContainer');
             const categoriaFiltro = document.getElementById('filtroCategoria').value;
@@ -424,16 +864,38 @@
                 if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
                 const { data: servicios } = await query;
                 if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
-                container.innerHTML = servicios.map(s => `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion?.substring(0, 100)}${s.descripcion?.length > 100 ? '...' : ''}</p></div><span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div><div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div></div><div class="border-t pt-4 flex justify-end"><button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-[#1B4F72] text-white px-5 py-2 rounded-lg hover:bg-[#2E86C1] transition">Enviar propuesta</button></div></div>`).join('');
+                container.innerHTML = servicios.map(s => `
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600">${s.descripcion}</p>
+                            </div>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div>
+                            <div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
+                        </div>
+                        <div class="border-t pt-4 flex justify-end">
+                            <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Enviar propuesta</button>
+                        </div>
+                    </div>
+                `).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
         };
 
+        // =============================================
+        // PROPUESTAS
+        // =============================================
         window.abrirPropuestaModal = function(servicioId, presupuestoMaximo) {
             servicioSeleccionado = { id: servicioId, maximo: presupuestoMaximo };
             document.getElementById('propuestaMonto').value = presupuestoMaximo * 0.85;
             document.getElementById('propuestaModal').classList.remove('hidden');
             document.getElementById('propuestaModal').classList.add('flex');
         };
+
         function cerrarPropuestaModal() { document.getElementById('propuestaModal').classList.add('hidden'); document.getElementById('propuestaModal').classList.remove('flex'); servicioSeleccionado = null; }
 
         document.getElementById('propuestaForm').addEventListener('submit', async (e) => {
@@ -448,11 +910,13 @@
                 await taskerSupabase.from('propuestas').insert([{ servicio_id: servicioSeleccionado.id, tasker_id: usuarioActual.id, monto_propuesto: monto, mensaje: document.getElementById('propuestaMensaje').value, tiempo_estimado: parseInt(document.getElementById('propuestaTiempo').value), status: 'pendiente', created_at: new Date() }]);
                 const { data: servicio } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', servicioSeleccionado.id).single();
                 await taskerSupabase.from('notificaciones').insert([{ usuario_id: servicio.cliente_id, tipo: 'propuesta', titulo: '¡Nueva propuesta recibida!', mensaje: 'Un tasker ha enviado una propuesta para tu servicio' }]);
-                notificar('¡Propuesta enviada! El cliente la revisará', 'success');
-                cerrarPropuestaModal();
+                alert('¡Propuesta enviada!'); cerrarPropuestaModal();
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         });
 
+        // =============================================
+        // MIS TRABAJOS
+        // =============================================
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
             const container = document.getElementById('misTrabajosContainer');
@@ -464,35 +928,58 @@
                 container.innerHTML = trabajos.map(t => {
                     const esAsignado = t.status === 'asignado';
                     const esProgreso = t.status === 'en_progreso';
-                    const direccion = t.ubicacion || 'Dirección no especificada';
-                    return `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion?.substring(0, 80)}...</p></div><span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span></div><div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>Dirección</p><p class="text-sm">${direccion}</p></div></div>${esAsignado ? `<div class="border-t pt-4 flex gap-3 flex-wrap"><button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-comment mr-2"></i>Contactar cliente</button></div>` : ''}${esProgreso ? `<div class="border-t pt-4"><button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 transition"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button></div>` : ''}</div>`;
-                }).join('');
+                    const esCompletado = t.status === 'completado';
+                    
+                    return `
+                    <div class="bg-white rounded-xl shadow-sm p-6 ${!esCompletado ? 'service-card' : ''}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion}</p></div>
+                            <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">
+                                ${t.status}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${t.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p></div>
+                        </div>
+                        ${esAsignado ? `
+                        <div class="border-t pt-4 flex gap-3">
+                            <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button>
+                            <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Contactar cliente</button>
+                        </div>
+                        ` : esProgreso ? `
+                        <div class="border-t pt-4">
+                            <p class="text-sm text-slate-600 mb-3"><i class="fas fa-info-circle text-blue-600 mr-2"></i>Esperando confirmación del cliente</p>
+                            <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `}).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
         };
 
         window.iniciarTrabajo = async (id) => {
             if (!confirm('¿Confirmas que vas a iniciar este trabajo?')) return;
-            mostrarCarga();
             try {
                 await taskerSupabase.from('servicios').update({ status: 'en_progreso', fecha_inicio: new Date() }).eq('id', id);
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar.' }]);
-                notificar('Trabajo iniciado', 'success');
-                window.cargarMisTrabajos();
-                await cargarDashboard();
-            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
+                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar' }]);
+                alert('Trabajo iniciado'); window.cargarMisTrabajos();
+            } catch (e) { alert('Error: ' + e.message); }
         };
 
         window.solicitarFinalizacion = async (id) => {
-            if (!confirm('¿Solicitar al cliente que confirme la finalización del trabajo?')) return;
-            mostrarCarga();
+            if (!confirm('¿Solicitar al cliente que confirme la finalización?')) return;
             try {
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma y califica.' }]);
-                notificar('Solicitud enviada al cliente', 'success');
-            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
+                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma.' }]);
+                alert('Solicitud enviada');
+            } catch (e) { alert('Error: ' + e.message); }
         };
 
+        // =============================================
+        // FINANZAS
+        // =============================================
         async function cargarFinanzas() {
             try {
                 const { data: pagos } = await taskerSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('tasker_id', usuarioActual.id).order('fecha_pago', false);
@@ -509,9 +996,12 @@
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('comisionesTotales').textContent = `$${comisiones.toFixed(2)}`;
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
+
                 const tbody = document.getElementById('pagosTableBody');
-                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-slate-400">No hay pagos</td></tr>'; return; }
-                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status === 'completado' ? 'Liberado' : 'Retenido'}</span></td></tr>`).join('');
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                tbody.innerHTML = pagos.map(p => `
+                    <tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>
+                `).join('');
             } catch (e) { console.error(e); }
         };
 
@@ -522,15 +1012,21 @@
             const monto = parseFloat(document.getElementById('retiroMonto').value);
             const saldo = parseFloat(document.getElementById('saldoActual').textContent.replace('$', ''));
             if (monto > saldo) { alert('Monto insuficiente'); return; }
-            alert('Solicitud de retiro enviada. El administrador la revisará.'); cerrarRetiroModal();
+            alert('Solicitud de retiro enviada'); cerrarRetiroModal();
         });
 
+        // =============================================
+        // CHAT
+        // =============================================
         window.cargarConversaciones = async function() {
             const c = document.getElementById('conversacionesLista');
             try {
                 const { data: chats } = await taskerSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', false);
                 if (!chats?.length) { c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>'; return; }
-                c.innerHTML = chats.map(ch => { const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1; return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url||''}');"></div><div><p class="font-bold">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje.substring(0,30)}</p>`:''}</div></div></div>`; }).join('');
+                c.innerHTML = chats.map(ch => {
+                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
+                    return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300"></div><div><p class="font-bold">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
+                }).join('');
             } catch (e) { console.error(e); }
         };
 
@@ -584,6 +1080,9 @@
             } catch (e) { console.error(e); alert('Error al abrir chat'); }
         };
 
+        // =============================================
+        // PERFIL
+        // =============================================
         document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
@@ -608,37 +1107,64 @@
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
+        // =============================================
+        // NAVEGACIÓN
+        // =============================================
         window.mostrarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil' };
+            
+            const tit = { 
+                inicio:'Inicio', 
+                disponibles:'Servicios Disponibles', 
+                'mis-trabajos':'Mis Trabajos', 
+                chat:'Mensajes', 
+                finanzas:'Finanzas', 
+                perfil:'Mi Perfil'
+            };
+            
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            if (sec === 'disponibles') window.cargarDisponibles();
-            if (sec === 'mis-trabajos') window.cargarMisTrabajos();
-            if (sec === 'chat') window.cargarConversaciones();
-            if (sec === 'finanzas') cargarFinanzas();
-            if (sec === 'inicio') cargarDashboard();
+            
+            if (sec === 'disponibles') {
+                console.log('🔄 Cargando servicios disponibles...');
+                window.cargarDisponibles();
+            }
+            if (sec === 'mis-trabajos') {
+                console.log('🔄 Cargando mis trabajos...');
+                window.cargarMisTrabajos();
+            }
+            if (sec === 'chat') {
+                console.log('🔄 Cargando conversaciones...');
+                window.cargarConversaciones();
+            }
+            if (sec === 'finanzas') {
+                console.log('🔄 Cargando finanzas...');
+                cargarFinanzas();
+            }
+            
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
         function configurarRealtime() {
-            taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => { if (p.new.remitente_id !== usuarioActual?.id) { if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new); else notificar('Nuevo mensaje recibido'); } }).subscribe();
-            taskerSupabase.channel('propuestas-tasker').on('postgres_changes', { event:'UPDATE', schema:'public', table:'propuestas', filter:`tasker_id=eq.${usuarioActual?.id}` }, p => { if (p.new.status === 'aceptada') { notificar('¡Propuesta aceptada! Revisa tus trabajos', 'success'); window.cargarMisTrabajos(); } }).subscribe();
+            taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => {
+                if (p.new.remitente_id !== usuarioActual?.id) {
+                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                    else notificar('Nuevo mensaje recibido');
+                }
+            }).subscribe();
         }
 
-        window.cerrarSesionTasker = async function() { if (confirm('¿Cerrar sesión?')) { mostrarCarga(); await taskerSupabase.auth.signOut(); window.location.href = 'index.html'; } };
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarUsuario();
-            await cargarCategoriasFiltro();
-            await cargarDashboard();
-            await cargarFinanzas();
-            configurarRealtime();
-            iniciarMenuMovil();
-        });
+        window.cerrarSesionTasker = async function() {
+            if (confirm('¿Cerrar sesión?')) {
+                mostrarCarga();
+                await taskerSupabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
+        };
     </script>
+    <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
 </body>
 </html>
