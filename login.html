@@ -10,411 +10,364 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS y Fuentes -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fuente Inter (estilo Uber) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { font-family: 'Inter', sans-serif; }
         
-        .bg-animated {
-            background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #2563eb, #1e40af);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+        .split-screen {
+            display: flex;
             min-height: 100vh;
         }
         
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #0A2540 0%, #1B4F72 50%, #2E86C1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: white;
         }
         
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
         }
         
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1.5px solid #e2e8f0;
+        }
+        
+        .input-field:focus {
+            border-color: #1B4F72;
+            box-shadow: 0 0 0 3px rgba(27, 79, 114, 0.1);
+            outline: none;
+        }
+        
+        .btn-login {
+            background: #1B4F72;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: #2E86C1;
+            transform: translateY(-2px);
+        }
+        
+        .btn-social {
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-social:hover {
+            border-color: #1B4F72;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .animate-slideUp {
-            animation: slideUp 0.6s ease-out;
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
         }
         
-        .input-focus {
-            transition: all 0.3s ease;
+        @media (max-width: 768px) {
+            .split-screen {
+                flex-direction: column;
+            }
+            .left-panel {
+                min-height: 30vh;
+                padding: 1.5rem;
+            }
+            .right-panel {
+                min-height: 70vh;
+                padding: 1.5rem;
+            }
+            .glass-card {
+                padding: 1.5rem;
+            }
         }
         
-        .input-focus:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
-        }
-        
-        .btn-ripple {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-ripple::after {
-            content: '';
+        /* Floating shapes */
+        .floating-shape {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
         }
         
-        .btn-ripple:hover::after {
-            animation: ripple 0.6s ease-out;
-        }
-        
-        @keyframes ripple {
-            0% { transform: scale(0, 0); opacity: 0.5; }
-            100% { transform: scale(20, 20); opacity: 0; }
-        }
-        
-        @media (max-width: 640px) {
-            .glass-card { margin: 1rem; padding: 1.5rem; }
-        }
-        
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-        
-        .animate-slideIn {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
         }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <!-- Fondo decorativo -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-    </div>
-
-    <!-- Logo flotante (desktop) -->
-    <div class="fixed top-8 left-8 hidden lg:block animate-slideUp">
-        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20">
-            <img src="logo-taskers.png" alt="Tasker's México" class="h-10 w-auto">
-            <span class="text-white font-bold text-xl">Tasker's</span>
-            <span class="text-blue-200 text-sm">MÉXICO</span>
-        </div>
-    </div>
-
-    <!-- Tarjeta de Login -->
-    <div class="glass-card rounded-3xl shadow-2xl w-full max-w-md p-6 md:p-8 animate-slideUp">
+<div class="split-screen">
+    <!-- Left Panel - Branding -->
+    <div class="left-panel relative overflow-hidden">
+        <div class="floating-shape w-64 h-64 -top-20 -left-20"></div>
+        <div class="floating-shape w-48 h-48 bottom-10 right-10 animation-delay-2000"></div>
+        <div class="floating-shape w-32 h-32 top-1/2 left-1/2 animation-delay-4000"></div>
         
-        <!-- Logo móvil -->
-        <div class="flex justify-center mb-6 lg:hidden">
-            <img src="logo-taskers.png" alt="Tasker's México" class="h-12 w-auto">
+        <div class="text-center text-white z-10 relative animate-fadeIn">
+            <img src="logo-taskers.png" alt="Tasker's México" class="h-16 w-auto mx-auto mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">¡Bienvenido de vuelta!</h1>
+            <p class="text-white/80 text-sm md:text-base max-w-sm mx-auto">
+                Accede a tu cuenta para gestionar tus servicios, comunicarte con profesionales y mucho más.
+            </p>
+            <div class="mt-8 flex justify-center gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold">+5K</div>
+                    <div class="text-xs text-white/70">Profesionales</div>
+                </div>
+                <div class="w-px h-10 bg-white/30"></div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">+10K</div>
+                    <div class="text-xs text-white/70">Servicios</div>
+                </div>
+                <div class="w-px h-10 bg-white/30"></div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">98%</div>
+                    <div class="text-xs text-white/70">Satisfacción</div>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">¡Bienvenido de vuelta!</h1>
-            <p class="text-sm md:text-base text-slate-500">Accede a tu cuenta para gestionar tus servicios</p>
-        </div>
+    <!-- Right Panel - Login Form -->
+    <div class="right-panel">
+        <div class="w-full max-w-md animate-fadeIn">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Iniciar Sesión</h2>
+                <p class="text-slate-500 text-sm">Ingresa tus datos para acceder a tu cuenta</p>
+            </div>
 
-        <!-- Formulario de Login -->
-        <form id="loginForm" class="space-y-5 md:space-y-6">
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                    <i class="fas fa-envelope mr-2"></i> Correo Electrónico
-                </label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-envelope"></i></span>
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-[#1B4F72]"></i> Correo Electrónico
+                    </label>
                     <input type="email" id="email" required 
-                        class="input-focus w-full pl-12 pr-4 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base"
+                        class="input-field w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white transition"
                         placeholder="tucorreo@ejemplo.com">
                 </div>
-            </div>
 
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                    <i class="fas fa-lock mr-2"></i> Contraseña
-                </label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><i class="fas fa-lock"></i></span>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-[#1B4F72]"></i> Contraseña
+                    </label>
                     <input type="password" id="password" required 
-                        class="input-focus w-full pl-12 pr-4 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base"
+                        class="input-field w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white transition"
                         placeholder="••••••••">
+                </div>
+
+                <div class="flex justify-between items-center text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-[#1B4F72] focus:ring-[#1B4F72]">
+                        <span class="text-slate-600">Recordarme</span>
+                    </label>
+                    <a href="#" class="text-[#1B4F72] hover:text-[#2E86C1] transition">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" id="loginBtn" 
+                    class="btn-login w-full text-white py-3 rounded-xl font-bold text-base transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-200"></div>
+                </div>
+                <div class="relative flex justify-center text-xs">
+                    <span class="bg-white px-4 text-slate-400">O continúa con</span>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="remember" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                    <span class="text-slate-600">Recordar mi cuenta</span>
-                </label>
-                <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline transition">¿Olvidaste tu contraseña?</a>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="loginWithProvider('google')" 
+                    class="btn-social flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                    <span class="text-sm font-medium text-slate-700">Google</span>
+                </button>
+                <button onclick="loginWithProvider('facebook')" 
+                    class="btn-social flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition">
+                    <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
+                    <span class="text-sm font-medium text-slate-700">Facebook</span>
+                </button>
             </div>
 
-            <button type="submit" id="loginBtn" 
-                class="btn-ripple w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            </button>
-        </form>
-
-        <div class="relative my-6 md:my-8">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-            <div class="relative flex justify-center text-xs md:text-sm"><span class="bg-white px-4 text-slate-400">O continúa con</span></div>
+            <div class="mt-8 text-center">
+                <p class="text-sm text-slate-500">
+                    ¿No tienes cuenta? 
+                    <a href="registro-clientes.html" class="text-[#1B4F72] font-semibold hover:text-[#2E86C1] transition">Regístrate como Cliente</a>
+                </p>
+                <p class="text-sm text-slate-500 mt-2">
+                    ¿Eres profesional? 
+                    <a href="registro-taskers.html" class="text-[#1B4F72] font-semibold hover:text-[#2E86C1] transition">Regístrate como Tasker</a>
+                </p>
+            </div>
         </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-            <button onclick="loginWithProvider('google')" 
-                class="flex items-center justify-center gap-2 px-4 py-3 md:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                <span class="text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600">Google</span>
-            </button>
-            <button onclick="loginWithProvider('facebook')" 
-                class="flex items-center justify-center gap-2 px-4 py-3 md:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
-                <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
-                <span class="text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600">Facebook</span>
-            </button>
-        </div>
-
-        <div class="mt-6 md:mt-8 text-center space-y-2">
-            <p class="text-xs md:text-sm text-slate-500">
-                ¿No tienes cuenta? 
-                <a href="registro-clientes.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Regístrate como Cliente</a>
-            </p>
-            <p class="text-xs md:text-sm text-slate-500">
-                ¿Eres profesional? 
-                <a href="registro-taskers.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Regístrate como Tasker</a>
-            </p>
-        </div>
-
-        <p class="text-center text-xs text-slate-400 mt-6 md:mt-8">
-            Al iniciar sesión, aceptas nuestros 
-            <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a> y 
-            <a href="#" class="text-blue-600 hover:underline">Política de Privacidad</a>
-        </p>
     </div>
+</div>
 
-    <script>
-        // =============================================
-        // CONFIGURACIÓN SUPABASE
-        // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+<script>
+    // =============================================
+    // CONFIGURACIÓN SUPABASE
+    // =============================================
+    const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
-        let supabaseClient = null;
+    let supabaseClient = null;
+    
+    try {
+        if (typeof window.supabase !== 'undefined') {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase listo');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+
+    // =============================================
+    // LOGIN
+    // =============================================
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
+        if (!supabaseClient) {
+            alert('Error: Supabase no está disponible. Recarga la página.');
+            return;
+        }
+
+        const btn = document.getElementById('loginBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
+
         try {
-            if (typeof window.supabase !== 'undefined') {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Supabase listo');
-            } else {
-                console.error('❌ Supabase no cargado');
-            }
-        } catch (e) {
-            console.error('Error:', e);
-        }
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-        // =============================================
-        // FUNCIÓN DE LOGIN
-        // =============================================
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!supabaseClient) {
-                alert('Error: Supabase no está disponible. Recarga la página.');
-                return;
+            if (!email || !password) {
+                throw new Error('Por favor completa todos los campos');
             }
 
-            const btn = document.getElementById('loginBtn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email, password
+            });
 
-            try {
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
+            if (error) throw error;
 
-                if (!email || !password) {
-                    throw new Error('Por favor completa todos los campos');
-                }
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', data.user.id)
+                .maybeSingle();
 
-                // Guardar en localStorage si "recordar" está marcado
-                if (document.getElementById('remember').checked) {
-                    localStorage.setItem('remembered_email', email);
-                } else {
-                    localStorage.removeItem('remembered_email');
-                }
+            if (profileError) {
+                console.error('Error al consultar perfil:', profileError);
+                throw profileError;
+            }
 
-                // 1. Login en Auth
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email, password
-                });
-
-                if (error) throw error;
-
-                // 2. Obtener perfil del usuario
-                const { data: profile, error: profileError } = await supabaseClient
+            if (!profile) {
+                console.warn('Usuario sin perfil, creando...');
+                const { error: insertError } = await supabaseClient
                     .from('profiles')
-                    .select('role, status')
-                    .eq('id', data.user.id)
-                    .maybeSingle();
+                    .insert([{
+                        id: data.user.id,
+                        email: email,
+                        full_name: email.split('@')[0],
+                        role: 'client',
+                        status: 'active',
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    }]);
 
-                if (profileError) {
-                    console.error('Error al consultar perfil:', profileError);
-                    if (profileError.message.includes('permission denied')) {
-                        alert('Error de permisos. Contacta al administrador.');
-                        return;
-                    }
-                    throw profileError;
-                }
-
-                // 3. Si no hay perfil, crearlo automáticamente (solo para clientes)
-                if (!profile) {
-                    console.warn('Usuario sin perfil, creando perfil por defecto...');
-                    
-                    const { error: insertError } = await supabaseClient
-                        .from('profiles')
-                        .insert([{
-                            id: data.user.id,
-                            email: email,
-                            full_name: email.split('@')[0],
-                            role: 'client',
-                            status: 'active',
-                            created_at: new Date(),
-                            updated_at: new Date()
-                        }]);
-
-                    if (insertError) {
-                        console.error('Error al crear perfil:', insertError);
-                        alert('Error al configurar tu perfil. Contacta al administrador.');
-                        return;
-                    }
-
-                    // Redirigir a dashboard cliente
-                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>Perfil creado. Redirigiendo...';
-                    setTimeout(() => window.location.href = 'dashboard-cliente.html', 1000);
-                    return;
-                }
-
-                // 4. Verificar estado del tasker (si aplica)
-                if (profile.role === 'tasker' && profile.status === 'pending') {
-                    alert('⚠️ Tu cuenta está en revisión. Serás notificado cuando sea aprobada por el administrador.');
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    return;
-                }
-
-                if (profile.role === 'tasker' && profile.status === 'rejected') {
-                    alert('❌ Tu cuenta ha sido rechazada. Contacta con soporte para más información.');
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    return;
-                }
-
-                // 5. Redirigir según el rol
-                let redirectUrl = 'dashboard-cliente.html';
-                if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
-                if (profile?.role === 'admin') redirectUrl = 'admin.html';
-
-                btn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Éxito! Redirigiendo...';
-                setTimeout(() => window.location.href = redirectUrl, 500);
-
-            } catch (error) {
-                console.error('Error de login:', error);
-                
-                let mensaje = 'Error al iniciar sesión';
-                if (error.message.includes('Invalid login credentials')) {
-                    mensaje = 'Credenciales incorrectas. Verifica tu email y contraseña.';
-                } else if (error.message.includes('Email not confirmed')) {
-                    mensaje = 'Por favor confirma tu email antes de iniciar sesión.';
-                } else {
-                    mensaje = error.message;
-                }
-                
-                alert('❌ ' + mensaje);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        });
-
-        // =============================================
-        // LOGIN CON PROVEEDORES
-        // =============================================
-        async function loginWithProvider(provider) {
-            if (!supabaseClient) {
-                alert('Error: Supabase no está disponible');
-                return;
+                if (insertError) throw insertError;
             }
 
-            try {
-                const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: provider,
-                    options: {
-                        redirectTo: window.location.origin + '/dashboard-redirect.html'
-                    }
-                });
-                
-                if (error) throw error;
-                
-            } catch (error) {
-                console.error('Error con proveedor:', error);
-                alert('Error al conectar con ' + provider + ': ' + error.message);
-            }
-        }
+            let redirectUrl = 'dashboard-cliente.html';
+            if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
+            if (profile?.role === 'admin') redirectUrl = 'admin.html';
 
-        // =============================================
-        // RECUPERAR EMAIL GUARDADO
-        // =============================================
-        function loadRememberedEmail() {
-            const rememberedEmail = localStorage.getItem('remembered_email');
-            if (rememberedEmail) {
-                document.getElementById('email').value = rememberedEmail;
-                document.getElementById('remember').checked = true;
-            }
-        }
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Éxito! Redirigiendo...';
+            setTimeout(() => window.location.href = redirectUrl, 500);
 
-        // =============================================
-        // INICIALIZAR
-        // =============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            loadRememberedEmail();
+        } catch (error) {
+            console.error('Error de login:', error);
             
-            // Animación título
-            const title = document.querySelector('h1');
-            if (title) {
-                title.style.opacity = '0';
-                setTimeout(() => {
-                    title.style.transition = 'opacity 0.5s ease';
-                    title.style.opacity = '1';
-                }, 200);
+            let mensaje = 'Error al iniciar sesión';
+            if (error.message.includes('Invalid login credentials')) {
+                mensaje = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+            } else if (error.message.includes('Email not confirmed')) {
+                mensaje = 'Por favor confirma tu email antes de iniciar sesión.';
+            } else {
+                mensaje = error.message;
             }
-        });
-    </script>
+            
+            alert('❌ ' + mensaje);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // =============================================
+    // LOGIN CON PROVEEDORES
+    // =============================================
+    async function loginWithProvider(provider) {
+        if (!supabaseClient) {
+            alert('Error: Supabase no está disponible');
+            return;
+        }
+
+        try {
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: window.location.origin + '/dashboard-redirect.html'
+                }
+            });
+            
+            if (error) throw error;
+            
+        } catch (error) {
+            console.error('Error con proveedor:', error);
+            alert('Error al conectar con ' + provider + ': ' + error.message);
+        }
+    }
+</script>
+
+<style>
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+</style>
 </body>
 </html>
