@@ -4,92 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Panel de Administración | Tasker's México</title>
-    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         * { font-family: 'Inter', sans-serif; }
-
         .admin-sidebar {
             background: linear-gradient(180deg, #0A2540 0%, #1B4F72 100%);
             transition: left 0.3s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
-        
         .sidebar-link {
             transition: all 0.2s ease;
             border-left: 3px solid transparent;
             border-radius: 0 12px 12px 0;
             margin: 4px 0;
         }
-        
         .sidebar-link:hover {
             background: rgba(46, 134, 193, 0.2);
             border-left-color: #2E86C1;
         }
-        
         .sidebar-link.active {
             background: rgba(46, 134, 193, 0.3);
             border-left-color: #2E86C1;
             color: white;
         }
-        
         .stat-card {
             transition: all 0.3s ease;
             border-left: 4px solid #1B4F72;
         }
-        
         .stat-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px -8px rgba(27, 79, 114, 0.2);
         }
-        
         .seccion-contenido {
             display: none;
             animation: fadeIn 0.3s ease-out;
         }
-        
         .seccion-contenido.active {
             display: block;
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        
-        .badge-pending {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-        
-        .badge-verified {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-        
-        .badge-rejected {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        
-        /* Responsive Sidebar */
+        .badge-pending { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-verified { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
         @media (max-width: 768px) {
             .admin-sidebar {
                 position: fixed !important;
@@ -100,11 +70,7 @@
                 width: 280px !important;
                 transition: left 0.3s ease !important;
             }
-            
-            .admin-sidebar.abierto {
-                left: 0 !important;
-            }
-            
+            .admin-sidebar.abierto { left: 0 !important; }
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -115,11 +81,7 @@
                 z-index: 9998 !important;
                 display: none;
             }
-            
-            #overlayMenu.visible {
-                display: block !important;
-            }
-            
+            #overlayMenu.visible { display: block !important; }
             #btnMenuMovil {
                 display: flex !important;
                 position: fixed !important;
@@ -135,56 +97,22 @@
                 z-index: 10000 !important;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             }
-            
-            .ml-12 {
-                margin-left: 3.5rem !important;
-            }
-            
-            .p-6 {
-                padding: 1rem !important;
-            }
-            
-            .grid-cols-2 {
-                gap: 0.75rem !important;
-            }
-            
-            .stat-card {
-                padding: 0.875rem !important;
-            }
-            
-            .stat-card p.text-3xl {
-                font-size: 1.5rem !important;
-            }
-            
+            .ml-12 { margin-left: 3.5rem !important; }
+            .p-6 { padding: 1rem !important; }
+            .grid-cols-2 { gap: 0.75rem !important; }
+            .stat-card { padding: 0.875rem !important; }
+            .stat-card p.text-3xl { font-size: 1.5rem !important; }
             .table-container {
                 overflow-x: auto !important;
                 margin: 0 -1rem !important;
                 padding: 0 1rem !important;
                 width: calc(100% + 2rem) !important;
             }
-            
-            table {
-                min-width: 600px !important;
-            }
-            
-            button, .sidebar-link, [onclick] {
-                min-height: 44px !important;
-            }
-            
-            input, select, textarea {
-                font-size: 16px !important;
-            }
+            table { min-width: 600px !important; }
+            button, .sidebar-link, [onclick] { min-height: 44px !important; }
         }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 { gap: 1rem; }
-            .stat-card { padding: 1rem; }
-            .stat-card p.text-3xl { font-size: 1.75rem; }
-        }
-        
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
         body.menu-open { overflow: hidden !important; }
         .animate-slideIn { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -217,7 +145,6 @@
             <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200 p-4 sticky top-0 z-10"><div class="flex justify-between items-center"><div class="ml-12 md:ml-0"><h2 id="section-title" class="text-lg md:text-xl font-bold text-slate-800">Dashboard</h2><p id="section-subtitle" class="text-xs md:text-sm text-slate-500">Panel de control administrativo</p></div><div class="flex items-center gap-3"><div id="headerAvatar" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72]"></div></div></div></header>
 
             <div class="p-4 md:p-6">
-                <!-- DASHBOARD -->
                 <section id="seccion-dashboard" class="seccion-contenido active">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-6">
                         <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Total Usuarios</p><p id="totalUsuarios" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
@@ -228,7 +155,6 @@
                     <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-chart-line text-[#1B4F72]"></i>Actividad Reciente</h3><canvas id="activityChart" height="100"></canvas></div>
                 </section>
 
-                <!-- TASKERS PENDIENTES DE VERIFICACIÓN (SOLO ESTO APRUEBA EL ADMIN) -->
                 <section id="seccion-taskers" class="seccion-contenido">
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold flex items-center gap-2"><i class="fas fa-users"></i>Taskers Pendientes de Verificación</h3></div>
@@ -236,7 +162,6 @@
                     </div>
                 </section>
 
-                <!-- SERVICIOS (SOLO VISUALIZACIÓN) -->
                 <section id="seccion-servicios" class="seccion-contenido">
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold flex items-center gap-2"><i class="fas fa-briefcase"></i>Todos los Servicios</h3></div>
@@ -244,7 +169,6 @@
                     </div>
                 </section>
 
-                <!-- PAGOS -->
                 <section id="seccion-pagos" class="seccion-contenido">
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold flex items-center gap-2"><i class="fas fa-credit-card"></i>Historial de Pagos</h3></div>
@@ -252,7 +176,6 @@
                     </div>
                 </section>
 
-                <!-- GANANCIAS DEL ADMIN -->
                 <section id="seccion-ganancias" class="seccion-contenido">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-chart-line text-[#1B4F72]"></i>Resumen de Ganancias</h3><div class="space-y-3"><div class="flex justify-between items-center p-3 bg-[#1B4F72]/10 rounded-xl"><span class="text-sm text-slate-600">Ganancias Totales (15%)</span><span id="gananciasTotales" class="text-xl font-bold text-[#1B4F72]">$0.00</span></div><div class="flex justify-between items-center p-3 bg-green-50 rounded-xl"><span class="text-sm text-slate-600">Este mes</span><span id="gananciasMes" class="text-lg font-bold text-green-600">$0.00</span></div><div class="flex justify-between items-center p-3 bg-purple-50 rounded-xl"><span class="text-sm text-slate-600">Hoy</span><span id="gananciasHoy" class="text-lg font-bold text-purple-600">$0.00</span></div></div></div>
@@ -277,7 +200,6 @@
         function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-[#1B4F72]'} text-white max-w-xs`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
-        // MENÚ MÓVIL CORREGIDO
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
