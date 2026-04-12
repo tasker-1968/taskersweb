@@ -93,26 +93,26 @@
             </div>
             
             <nav class="flex-1 mt-4 px-3 space-y-1">
-                <div onclick="mostrarSeccion('dashboard')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white" data-seccion="dashboard">
+                <div id="btnDashboard" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
                     <i class="fas fa-chart-pie w-5"></i><span>Dashboard</span>
                 </div>
-                <div onclick="mostrarSeccion('taskers')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white" data-seccion="taskers">
+                <div id="btnTaskers" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
                     <i class="fas fa-users w-5"></i><span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
                 </div>
-                <div onclick="mostrarSeccion('servicios')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white" data-seccion="servicios">
+                <div id="btnServicios" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
                     <i class="fas fa-briefcase w-5"></i><span>Servicios</span>
                 </div>
-                <div onclick="mostrarSeccion('pagos')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white" data-seccion="pagos">
+                <div id="btnPagos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
                     <i class="fas fa-credit-card w-5"></i><span>Pagos</span>
                 </div>
-                <div onclick="mostrarSeccion('ganancias')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white" data-seccion="ganancias">
+                <div id="btnGanancias" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
                     <i class="fas fa-chart-line w-5"></i><span>Mis Ganancias</span>
                 </div>
             </nav>
             
             <div class="p-4 border-t border-white/10">
-                <button onclick="cerrarSesion()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2">
+                <button id="btnCerrarSesion" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
                 </button>
             </div>
@@ -192,26 +192,13 @@
         let activityChart = null;
         let gananciasChart = null;
 
-        // Mostrar/Ocultar carga
-        function mostrarCarga() { document.getElementById('loadingModal')?.classList.remove('hidden'); }
-        function ocultarCarga() { document.getElementById('loadingModal')?.classList.add('hidden'); }
+        // ============================================
+        // FUNCIONES GLOBALES (definidas ANTES de usarlas)
+        // ============================================
         
-        // ============================================
-        // MENÚ MÓVIL
-        // ============================================
-        function initMenuMovil() {
-            const btn = document.getElementById('btnMenuMovil');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlayMenu');
-            if (!btn || !sidebar) return;
-            btn.onclick = () => { sidebar.classList.add('abierto'); if(overlay) overlay.classList.remove('hidden'); };
-            if(overlay) overlay.onclick = () => { sidebar.classList.remove('abierto'); overlay.classList.add('hidden'); };
-        }
-        
-        // ============================================
-        // NAVEGACIÓN ENTRE SECCIONES
-        // ============================================
         function mostrarSeccion(seccion) {
+            console.log('Mostrando sección:', seccion);
+            
             // Ocultar todas las secciones
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
             // Mostrar la seleccionada
@@ -221,10 +208,12 @@
             // Actualizar active en sidebar
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('data-seccion') === seccion) {
-                    link.classList.add('active');
-                }
             });
+            if (seccion === 'dashboard') document.getElementById('btnDashboard')?.classList.add('active');
+            if (seccion === 'taskers') document.getElementById('btnTaskers')?.classList.add('active');
+            if (seccion === 'servicios') document.getElementById('btnServicios')?.classList.add('active');
+            if (seccion === 'pagos') document.getElementById('btnPagos')?.classList.add('active');
+            if (seccion === 'ganancias') document.getElementById('btnGanancias')?.classList.add('active');
             
             // Actualizar título
             const titulos = { dashboard:'Dashboard', taskers:'Taskers Pendientes', servicios:'Servicios', pagos:'Pagos', ganancias:'Mis Ganancias' };
@@ -244,8 +233,42 @@
             }
         }
         
-        // Exponer globalmente
+        async function cerrarSesion() {
+            if (confirm('¿Cerrar sesión?')) {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Exponer funciones globalmente para que los botones las encuentren
         window.mostrarSeccion = mostrarSeccion;
+        window.cerrarSesion = cerrarSesion;
+        window.aprobarTasker = null;
+        window.rechazarTasker = null;
+        
+        // ============================================
+        // MENÚ MÓVIL
+        // ============================================
+        function initMenuMovil() {
+            const btn = document.getElementById('btnMenuMovil');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            if (!btn || !sidebar) return;
+            btn.onclick = () => { sidebar.classList.add('abierto'); if(overlay) overlay.classList.remove('hidden'); };
+            if(overlay) overlay.onclick = () => { sidebar.classList.remove('abierto'); overlay.classList.add('hidden'); };
+        }
+        
+        // ============================================
+        // ASIGNAR EVENTOS A LOS BOTONES DEL SIDEBAR
+        // ============================================
+        function asignarEventosBotones() {
+            document.getElementById('btnDashboard')?.addEventListener('click', () => mostrarSeccion('dashboard'));
+            document.getElementById('btnTaskers')?.addEventListener('click', () => mostrarSeccion('taskers'));
+            document.getElementById('btnServicios')?.addEventListener('click', () => mostrarSeccion('servicios'));
+            document.getElementById('btnPagos')?.addEventListener('click', () => mostrarSeccion('pagos'));
+            document.getElementById('btnGanancias')?.addEventListener('click', () => mostrarSeccion('ganancias'));
+            document.getElementById('btnCerrarSesion')?.addEventListener('click', () => cerrarSesion());
+        }
         
         // ============================================
         // VERIFICAR ADMIN
@@ -301,8 +324,8 @@
                     <div class="bg-white border rounded-xl p-4 flex flex-wrap justify-between items-center gap-3">
                         <div><p class="font-bold">${t.full_name || 'Sin nombre'}</p><p class="text-sm text-slate-500">${t.email}</p><p class="text-sm">${t.phone || ''}</p></div>
                         <div class="flex gap-2">
-                            <button onclick="aprobarTasker('${t.id}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Aprobar</button>
-                            <button onclick="rechazarTasker('${t.id}')" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">Rechazar</button>
+                            <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Aprobar</button>
+                            <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">Rechazar</button>
                         </div>
                     </div>
                 `).join('');
@@ -382,18 +405,16 @@
         }
         
         // ============================================
-        // CERRAR SESIÓN
-        // ============================================
-        window.cerrarSesion = async () => { await supabase.auth.signOut(); window.location.href = 'index.html'; };
-        
-        // ============================================
         // INICIALIZAR
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM cargado, inicializando...');
             const ok = await verificarAdmin();
             if (ok) {
                 await cargarDashboard();
                 initMenuMovil();
+                asignarEventosBotones();
+                console.log('Inicialización completa');
             }
         });
     </script>
