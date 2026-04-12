@@ -2,498 +2,372 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Cliente | Tasker's México</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Iniciar Sesión | Tasker's México</title>
     
-    <!-- Tailwind CSS y Fuentes -->
+    <!-- Anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fuente Inter (estilo Uber) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+        * { font-family: 'Inter', sans-serif; }
         
-        /* Fondo con gradiente animado */
-        .bg-animated {
-            background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #2563eb, #1e40af);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+        .split-screen {
+            display: flex;
             min-height: 100vh;
         }
         
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Tarjeta de registro con efecto glass */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        /* Animación de entrada */
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .animate-slideUp {
-            animation: slideUp 0.6s ease-out;
-        }
-        
-        /* Input focus effects */
-        .input-focus {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .input-focus:focus {
-            transform: translateY(-2px);
-            border-color: #3b82f6;
-            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
-        }
-        
-        /* Botón con efecto de onda */
-        .btn-ripple {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
-        
-        .btn-ripple::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-        
-        .btn-ripple:hover::after {
-            animation: ripple 0.6s ease-out;
-        }
-        
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
-        }
-        
-        /* Steps indicator */
-        .step {
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #0A2540 0%, #1B4F72 50%, #2E86C1 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            color: #64748b;
-            font-weight: bold;
+            padding: 2rem;
+        }
+        
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: white;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1.5px solid #e2e8f0;
+        }
+        
+        .input-field:focus {
+            border-color: #1B4F72;
+            box-shadow: 0 0 0 3px rgba(27, 79, 114, 0.1);
+            outline: none;
+        }
+        
+        .btn-login {
+            background: #1B4F72;
             transition: all 0.3s ease;
         }
         
-        .step.active {
-            background: #3b82f6;
-            color: white;
-            transform: scale(1.1);
+        .btn-login:hover {
+            background: #2E86C1;
+            transform: translateY(-2px);
         }
         
-        .step.completed {
-            background: #10b981;
-            color: white;
+        .btn-social {
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .glass-card {
-                margin: 1rem;
+        .btn-social:hover {
+            border-color: #1B4F72;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .split-screen {
+                flex-direction: column;
+            }
+            .left-panel {
+                min-height: 30vh;
                 padding: 1.5rem;
             }
-            .step {
-                width: 30px;
-                height: 30px;
-                font-size: 0.875rem;
+            .right-panel {
+                min-height: 70vh;
+                padding: 1.5rem;
             }
+            .glass-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
         }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <!-- Fondo con partículas (decorativo) -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+<div class="split-screen">
+    <!-- Left Panel - Branding -->
+    <div class="left-panel relative overflow-hidden">
+        <div class="floating-shape w-64 h-64 -top-20 -left-20"></div>
+        <div class="floating-shape w-48 h-48 bottom-10 right-10 animation-delay-2000"></div>
+        <div class="floating-shape w-32 h-32 top-1/2 left-1/2 animation-delay-4000"></div>
+        
+        <div class="text-center text-white z-10 relative animate-fadeIn">
+            <img src="logo-taskers.png" alt="Tasker's México" class="h-16 w-auto mx-auto mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">¡Bienvenido de vuelta!</h1>
+            <p class="text-white/80 text-sm md:text-base max-w-sm mx-auto">
+                Accede a tu cuenta para gestionar tus servicios, comunicarte con profesionales y mucho más.
+            </p>
+            <div class="mt-8 flex justify-center gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold">+5K</div>
+                    <div class="text-xs text-white/70">Profesionales</div>
+                </div>
+                <div class="w-px h-10 bg-white/30"></div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">+10K</div>
+                    <div class="text-xs text-white/70">Servicios</div>
+                </div>
+                <div class="w-px h-10 bg-white/30"></div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">98%</div>
+                    <div class="text-xs text-white/70">Satisfacción</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Navbar simplificado (solo logo y volver) -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div class="container mx-auto px-4 sm:px-6">
-            <div class="flex justify-between items-center h-16 sm:h-20">
-                <!-- Logo -->
-                <a href="index.html" class="flex items-center gap-2 sm:gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's México" class="h-8 sm:h-10 w-auto">
-                    <span class="text-white font-bold text-lg sm:text-xl hidden sm:inline">Tasker's</span>
-                </a>
-                
-                <!-- Botón volver -->
-                <a href="index.html" class="flex items-center gap-2 text-white/80 hover:text-white transition bg-white/10 px-3 sm:px-4 py-2 rounded-xl">
-                    <i class="fas fa-arrow-left text-sm sm:text-base"></i>
-                    <span class="text-sm sm:text-base hidden sm:inline">Volver al inicio</span>
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Contenedor principal -->
-    <div class="container mx-auto max-w-2xl pt-20 sm:pt-24">
-        <!-- Steps indicator (opcional, para dar sensación de progreso) -->
-        <div class="flex justify-center items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-            <div class="step active">1</div>
-            <div class="w-12 sm:w-16 h-0.5 bg-white/30"></div>
-            <div class="step">2</div>
-            <div class="w-12 sm:w-16 h-0.5 bg-white/30"></div>
-            <div class="step">3</div>
-        </div>
-
-        <!-- Tarjeta de Registro -->
-        <div class="glass-card rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 animate-slideUp">
-            
-            <!-- Header -->
-            <div class="text-center mb-6 sm:mb-8">
-                <div class="inline-block p-3 bg-blue-100 rounded-2xl mb-4">
-                    <i class="fas fa-user-plus text-2xl sm:text-3xl text-blue-600"></i>
-                </div>
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">Crea tu cuenta</h1>
-                <p class="text-sm sm:text-base text-slate-500">Únete a Tasker's y encuentra al experto ideal para tus necesidades</p>
+    <!-- Right Panel - Login Form -->
+    <div class="right-panel">
+        <div class="w-full max-w-md animate-fadeIn">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Iniciar Sesión</h2>
+                <p class="text-slate-500 text-sm">Ingresa tus datos para acceder a tu cuenta</p>
             </div>
 
-            <!-- Formulario de Registro -->
-            <form id="clientRegisterForm" class="space-y-4 sm:space-y-5">
-                <!-- Nombre Completo -->
+            <form id="loginForm" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                        <i class="fas fa-user mr-2"></i>
-                        Nombre Completo
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-[#1B4F72]"></i> Correo Electrónico
                     </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <i class="fas fa-user"></i>
-                        </span>
-                        <input type="text" id="clientName" required 
-                            class="input-focus w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
-                            placeholder="Ej. Juan Pérez García">
-                    </div>
+                    <input type="email" id="email" required 
+                        class="input-field w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white transition"
+                        placeholder="tucorreo@ejemplo.com">
                 </div>
 
-                <!-- Teléfono -->
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                        <i class="fas fa-phone mr-2"></i>
-                        Número Telefónico
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-[#1B4F72]"></i> Contraseña
                     </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <i class="fas fa-phone"></i>
-                        </span>
-                        <input type="tel" id="clientPhone" required 
-                            class="input-focus w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
-                            placeholder="Ej. 5512345678">
-                    </div>
+                    <input type="password" id="password" required 
+                        class="input-field w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white transition"
+                        placeholder="••••••••">
                 </div>
 
-                <!-- Email -->
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                        <i class="fas fa-envelope mr-2"></i>
-                        Correo Electrónico
+                <div class="flex justify-between items-center text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-[#1B4F72] focus:ring-[#1B4F72]">
+                        <span class="text-slate-600">Recordarme</span>
                     </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <input type="email" id="clientEmail" required 
-                            class="input-focus w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
-                            placeholder="tu@email.com">
-                    </div>
+                    <a href="#" class="text-[#1B4F72] hover:text-[#2E86C1] transition">¿Olvidaste tu contraseña?</a>
                 </div>
 
-                <!-- Contraseña -->
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-2 ml-1 tracking-widest">
-                        <i class="fas fa-lock mr-2"></i>
-                        Contraseña
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                        <input type="password" id="clientPass" required minlength="6"
-                            class="input-focus w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm sm:text-base"
-                            placeholder="Mínimo 6 caracteres">
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                        <i class="fas fa-info-circle"></i>
-                        La contraseña debe tener al menos 6 caracteres
-                    </p>
-                </div>
-
-                <!-- Términos y condiciones -->
-                <div class="flex items-start gap-3 pt-2">
-                    <input type="checkbox" id="terminos" required class="mt-1 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                    <label class="text-xs sm:text-sm text-slate-600">
-                        Acepto los 
-                        <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Términos y Condiciones</a> 
-                        y la 
-                        <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Política de Privacidad</a>. 
-                        Confirmo que la información proporcionada es verídica.
-                    </label>
-                </div>
-
-                <!-- Botón de Registro -->
-                <button type="submit" id="submitBtn" 
-                    class="btn-ripple w-full text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
-                    <i class="fas fa-user-plus"></i>
-                    Crear cuenta
+                <button type="submit" id="loginBtn" 
+                    class="btn-login w-full text-white py-3 rounded-xl font-bold text-base transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </button>
             </form>
 
-            <!-- Divisor -->
-            <div class="relative my-6 sm:my-8">
+            <div class="relative my-6">
                 <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-slate-200"></div>
                 </div>
-                <div class="relative flex justify-center text-xs sm:text-sm">
-                    <span class="bg-white px-4 text-slate-400">O regístrate con</span>
+                <div class="relative flex justify-center text-xs">
+                    <span class="bg-white px-4 text-slate-400">O continúa con</span>
                 </div>
             </div>
 
-            <!-- Botones de Proveedores -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 gap-3">
                 <button onclick="loginWithProvider('google')" 
-                    class="flex items-center justify-center gap-2 px-4 py-3 sm:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                    class="btn-social flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                    <span class="text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600">Google</span>
+                    <span class="text-sm font-medium text-slate-700">Google</span>
                 </button>
                 <button onclick="loginWithProvider('facebook')" 
-                    class="flex items-center justify-center gap-2 px-4 py-3 sm:py-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                    class="btn-social flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition">
                     <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
-                    <span class="text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600">Facebook</span>
+                    <span class="text-sm font-medium text-slate-700">Facebook</span>
                 </button>
             </div>
 
-            <!-- Enlace a login -->
-            <div class="mt-6 sm:mt-8 text-center">
-                <p class="text-xs sm:text-sm text-slate-500">
-                    ¿Ya tienes cuenta? 
-                    <a href="login.html" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                        Inicia sesión aquí
-                    </a>
+            <div class="mt-8 text-center">
+                <p class="text-sm text-slate-500">
+                    ¿No tienes cuenta? 
+                    <a href="registro-clientes.html" class="text-[#1B4F72] font-semibold hover:text-[#2E86C1] transition">Regístrate como Cliente</a>
+                </p>
+                <p class="text-sm text-slate-500 mt-2">
+                    ¿Eres profesional? 
+                    <a href="registro-taskers.html" class="text-[#1B4F72] font-semibold hover:text-[#2E86C1] transition">Regístrate como Tasker</a>
                 </p>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        lucide.createIcons();
+<script>
+    // =============================================
+    // CONFIGURACIÓN SUPABASE
+    // =============================================
+    const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
 
-        // =============================================
-        // CONFIGURACIÓN DE SUPABASE
-        // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+    let supabaseClient = null;
+    
+    try {
+        if (typeof window.supabase !== 'undefined') {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase listo');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+
+    // =============================================
+    // LOGIN
+    // =============================================
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        if (!supabaseClient) {
+            alert('Error: Supabase no está disponible. Recarga la página.');
+            return;
+        }
 
-        // =============================================
-        // REGISTRO DE CLIENTE
-        // =============================================
-        document.getElementById('clientRegisterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            
-            // Deshabilitar botón
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creando cuenta...';
+        const btn = document.getElementById('loginBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...';
 
-            try {
-                // Obtener valores
-                const email = document.getElementById('clientEmail').value.trim();
-                const password = document.getElementById('clientPass').value;
-                const nombre = document.getElementById('clientName').value.trim();
-                const telefono = document.getElementById('clientPhone').value.trim();
+        try {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-                // Validaciones básicas
-                if (!email || !password || !nombre || !telefono) {
-                    throw new Error('Todos los campos son obligatorios');
-                }
+            if (!email || !password) {
+                throw new Error('Por favor completa todos los campos');
+            }
 
-                if (password.length < 6) {
-                    throw new Error('La contraseña debe tener al menos 6 caracteres');
-                }
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email, password
+            });
 
-                if (!email.includes('@') || !email.includes('.')) {
-                    throw new Error('Ingresa un correo electrónico válido');
-                }
+            if (error) throw error;
 
-                // 1. Registro en Auth
-                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: nombre,
-                            phone: telefono,
-                            role: 'client'
-                        }
-                    }
-                });
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', data.user.id)
+                .maybeSingle();
 
-                if (authError) throw new Error(authError.message);
+            if (profileError) {
+                console.error('Error al consultar perfil:', profileError);
+                throw profileError;
+            }
 
-                if (!authData || !authData.user) {
-                    throw new Error('No se pudo crear el usuario');
-                }
-
-                // 2. Insertar en profiles
-                const { error: profileError } = await supabaseClient
+            if (!profile) {
+                console.warn('Usuario sin perfil, creando...');
+                const { error: insertError } = await supabaseClient
                     .from('profiles')
                     .insert([{
-                        id: authData.user.id,
+                        id: data.user.id,
                         email: email,
-                        full_name: nombre,
-                        phone: telefono,
+                        full_name: email.split('@')[0],
                         role: 'client',
                         status: 'active',
                         created_at: new Date(),
                         updated_at: new Date()
                     }]);
 
-                if (profileError) {
-                    console.error("Error al crear perfil:", profileError);
-                    
-                    // Si falla el perfil, intentamos eliminar el usuario de auth
-                    await supabaseClient.auth.admin.deleteUser(authData.user.id);
-                    
-                    if (profileError.message.includes('duplicate key')) {
-                        throw new Error('Este correo electrónico ya está registrado');
-                    } else {
-                        throw new Error('Error al crear el perfil: ' + profileError.message);
-                    }
+                if (insertError) throw insertError;
+            }
+
+            let redirectUrl = 'dashboard-cliente.html';
+            if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
+            if (profile?.role === 'admin') redirectUrl = 'admin.html';
+
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Éxito! Redirigiendo...';
+            setTimeout(() => window.location.href = redirectUrl, 500);
+
+        } catch (error) {
+            console.error('Error de login:', error);
+            
+            let mensaje = 'Error al iniciar sesión';
+            if (error.message.includes('Invalid login credentials')) {
+                mensaje = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+            } else if (error.message.includes('Email not confirmed')) {
+                mensaje = 'Por favor confirma tu email antes de iniciar sesión.';
+            } else {
+                mensaje = error.message;
+            }
+            
+            alert('❌ ' + mensaje);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // =============================================
+    // LOGIN CON PROVEEDORES
+    // =============================================
+    async function loginWithProvider(provider) {
+        if (!supabaseClient) {
+            alert('Error: Supabase no está disponible');
+            return;
+        }
+
+        try {
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: window.location.origin + '/dashboard-redirect.html'
                 }
-
-                // 3. Registro exitoso
-                btn.innerHTML = '<i class="fas fa-check mr-2"></i>¡Registro exitoso!';
-                
-                // Mostrar mensaje de éxito
-                alert('✅ ¡Registro exitoso! Serás redirigido a tu panel.');
-                
-                // Redirigir al dashboard de cliente
-                setTimeout(() => {
-                    window.location.href = 'dashboard-cliente.html';
-                }, 1500);
-
-            } catch (error) {
-                console.error('Error en registro:', error);
-                alert('❌ Error: ' + error.message);
-                
-                // Restaurar botón
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        });
-
-        // =============================================
-        // REGISTRO CON PROVEEDORES
-        // =============================================
-        async function loginWithProvider(providerName) {
-            try {
-                const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: providerName,
-                    options: {
-                        redirectTo: window.location.origin + '/dashboard-cliente.html'
-                    }
-                });
-
-                if (error) throw error;
-                
-            } catch (error) {
-                console.error('Error con proveedor:', error);
-                alert("Error al conectar con " + providerName + ": " + error.message);
-            }
+            });
+            
+            if (error) throw error;
+            
+        } catch (error) {
+            console.error('Error con proveedor:', error);
+            alert('Error al conectar con ' + provider + ': ' + error.message);
         }
+    }
+</script>
 
-        // =============================================
-        // ANIMACIONES Y EFECTOS
-        // =============================================
-        // Efecto de entrada para los pasos
-        const steps = document.querySelectorAll('.step');
-        steps.forEach((step, index) => {
-            setTimeout(() => {
-                step.style.transition = 'all 0.3s ease';
-                step.style.opacity = '1';
-            }, index * 200);
-        });
-    </script>
-
-    <!-- Estilos adicionales para animaciones -->
-    <style>
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-        
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-            animation-delay: 4s;
-        }
-        
-        .step {
-            opacity: 0;
-        }
-    </style>
+<style>
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+</style>
 </body>
 </html>
