@@ -5,22 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Panel Tasker | Tasker's Profesional</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Leaflet CSS (mapa gratuito) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
@@ -69,11 +62,6 @@
             animation: slideIn 0.3s ease-out;
         }
         
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
         .chat-tasker {
             background: linear-gradient(135deg, #1B4F72, #2E86C1);
             color: white;
@@ -109,7 +97,6 @@
             box-shadow: 0 8px 20px rgba(27, 79, 114, 0.15);
         }
         
-        /* Mapa */
         #map {
             height: 280px;
             width: 100%;
@@ -118,12 +105,9 @@
         }
         
         @media (min-width: 768px) {
-            #map {
-                height: 350px;
-            }
+            #map { height: 350px; }
         }
         
-        /* Toggle switch estilo Uber */
         .toggle-switch {
             position: relative;
             display: inline-block;
@@ -250,37 +234,9 @@
         }
         
         @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 {
-                gap: 1rem;
-            }
-            .stat-card {
-                padding: 1rem;
-            }
-            .stat-card p.text-3xl {
-                font-size: 1.75rem;
-            }
-        }
-        
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        body.menu-open {
-            overflow: hidden !important;
-        }
-        
-        .animate-slideIn {
-            animation: slideInMsg 0.3s ease-out;
-        }
-        
-        @keyframes slideInMsg {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            .grid-cols-2 { gap: 1rem; }
+            .stat-card { padding: 1rem; }
+            .stat-card p.text-3xl { font-size: 1.75rem; }
         }
         
         .custom-marker {
@@ -310,382 +266,136 @@
             border: 2px solid white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
+        
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        body.menu-open { overflow: hidden !important; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body class="bg-slate-50">
 
-    <!-- Botón menú móvil -->
-    <button id="btnMenuMovil" class="hidden md:hidden">
-        <i class="fas fa-bars text-xl"></i>
-    </button>
-
-    <!-- Overlay para móvil -->
+    <button id="btnMenuMovil" class="hidden md:hidden"><i class="fas fa-bars text-xl"></i></button>
     <div id="overlayMenu" class="hidden md:hidden"></div>
 
-    <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-        <div class="bg-white p-6 rounded-2xl shadow-xl text-center">
-            <i class="fas fa-spinner fa-spin text-3xl text-[#1B4F72] mb-3"></i>
-            <p class="text-gray-600 font-medium">Cargando...</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-xl text-center"><i class="fas fa-spinner fa-spin text-3xl text-[#1B4F72] mb-3"></i><p class="text-gray-600 font-medium">Cargando...</p></div>
     </div>
 
-    <!-- Modal de propuesta -->
     <div id="propuestaModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3>
-                <button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3><button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button></div>
             <form id="propuestaForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label>
-                    <input type="number" id="propuestaMonto" required min="100" step="100"
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                        <i class="fas fa-info-circle text-[#1B4F72]"></i>
-                        Recibirás el 85% (comisión Tasker's: 15%)
-                    </p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label>
-                    <textarea id="propuestaMensaje" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Describe por qué eres la mejor opción..."></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label>
-                    <select id="propuestaTiempo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                        <option value="60">1 hora</option>
-                        <option value="120">2 horas</option>
-                        <option value="180">3 horas</option>
-                        <option value="240">4 horas</option>
-                        <option value="300">5 horas</option>
-                        <option value="360">6+ horas</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">
-                    Enviar Propuesta
-                </button>
+                <div><label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label><input type="number" id="propuestaMonto" required min="100" step="100" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle text-[#1B4F72]"></i> Recibirás el 85% (comisión Tasker's: 15%)</p></div>
+                <div><label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label><textarea id="propuestaMensaje" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Describe por qué eres la mejor opción..."></textarea></div>
+                <div><label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label><select id="propuestaTiempo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><option value="60">1 hora</option><option value="120">2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option><option value="300">5 horas</option><option value="360">6+ horas</option></select></div>
+                <button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">Enviar Propuesta</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal de retiro -->
     <div id="retiroModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3>
-                <button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3><button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button></div>
             <form id="retiroForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label>
-                    <input type="number" id="retiroMonto" required min="100" step="100"
-                        class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                    <p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label>
-                    <select id="retiroMetodo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                        <option value="transferencia">Transferencia bancaria</option>
-                        <option value="paypal">PayPal</option>
-                    </select>
-                </div>
-                <div id="datosBancarios">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label>
-                    <input type="text" id="retiroClabe" maxlength="18" class="w-full p-3 border rounded-xl">
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">
-                    Solicitar Retiro
-                </button>
+                <div><label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label><input type="number" id="retiroMonto" required min="100" step="100" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p></div>
+                <div><label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label><select id="retiroMetodo" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><option value="transferencia">Transferencia bancaria</option><option value="paypal">PayPal</option></select></div>
+                <div id="datosBancarios"><label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label><input type="text" id="retiroClabe" maxlength="18" class="w-full p-3 border rounded-xl"></div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">Solicitar Retiro</button>
             </form>
         </div>
     </div>
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
         <aside id="sidebar" class="sidebar-tasker w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
-            <div class="p-5 border-b border-white/10">
-                <div class="flex items-center gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's" class="h-9 w-auto">
-                    <div>
-                        <div class="text-lg font-bold text-white">Tasker's</div>
-                        <div class="text-xs text-[#2E86C1]">Panel Profesional</div>
-                    </div>
-                </div>
-                <div id="userInfo" class="mt-4 text-sm bg-white/10 p-3 rounded-xl">
-                    <!-- Se llena dinámicamente -->
-                </div>
-            </div>
-            
+            <div class="p-5 border-b border-white/10"><div class="flex items-center gap-3"><img src="logo-taskers.png" alt="Tasker's" class="h-9 w-auto"><div><div class="text-lg font-bold text-white">Tasker's</div><div class="text-xs text-[#2E86C1]">Panel Profesional</div></div></div><div id="userInfo" class="mt-4 text-sm bg-white/10 p-3 rounded-xl"></div></div>
             <nav class="flex-1 mt-4 space-y-1 px-3">
-                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio">
-                    <i class="fas fa-home w-6"></i><span>Inicio</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles">
-                    <i class="fas fa-search w-6"></i><span>Servicios Disponibles</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos">
-                    <i class="fas fa-briefcase w-6"></i><span>Mis Trabajos</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat">
-                    <i class="fas fa-comments w-6"></i><span>Mensajes</span>
-                    <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas">
-                    <i class="fas fa-wallet w-6"></i><span>Finanzas</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil">
-                    <i class="fas fa-user w-6"></i><span>Mi Perfil</span>
-                </a>
+                <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio"><i class="fas fa-home w-6"></i><span>Inicio</span></a>
+                <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles"><i class="fas fa-search w-6"></i><span>Servicios Disponibles</span></a>
+                <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos"><i class="fas fa-briefcase w-6"></i><span>Mis Trabajos</span></a>
+                <a href="#" onclick="window.mostrarSeccion('ubicacion'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ubicacion"><i class="fas fa-location-dot w-6"></i><span>Compartir Ubicación</span></a>
+                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat"><i class="fas fa-comments w-6"></i><span>Mensajes</span><span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span></a>
+                <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas"><i class="fas fa-wallet w-6"></i><span>Finanzas</span></a>
+                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil"><i class="fas fa-user w-6"></i><span>Mi Perfil</span></a>
             </nav>
-            
-            <div class="p-4 border-t border-white/10">
-                <button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
-                </button>
-            </div>
+            <div class="p-4 border-t border-white/10"><button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i>Cerrar Sesión</button></div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50">
             <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200 p-4 sticky top-0 z-10 flex justify-between items-center">
-                <div class="ml-12 md:ml-0">
-                    <h2 id="section-title" class="text-lg md:text-xl font-bold text-slate-800">Inicio</h2>
-                    <p id="section-subtitle" class="text-xs md:text-sm text-slate-500">Bienvenido a tu panel profesional</p>
-                </div>
+                <div class="ml-12 md:ml-0"><h2 id="section-title" class="text-lg md:text-xl font-bold text-slate-800">Inicio</h2><p id="section-subtitle" class="text-xs md:text-sm text-slate-500">Bienvenido a tu panel profesional</p></div>
                 <div class="flex items-center gap-3">
-                    <span id="verificationBadge" class="hidden px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-                        <i class="fas fa-clock mr-1"></i> Pendiente
-                    </span>
-                    <div class="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1">
-                        <span class="text-xs text-slate-600">En línea</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="onlineToggle" onchange="toggleModoOnline()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <button onclick="window.mostrarSeccion('chat')" class="relative">
-                        <i class="fas fa-comments text-slate-600 text-lg md:text-xl hover:text-[#1B4F72] transition"></i>
-                        <span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span>
-                    </button>
+                    <span id="verificationBadge" class="hidden px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> Pendiente</span>
+                    <div class="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1"><span class="text-xs text-slate-600">En línea</span><label class="toggle-switch"><input type="checkbox" id="onlineToggle" onchange="toggleModoOnline()"><span class="toggle-slider"></span></label></div>
+                    <button onclick="window.mostrarSeccion('chat')" class="relative"><i class="fas fa-comments text-slate-600 text-lg md:text-xl hover:text-[#1B4F72] transition"></i><span id="headerChatBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden items-center justify-center">0</span></button>
                     <div id="headerAvatar" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72] cursor-pointer" onclick="window.mostrarSeccion('perfil')"></div>
                 </div>
             </header>
 
             <div class="p-4 md:p-6">
-                <!-- INICIO (con mapa) -->
+                <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido active">
-                    <!-- Mapa de servicios cercanos -->
-                    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-semibold text-slate-800 flex items-center gap-2">
-                                <i class="fas fa-map-marker-alt text-[#1B4F72]"></i>
-                                Servicios cerca de ti
-                            </h3>
-                            <button onclick="obtenerUbicacionTasker()" class="text-xs bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full hover:bg-[#1B4F72]/20 transition">
-                                <i class="fas fa-location-dot mr-1"></i> Mi ubicación
-                            </button>
-                        </div>
-                        <div id="map" class="relative" style="height: 280px;">
-                            <div class="loading-map hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 px-3 py-1 rounded-full text-xs z-10" id="loadingMap">Cargando mapa...</div>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-2 text-center">
-                            <i class="fas fa-eye text-[#1B4F72] mr-1"></i>
-                            Los puntos naranjas son servicios disponibles cerca de ti
-                        </p>
-                    </div>
-
-                    <!-- Stats -->
+                    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6"><div class="flex justify-between items-center mb-3"><h3 class="font-semibold text-slate-800"><i class="fas fa-map-marker-alt text-[#1B4F72] mr-2"></i>Servicios cerca de ti</h3><button onclick="obtenerUbicacionTasker()" class="text-xs bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full"><i class="fas fa-location-dot mr-1"></i>Mi ubicación</button></div><div id="map" style="height: 280px;"></div><p class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-eye text-[#1B4F72] mr-1"></i>Puntos naranjas = servicios disponibles cerca de ti</p></div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-6">
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm">
-                            <p class="text-slate-500 text-xs uppercase tracking-wide">Ganancias del mes</p>
-                            <p id="statsGanancias" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0</p>
-                        </div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm">
-                            <p class="text-slate-500 text-xs uppercase tracking-wide">Trabajos completados</p>
-                            <p id="statsCompletados" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p>
-                        </div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm">
-                            <p class="text-slate-500 text-xs uppercase tracking-wide">En progreso</p>
-                            <p id="statsProgreso" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p>
-                        </div>
-                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm">
-                            <p class="text-slate-500 text-xs uppercase tracking-wide">Calificación</p>
-                            <p id="statsCalificacion" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0.0</p>
-                        </div>
+                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Ganancias del mes</p><p id="statsGanancias" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0</p></div>
+                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Trabajos completados</p><p id="statsCompletados" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
+                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">En progreso</p><p id="statsProgreso" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
+                        <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Calificación</p><p id="statsCalificacion" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0.0</p></div>
                     </div>
-
-                    <!-- Próximos trabajos -->
-                    <div class="bg-white rounded-2xl shadow-sm p-5">
-                        <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-calendar-alt text-[#1B4F72]"></i>
-                            Próximos trabajos
-                        </h3>
-                        <div id="proximosTrabajos" class="space-y-3">
-                            <p class="text-slate-400 text-center py-6">Cargando...</p>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-semibold text-slate-800 mb-4"><i class="fas fa-calendar-alt text-[#1B4F72] mr-2"></i>Próximos trabajos</h3><div id="proximosTrabajos" class="space-y-3"><p class="text-slate-400 text-center py-6">Cargando...</p></div></div>
                 </section>
 
                 <!-- SERVICIOS DISPONIBLES -->
                 <section id="seccion-disponibles" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-                        <h3 class="text-xl md:text-2xl font-bold text-slate-800">Servicios Disponibles</h3>
-                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border rounded-lg text-sm">
-                            <option value="">Todas las categorías</option>
-                        </select>
-                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5"><h3 class="text-xl md:text-2xl font-bold text-slate-800">Servicios Disponibles</h3><select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border rounded-lg text-sm"><option value="">Todas las categorías</option></select></div>
                     <div id="disponiblesContainer" class="space-y-4"></div>
                 </section>
 
                 <!-- MIS TRABAJOS -->
                 <section id="seccion-mis-trabajos" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-                        <h3 class="text-xl md:text-2xl font-bold text-slate-800">Mis Trabajos</h3>
-                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border rounded-lg text-sm">
-                            <option value="todos">Todos</option>
-                            <option value="asignado">Asignados</option>
-                            <option value="en_progreso">En progreso</option>
-                            <option value="completado">Completados</option>
-                        </select>
-                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5"><h3 class="text-xl md:text-2xl font-bold text-slate-800">Mis Trabajos</h3><select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border rounded-lg text-sm"><option value="todos">Todos</option><option value="asignado">Asignados</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
                     <div id="misTrabajosContainer" class="space-y-4"></div>
+                </section>
+
+                <!-- COMPARTIR UBICACIÓN -->
+                <section id="seccion-ubicacion" class="seccion-contenido">
+                    <div class="bg-white rounded-2xl shadow-sm p-6 text-center"><i class="fas fa-map-marked-alt text-5xl text-[#1B4F72] mb-4"></i><h3 class="text-xl font-bold text-slate-800 mb-2">Compartir ubicación en tiempo real</h3><p class="text-slate-500 mb-6">Activa el seguimiento para que tus clientes sepan dónde estás</p><div id="estadoUbicacion" class="bg-slate-100 p-4 rounded-xl mb-6"><i class="fas fa-spinner fa-spin text-[#1B4F72] mr-2"></i>Obteniendo ubicación...</div><button onclick="iniciarCompartirUbicacion()" class="bg-[#1B4F72] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition w-full"><i class="fas fa-play mr-2"></i>Activar seguimiento en vivo</button><p class="text-xs text-slate-400 mt-4"><i class="fas fa-shield-alt text-[#1B4F72] mr-1"></i>Tu ubicación solo se comparte con clientes que tienen servicios activos contigo</p></div>
                 </section>
 
                 <!-- CHAT -->
                 <section id="seccion-chat" class="seccion-contenido">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 h-[calc(100vh-180px)]">
-                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                            <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white">
-                                <h3 class="font-semibold"><i class="fas fa-comments mr-2"></i>Conversaciones</h3>
-                            </div>
-                            <div id="conversacionesLista" class="overflow-y-auto flex-1 p-2"></div>
-                        </div>
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm flex flex-col">
-                            <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
-                                <div class="flex items-center gap-3">
-                                    <div id="chatClienteAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72]"></div>
-                                    <div>
-                                        <h4 id="chatClienteNombre" class="font-bold text-slate-800"></h4>
-                                        <p id="chatServicioInfo" class="text-xs text-slate-500"></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-                            <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
-                                <form id="mensajeForm" class="flex gap-2">
-                                    <input type="text" id="mensajeTexto" class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Escribe tu mensaje...">
-                                    <button type="submit" class="bg-[#1B4F72] text-white px-5 py-3 rounded-xl hover:bg-[#2E86C1] transition">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </form>
-                                <p class="text-xs text-slate-400 mt-2 text-center">
-                                    <i class="fas fa-shield-alt mr-1 text-[#1B4F72]"></i>
-                                    Todos los mensajes son monitoreados por seguridad
-                                </p>
-                            </div>
-                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col"><div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-semibold"><i class="fas fa-comments mr-2"></i>Conversaciones</h3></div><div id="conversacionesLista" class="overflow-y-auto flex-1 p-2"></div></div>
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm flex flex-col"><div id="chatHeader" class="p-4 border-b bg-slate-50 hidden"><div class="flex items-center gap-3"><div id="chatClienteAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72]"></div><div><h4 id="chatClienteNombre" class="font-bold text-slate-800"></h4><p id="chatServicioInfo" class="text-xs text-slate-500"></p></div></div></div><div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3"></div><div id="chatInput" class="p-4 border-t bg-slate-50 hidden"><form id="mensajeForm" class="flex gap-2"><input type="text" id="mensajeTexto" class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Escribe tu mensaje..."><button type="submit" class="bg-[#1B4F72] text-white px-5 py-3 rounded-xl hover:bg-[#2E86C1] transition"><i class="fas fa-paper-plane"></i></button></form><p class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-shield-alt text-[#1B4F72] mr-1"></i>Todos los mensajes son monitoreados por seguridad</p></div></div>
                     </div>
                 </section>
 
                 <!-- FINANZAS -->
                 <section id="seccion-finanzas" class="seccion-contenido">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6">
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm">
-                            <p class="text-slate-500 text-sm">Saldo disponible</p>
-                            <p id="saldoActual" class="text-2xl md:text-3xl font-bold text-green-600 mt-1">$0.00</p>
-                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition">
-                                <i class="fas fa-money-bill-wave mr-2"></i>Retirar
-                            </button>
-                        </div>
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm">
-                            <p class="text-slate-500 text-sm">Ganancias totales</p>
-                            <p id="gananciasTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p>
-                        </div>
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm">
-                            <p class="text-slate-500 text-sm">Comisiones pagadas</p>
-                            <p id="comisionesTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p>
-                        </div>
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Saldo disponible</p><p id="saldoActual" class="text-2xl md:text-3xl font-bold text-green-600 mt-1">$0.00</p><button onclick="abrirRetiroModal()" class="mt-4 w-full bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-money-bill-wave mr-2"></i>Retirar</button></div>
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Ganancias totales</p><p id="gananciasTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p></div>
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm"><p class="text-slate-500 text-sm">Comisiones pagadas</p><p id="comisionesTotales" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0.00</p></div>
                     </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm p-5">
-                        <h3 class="font-bold text-slate-800 mb-4">Historial de pagos</h3>
-                        <div class="table-container overflow-x-auto">
-                            <table class="w-full min-w-[500px]">
-                                <thead class="bg-slate-50">
-                                    <tr><th class="p-3 text-left text-sm">Fecha</th><th class="p-3 text-left text-sm">Servicio</th><th class="p-3 text-left text-sm">Monto</th><th class="p-3 text-left text-sm">Comisión</th><th class="p-3 text-left text-sm">Neto</th><th class="p-3 text-left text-sm">Estado</th></tr>
-                                </thead>
-                                <tbody id="pagosTableBody">
-                                    <tr><td colspan="6" class="text-center p-6 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm p-5"><h3 class="font-bold text-slate-800 mb-4">Historial de pagos</h3><div class="table-container overflow-x-auto"><table class="w-full min-w-[500px]"><thead class="bg-slate-50"><tr><th class="p-3 text-left text-sm">Fecha</th><th class="p-3 text-left text-sm">Servicio</th><th class="p-3 text-left text-sm">Monto</th><th class="p-3 text-left text-sm">Comisión</th><th class="p-3 text-left text-sm">Neto</th><th class="p-3 text-left text-sm">Estado</th></tr></thead><tbody id="pagosTableBody"><tr><td colspan="6" class="text-center p-6 text-slate-400">Cargando...</td></tr></tbody></table></div></div>
                 </section>
 
                 <!-- PERFIL -->
                 <section id="seccion-perfil" class="seccion-contenido">
-                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-6 md:p-8">
-                        <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-6">Mi Perfil Profesional</h3>
-                        
-                        <div class="flex flex-col items-center mb-6">
-                            <div class="relative">
-                                <div id="profileAvatar" class="w-28 h-28 rounded-full bg-slate-300 border-4 border-[#1B4F72]/20"></div>
-                                <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-[#1B4F72] text-white p-2 rounded-full hover:bg-[#2E86C1] transition">
-                                    <i class="fas fa-camera text-sm"></i>
-                                </button>
-                            </div>
-                            <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
-                            <p class="text-xs text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
-                        </div>
-
-                        <form id="perfilForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label>
-                                <input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label>
-                                <input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50 text-slate-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label>
-                                <input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                                <p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label>
-                                <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label>
-                                <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]">
-                            </div>
-                            <button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">
-                                Guardar Cambios
-                            </button>
-                        </form>
-                    </div>
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-6 md:p-8"><h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-6">Mi Perfil Profesional</h3><div class="flex flex-col items-center mb-6"><div class="relative"><div id="profileAvatar" class="w-28 h-28 rounded-full bg-slate-300 border-4 border-[#1B4F72]/20"></div><button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-[#1B4F72] text-white p-2 rounded-full hover:bg-[#2E86C1] transition"><i class="fas fa-camera text-sm"></i></button></div><input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()"><p class="text-xs text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p></div>
+                        <form id="perfilForm" class="space-y-4"><div><label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label><input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label><input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50 text-slate-500"></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label><input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"><p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label><textarea id="perfilDescripcion" rows="3" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]" placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea></div><div><label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label><input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#1B4F72]"></div><button type="submit" class="w-full bg-[#1B4F72] text-white py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition">Guardar Cambios</button></form></div>
                 </section>
             </div>
         </main>
     </div>
 
     <script>
-        // =============================================
-        // CONFIGURACIÓN SUPABASE
-        // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         const taskerSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // =============================================
-        // VARIABLES GLOBALES
-        // =============================================
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
@@ -694,240 +404,110 @@
         let marcadorUsuario = null;
         let marcadoresServicios = [];
         let ubicacionActual = null;
+        let intervalUbicacion = null;
 
-        // =============================================
-        // FUNCIONES DE UTILIDAD
-        // =============================================
         function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-[#1B4F72]'} text-white max-w-xs`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
-        // =============================================
-        // MAPA (LEAFLET - GRATUITO)
-        // =============================================
+        // MENÚ MÓVIL CORREGIDO
+        function iniciarMenuMovil() {
+            const menuBtn = document.getElementById('btnMenuMovil');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            if (!menuBtn || !sidebar || !overlay) return;
+            menuBtn.onclick = function(e) { e.preventDefault(); sidebar.classList.add('abierto'); overlay.classList.add('visible'); document.body.classList.add('menu-open'); };
+            overlay.onclick = function() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); };
+            document.querySelectorAll('.sidebar-link').forEach(link => { link.onclick = function() { if (window.innerWidth < 768) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } }; });
+        }
+        function cerrarMenuMovil() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlayMenu'); if (sidebar && overlay) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } }
+        window.addEventListener('resize', function() { if (window.innerWidth >= 768) cerrarMenuMovil(); });
+
+        // MAPA
         function iniciarMapaTasker() {
             const container = document.getElementById('map');
             if (!container) return;
-            
             mapa = L.map('map').setView([19.4326, -99.1332], 12);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
-                subdomains: 'abcd',
-                maxZoom: 19,
-                minZoom: 3
-            }).addTo(mapa);
-            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(mapa);
             obtenerUbicacionTasker();
         }
-        
+
         function obtenerUbicacionTasker() {
             if (!mapa) return;
-            
-            const loadingDiv = document.getElementById('loadingMap');
-            if (loadingDiv) loadingDiv.classList.remove('hidden');
-            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(pos) {
                         const lat = pos.coords.latitude;
                         const lng = pos.coords.longitude;
                         ubicacionActual = { lat, lng };
-                        
                         mapa.setView([lat, lng], 14);
-                        
                         if (marcadorUsuario) mapa.removeLayer(marcadorUsuario);
-                        marcadorUsuario = L.marker([lat, lng], {
-                            icon: L.divIcon({
-                                className: 'custom-marker',
-                                html: '<i class="fas fa-briefcase"></i>',
-                                iconSize: [32, 32],
-                                popupAnchor: [0, -16]
-                            })
-                        }).addTo(mapa).bindPopup('Tu ubicación').openPopup();
-                        
-                        if (loadingDiv) loadingDiv.classList.add('hidden');
+                        marcadorUsuario = L.marker([lat, lng], { icon: L.divIcon({ className: 'custom-marker', html: '<i class="fas fa-briefcase"></i>', iconSize: [32, 32] }) }).addTo(mapa).bindPopup('Tu ubicación').openPopup();
                         cargarServiciosCercanos(lat, lng);
-                        
-                        // Guardar ubicación en perfil
                         actualizarUbicacionPerfil(lat, lng);
                     },
-                    function(error) {
-                        console.error('Error de geolocalización:', error);
-                        if (loadingDiv) loadingDiv.classList.add('hidden');
-                        notificar('Activa el GPS para ver servicios cerca de ti', 'error');
-                    }
+                    function(error) { console.error('Error:', error); notificar('Activa el GPS para ver servicios cerca de ti', 'error'); }
                 );
-            } else {
-                if (loadingDiv) loadingDiv.classList.add('hidden');
-                notificar('Tu navegador no soporta geolocalización', 'error');
-            }
+            } else { notificar('Tu navegador no soporta geolocalización', 'error'); }
         }
-        
+
         async function actualizarUbicacionPerfil(lat, lng) {
             if (!usuarioActual) return;
-            try {
-                await taskerSupabase.from('profiles').update({ 
-                    latitud: lat, 
-                    longitud: lng,
-                    updated_at: new Date()
-                }).eq('id', usuarioActual.id);
-            } catch (error) {
-                console.error('Error actualizando ubicación:', error);
-            }
+            try { await taskerSupabase.from('profiles').update({ latitud: lat, longitud: lng, updated_at: new Date() }).eq('id', usuarioActual.id); } catch (error) { console.error(error); }
         }
-        
+
         async function cargarServiciosCercanos(lat, lng) {
             try {
-                const { data: servicios, error } = await taskerSupabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('status', 'publicado')
-                    .order('created_at', { ascending: false })
-                    .limit(30);
-                
-                if (error) throw error;
-                if (!servicios || servicios.length === 0) return;
-                
-                // Limpiar marcadores anteriores
+                const { data: servicios } = await taskerSupabase.from('servicios').select('*').eq('status', 'publicado').order('created_at', false).limit(30);
+                if (!servicios?.length) return;
                 marcadoresServicios.forEach(m => mapa.removeLayer(m));
                 marcadoresServicios = [];
-                
-                // Agregar marcadores de servicios (en naranja)
                 servicios.forEach(servicio => {
-                    // Simular ubicación basada en CP (por ahora, posición aleatoria cercana)
-                    // En producción, deberías tener lat/lng en la tabla servicios
                     const offsetLat = (Math.random() - 0.5) * 0.05;
                     const offsetLng = (Math.random() - 0.5) * 0.05;
-                    const markerLat = lat + offsetLat;
-                    const markerLng = lng + offsetLng;
-                    
-                    const marker = L.marker([markerLat, markerLng], {
-                        icon: L.divIcon({
-                            className: 'custom-marker-service',
-                            html: '<i class="fas fa-tools"></i>',
-                            iconSize: [32, 32],
-                            popupAnchor: [0, -16]
-                        })
-                    }).addTo(mapa);
-                    
-                    marker.bindPopup(`
-                        <div class="text-center max-w-[200px]">
-                            <strong>${servicio.subcategoria || 'Servicio'}</strong><br>
-                            <span class="text-sm">$${servicio.monto_ofertado?.toFixed(2)}</span><br>
-                            <button onclick="verServicioDetalle('${servicio.id}')" class="mt-2 bg-[#1B4F72] text-white px-3 py-1 rounded text-xs w-full">Ver detalle</button>
-                        </div>
-                    `);
-                    
+                    const marker = L.marker([lat + offsetLat, lng + offsetLng], { icon: L.divIcon({ className: 'custom-marker-service', html: '<i class="fas fa-tools"></i>', iconSize: [32, 32] }) }).addTo(mapa);
+                    marker.bindPopup(`<div class="text-center"><strong>${servicio.subcategoria || 'Servicio'}</strong><br><span class="text-sm">$${servicio.monto_ofertado?.toFixed(2)}</span><br><button onclick="verServicioDetalle('${servicio.id}')" class="mt-2 bg-[#1B4F72] text-white px-3 py-1 rounded text-xs w-full">Ver detalle</button></div>`);
                     marcadoresServicios.push(marker);
                 });
-                
-            } catch (error) {
-                console.error('Error cargando servicios cercanos:', error);
-            }
+            } catch (error) { console.error(error); }
         }
-        
-        window.verServicioDetalle = function(servicioId) {
-            window.mostrarSeccion('disponibles');
-            setTimeout(() => {
-                document.getElementById(`servicio-${servicioId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-        };
 
-        // =============================================
-        // MODO EN LÍNEA / DESCONECTADO
-        // =============================================
+        window.verServicioDetalle = function(servicioId) { window.mostrarSeccion('disponibles'); setTimeout(() => { document.getElementById(`servicio-${servicioId}`)?.scrollIntoView({ behavior: 'smooth' }); }, 300); };
+
+        // MODO EN LÍNEA
         window.toggleModoOnline = async function() {
             const toggle = document.getElementById('onlineToggle');
             const isOnline = toggle.checked;
-            
             try {
-                await taskerSupabase.from('profiles').update({ 
-                    online: isOnline,
-                    updated_at: new Date()
-                }).eq('id', usuarioActual.id);
-                
+                await taskerSupabase.from('profiles').update({ online: isOnline, updated_at: new Date() }).eq('id', usuarioActual.id);
                 notificar(isOnline ? '✅ Ahora estás en línea' : '⭕ Has entrado en modo offline', 'success');
-                
-                if (isOnline && ubicacionActual) {
-                    cargarServiciosCercanos(ubicacionActual.lat, ubicacionActual.lng);
-                }
-            } catch (error) {
-                console.error('Error actualizando estado:', error);
-                toggle.checked = !isOnline;
-                notificar('Error al cambiar estado', 'error');
-            }
+                if (isOnline && ubicacionActual) cargarServiciosCercanos(ubicacionActual.lat, ubicacionActual.lng);
+            } catch (error) { toggle.checked = !isOnline; notificar('Error al cambiar estado', 'error'); }
         };
 
-        // =============================================
-        // AUTENTICACIÓN
-        // =============================================
-        async function verificarAuth(redirectUrl = 'login.html') {
-            try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; }
-            catch { window.location.href = redirectUrl; return null; }
-        }
+        // COMPARTIR UBICACIÓN EN VIVO
+        window.iniciarCompartirUbicacion = function() {
+            if (intervalUbicacion) clearInterval(intervalUbicacion);
+            const estadoDiv = document.getElementById('estadoUbicacion');
+            estadoDiv.innerHTML = '<i class="fas fa-spinner fa-spin text-[#1B4F72] mr-2"></i>Activando seguimiento...';
+            if (navigator.geolocation) {
+                intervalUbicacion = setInterval(() => {
+                    navigator.geolocation.getCurrentPosition(
+                        async (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            await actualizarUbicacionPerfil(lat, lng);
+                            estadoDiv.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-2"></i>Seguimiento activo - Enviando ubicación cada 10 segundos<br><span class="text-xs text-slate-400">Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</span>`;
+                            notificar('Ubicación actualizada', 'success');
+                        },
+                        () => { estadoDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Error al obtener ubicación'; },
+                        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+                    );
+                }, 10000);
+            } else { estadoDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Geolocalización no soportada'; }
+        };
 
-        // =============================================
-        // MENÚ MÓVIL
-        // =============================================
-        function iniciarMenuMovil() {
-            const menuBtn = document.getElementById('btnMenuMovil');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlayMenu');
-            
-            if (!menuBtn || !sidebar || !overlay) return;
-
-            menuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                sidebar.classList.add('abierto');
-                overlay.classList.add('visible');
-                document.body.classList.add('menu-open');
-            });
-
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            });
-
-            const links = document.querySelectorAll('.sidebar-link');
-            links.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
-                        sidebar.classList.remove('abierto');
-                        overlay.classList.remove('visible');
-                        document.body.classList.remove('menu-open');
-                    }
-                });
-            });
-        }
-
-        function cerrarMenuMovil() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlayMenu');
-            if (sidebar && overlay) {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            }
-        }
-
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) cerrarMenuMovil();
-        });
-
-        // =============================================
-        // INICIALIZACIÓN Y PERFIL
-        // =============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarUsuario();
-            await cargarCategoriasFiltro();
-            await cargarDashboard();
-            await cargarFinanzas();
-            configurarRealtime();
-            iniciarMenuMovil();
-            iniciarMapaTasker();
-        });
+        async function verificarAuth(redirectUrl = 'login.html') { try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; } catch { window.location.href = redirectUrl; return null; } }
 
         async function cargarUsuario() {
             mostrarCarga();
@@ -938,16 +518,9 @@
                 if (!perfil) throw new Error('Perfil no encontrado');
                 usuarioActual = perfil;
                 document.getElementById('userInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Tasker'}</p><p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>`;
-                if (perfil.photo_url) {
-                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                    document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                }
-                if (perfil.status === 'pending') {
-                    document.getElementById('verificationBadge').classList.remove('hidden');
-                }
-                if (perfil.online) {
-                    document.getElementById('onlineToggle').checked = true;
-                }
+                if (perfil.photo_url) { document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`; document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`; }
+                if (perfil.status === 'pending') document.getElementById('verificationBadge').classList.remove('hidden');
+                if (perfil.online) document.getElementById('onlineToggle').checked = true;
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
@@ -956,9 +529,6 @@
             } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
         }
 
-        // =============================================
-        // DASHBOARD INICIO
-        // =============================================
         async function cargarDashboard() {
             try {
                 const { data: trabajos } = await taskerSupabase.from('servicios').select('*').eq('tasker_id', usuarioActual.id).order('created_at', false);
@@ -966,43 +536,18 @@
                 const mesActual = ahora.getMonth();
                 const anioActual = ahora.getFullYear();
                 let ganancias = 0;
-                (trabajos || []).forEach(t => {
-                    if (t.status === 'completado') {
-                        const fecha = new Date(t.fecha_completado || t.created_at);
-                        if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
-                            ganancias += (t.monto_final || t.monto_ofertado || 0) * 0.85;
-                        }
-                    }
-                });
+                (trabajos || []).forEach(t => { if (t.status === 'completado') { const fecha = new Date(t.fecha_completado || t.created_at); if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) ganancias += (t.monto_final || t.monto_ofertado || 0) * 0.85; } });
                 document.getElementById('statsGanancias').textContent = `$${ganancias.toFixed(2)}`;
                 document.getElementById('statsCompletados').textContent = (trabajos || []).filter(t => t.status === 'completado').length;
                 document.getElementById('statsProgreso').textContent = (trabajos || []).filter(t => t.status === 'en_progreso').length;
                 document.getElementById('statsCalificacion').textContent = usuarioActual.calificacion_promedio?.toFixed(1) || '0.0';
-
                 const proximos = (trabajos || []).filter(t => ['asignado', 'en_progreso'].includes(t.status)).slice(0, 5);
                 const container = document.getElementById('proximosTrabajos');
-                if (proximos.length === 0) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>';
-                } else {
-                    container.innerHTML = proximos.map(t => `
-                        <div class="border rounded-xl p-4 hover:bg-slate-50 transition">
-                            <div class="flex justify-between items-start flex-wrap gap-2">
-                                <div><h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${t.ubicacion || ''}</p></div>
-                                <span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">${t.status === 'asignado' ? 'Asignado' : 'En progreso'}</span>
-                            </div>
-                            <div class="mt-3 flex justify-between items-center">
-                                <span class="text-sm font-bold text-[#1B4F72]">$${(t.monto_ofertado || 0).toFixed(2)}</span>
-                                <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="text-sm bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full hover:bg-[#1B4F72]/20 transition"><i class="fas fa-comment mr-1"></i>Chat</button>
-                            </div>
-                        </div>
-                    `).join('');
-                }
+                if (proximos.length === 0) { container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>'; }
+                else { container.innerHTML = proximos.map(t => `<div class="border rounded-xl p-4 hover:bg-slate-50 transition"><div class="flex justify-between items-start flex-wrap gap-2"><div><h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${t.ubicacion || ''}</p></div><span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">${t.status === 'asignado' ? 'Asignado' : 'En progreso'}</span></div><div class="mt-3 flex justify-between items-center"><span class="text-sm font-bold text-[#1B4F72]">$${(t.monto_ofertado || 0).toFixed(2)}</span><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="text-sm bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full hover:bg-[#1B4F72]/20 transition"><i class="fas fa-comment mr-1"></i>Chat</button></div></div>`).join(''); }
             } catch (e) { console.error(e); }
         }
 
-        // =============================================
-        // CATEGORÍAS PARA FILTRO
-        // =============================================
         async function cargarCategoriasFiltro() {
             try {
                 const { data: cats } = await taskerSupabase.from('categorias').select('*').eq('activo', true);
@@ -1012,9 +557,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // =============================================
-        // SERVICIOS DISPONIBLES
-        // =============================================
         window.cargarDisponibles = async function() {
             const container = document.getElementById('disponiblesContainer');
             const categoriaFiltro = document.getElementById('filtroCategoria').value;
@@ -1023,35 +565,16 @@
                 if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
                 const { data: servicios } = await query;
                 if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
-                container.innerHTML = servicios.map(s => `
-                    <div id="servicio-${s.id}" class="bg-white rounded-xl shadow-sm p-5 service-card">
-                        <div class="flex justify-between items-start flex-wrap gap-2 mb-3">
-                            <div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion?.substring(0, 100)}${s.descripcion?.length > 100 ? '...' : ''}</p></div>
-                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span>
-                        </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div>
-                            <div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
-                        </div>
-                        <div class="border-t pt-4 flex justify-end">
-                            <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-[#1B4F72] text-white px-5 py-2 rounded-lg hover:bg-[#2E86C1] transition">Enviar propuesta</button>
-                        </div>
-                    </div>
-                `).join('');
+                container.innerHTML = servicios.map(s => `<div id="servicio-${s.id}" class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion?.substring(0, 100)}${s.descripcion?.length > 100 ? '...' : ''}</p></div><span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div><div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div></div><div class="border-t pt-4 flex justify-end"><button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-[#1B4F72] text-white px-5 py-2 rounded-lg hover:bg-[#2E86C1] transition">Enviar propuesta</button></div></div>`).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
         };
 
-        // =============================================
-        // PROPUESTAS
-        // =============================================
         window.abrirPropuestaModal = function(servicioId, presupuestoMaximo) {
             servicioSeleccionado = { id: servicioId, maximo: presupuestoMaximo };
             document.getElementById('propuestaMonto').value = presupuestoMaximo * 0.85;
             document.getElementById('propuestaModal').classList.remove('hidden');
             document.getElementById('propuestaModal').classList.add('flex');
         };
-
         function cerrarPropuestaModal() { document.getElementById('propuestaModal').classList.add('hidden'); document.getElementById('propuestaModal').classList.remove('flex'); servicioSeleccionado = null; }
 
         document.getElementById('propuestaForm').addEventListener('submit', async (e) => {
@@ -1066,13 +589,11 @@
                 await taskerSupabase.from('propuestas').insert([{ servicio_id: servicioSeleccionado.id, tasker_id: usuarioActual.id, monto_propuesto: monto, mensaje: document.getElementById('propuestaMensaje').value, tiempo_estimado: parseInt(document.getElementById('propuestaTiempo').value), status: 'pendiente', created_at: new Date() }]);
                 const { data: servicio } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', servicioSeleccionado.id).single();
                 await taskerSupabase.from('notificaciones').insert([{ usuario_id: servicio.cliente_id, tipo: 'propuesta', titulo: '¡Nueva propuesta recibida!', mensaje: 'Un tasker ha enviado una propuesta para tu servicio' }]);
-                alert('¡Propuesta enviada!'); cerrarPropuestaModal();
+                notificar('¡Propuesta enviada! El cliente la revisará', 'success');
+                cerrarPropuestaModal();
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         });
 
-        // =============================================
-        // MIS TRABAJOS
-        // =============================================
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
             const container = document.getElementById('misTrabajosContainer');
@@ -1084,56 +605,36 @@
                 container.innerHTML = trabajos.map(t => {
                     const esAsignado = t.status === 'asignado';
                     const esProgreso = t.status === 'en_progreso';
-                    return `
-                    <div class="bg-white rounded-xl shadow-sm p-5">
-                        <div class="flex justify-between items-start flex-wrap gap-2 mb-3">
-                            <div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion?.substring(0, 80)}...</p></div>
-                            <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${t.ubicacion || ''}</p></div>
-                        </div>
-                        ${esAsignado ? `
-                        <div class="border-t pt-4 flex gap-3 flex-wrap">
-                            <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button>
-                            <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-comment mr-2"></i>Contactar cliente</button>
-                        </div>
-                        ` : esProgreso ? `
-                        <div class="border-t pt-4">
-                            <p class="text-sm text-slate-600 mb-3"><i class="fas fa-info-circle text-[#1B4F72] mr-2"></i>Esperando confirmación del cliente</p>
-                            <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 transition"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>
-                        </div>
-                        ` : ''}
-                    </div>
-                `}).join('');
+                    const puedeFinalizar = t.status === 'en_progreso';
+                    const direccion = t.ubicacion || 'Dirección no especificada';
+                    return `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion?.substring(0, 80)}...</p></div><span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span></div><div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>Dirección</p><p class="text-sm">${direccion}</p></div></div>${esAsignado ? `<div class="border-t pt-4 flex gap-3 flex-wrap"><button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-comment mr-2"></i>Contactar cliente</button></div>` : ''}${esProgreso ? `<div class="border-t pt-4"><div class="bg-yellow-50 p-3 rounded-lg mb-3"><p class="text-sm text-yellow-800"><i class="fas fa-info-circle mr-2"></i>Trabajo en progreso. Cuando termines, solicita la finalización.</p></div>${puedeFinalizar ? `<button onclick="finalizarTrabajo('${t.id}')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>` : ''}</div>` : ''}</div>`;
+                }).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
         };
 
         window.iniciarTrabajo = async (id) => {
-            if (!confirm('¿Confirmas que vas a iniciar este trabajo?')) return;
+            if (!confirm('¿Confirmas que vas a iniciar este trabajo? Recuerda activar el seguimiento de ubicación.')) return;
             mostrarCarga();
             try {
                 await taskerSupabase.from('servicios').update({ status: 'en_progreso', fecha_inicio: new Date() }).eq('id', id);
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar' }]);
-                alert('Trabajo iniciado'); window.cargarMisTrabajos(); await cargarDashboard();
+                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar. Podrás ver su ubicación en tiempo real.' }]);
+                notificar('Trabajo iniciado. Activa el seguimiento de ubicación.', 'success');
+                window.cargarMisTrabajos();
+                await cargarDashboard();
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-        window.solicitarFinalizacion = async (id) => {
-            if (!confirm('¿Solicitar al cliente que confirme la finalización?')) return;
+        window.finalizarTrabajo = async (id) => {
+            if (!confirm('¿Solicitar al cliente que confirme la finalización del trabajo?')) return;
             mostrarCarga();
             try {
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma.' }]);
-                alert('Solicitud enviada');
+                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma y califica.' }]);
+                notificar('Solicitud enviada al cliente. Espera su confirmación y calificación.', 'success');
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-        // =============================================
-        // FINANZAS
-        // =============================================
         async function cargarFinanzas() {
             try {
                 const { data: pagos } = await taskerSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('tasker_id', usuarioActual.id).order('fecha_pago', false);
@@ -1150,12 +651,9 @@
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('comisionesTotales').textContent = `$${comisiones.toFixed(2)}`;
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
-
                 const tbody = document.getElementById('pagosTableBody');
                 if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-slate-400">No hay pagos</td></tr>'; return; }
-                tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>
-                `).join('');
+                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status === 'completado' ? 'Liberado' : 'Retenido'}</span></td></tr>`).join('');
             } catch (e) { console.error(e); }
         };
 
@@ -1166,21 +664,16 @@
             const monto = parseFloat(document.getElementById('retiroMonto').value);
             const saldo = parseFloat(document.getElementById('saldoActual').textContent.replace('$', ''));
             if (monto > saldo) { alert('Monto insuficiente'); return; }
-            alert('Solicitud de retiro enviada'); cerrarRetiroModal();
+            alert('Solicitud de retiro enviada. El administrador la revisará.'); cerrarRetiroModal();
         });
 
-        // =============================================
         // CHAT
-        // =============================================
         window.cargarConversaciones = async function() {
             const c = document.getElementById('conversacionesLista');
             try {
                 const { data: chats } = await taskerSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', false);
                 if (!chats?.length) { c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>'; return; }
-                c.innerHTML = chats.map(ch => {
-                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300" style="background-image: url('${otro.photo_url||''}'); background-size: cover;"></div><div><p class="font-bold">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje.substring(0,30)}</p>`:''}</div></div></div>`;
-                }).join('');
+                c.innerHTML = chats.map(ch => { const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1; return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url||''}');"></div><div><p class="font-bold">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje.substring(0,30)}</p>`:''}</div></div></div>`; }).join('');
             } catch (e) { console.error(e); }
         };
 
@@ -1234,9 +727,6 @@
             } catch (e) { console.error(e); alert('Error al abrir chat'); }
         };
 
-        // =============================================
-        // PERFIL
-        // =============================================
         document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
@@ -1261,44 +751,38 @@
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-        // =============================================
-        // NAVEGACIÓN
-        // =============================================
         window.mostrarSeccion = function(sec) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            
-            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil' };
+            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', ubicacion:'Compartir Ubicación', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil' };
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            
             if (sec === 'disponibles') window.cargarDisponibles();
             if (sec === 'mis-trabajos') window.cargarMisTrabajos();
             if (sec === 'chat') window.cargarConversaciones();
             if (sec === 'finanzas') cargarFinanzas();
             if (sec === 'inicio') { cargarDashboard(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
-            
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
         function configurarRealtime() {
-            taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => {
-                if (p.new.remitente_id !== usuarioActual?.id) {
-                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                    else notificar('Nuevo mensaje recibido');
-                }
-            }).subscribe();
+            taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => { if (p.new.remitente_id !== usuarioActual?.id) { if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new); else notificar('Nuevo mensaje recibido'); } }).subscribe();
+            taskerSupabase.channel('propuestas-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'propuestas', filter:`tasker_id=eq.${usuarioActual?.id}` }, p => { if (p.new.status === 'aceptada') { notificar('¡Propuesta aceptada! Revisa tus trabajos', 'success'); window.cargarMisTrabajos(); } }).subscribe();
         }
 
-        window.cerrarSesionTasker = async function() {
-            if (confirm('¿Cerrar sesión?')) {
-                mostrarCarga();
-                await taskerSupabase.auth.signOut();
-                window.location.href = 'index.html';
-            }
-        };
+        window.cerrarSesionTasker = async function() { if (confirm('¿Cerrar sesión?')) { mostrarCarga(); await taskerSupabase.auth.signOut(); window.location.href = 'index.html'; } };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarUsuario();
+            await cargarCategoriasFiltro();
+            await cargarDashboard();
+            await cargarFinanzas();
+            configurarRealtime();
+            iniciarMenuMovil();
+            iniciarMapaTasker();
+        });
     </script>
 </body>
 </html>
