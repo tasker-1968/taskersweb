@@ -5,408 +5,1248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Panel de Administración | Tasker's México</title>
     
+    <!-- Anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
         .admin-sidebar {
-            background: linear-gradient(180deg, #0A2540 0%, #1B4F72 100%);
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             transition: left 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
+        
         .sidebar-link {
             transition: all 0.2s ease;
-            border-radius: 12px;
-            cursor: pointer;
+            border-left: 3px solid transparent;
         }
+        
         .sidebar-link:hover {
-            background: rgba(46, 134, 193, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
         }
+        
         .sidebar-link.active {
-            background: rgba(46, 134, 193, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #3b82f6;
             color: white;
         }
-        .seccion {
-            display: none;
-        }
-        .seccion.active {
-            display: block;
-        }
+        
         .stat-card {
             transition: all 0.3s ease;
-            border-left: 4px solid #1B4F72;
         }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .seccion-contenido {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .seccion-contenido.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
+        
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        
+        .badge-verified {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        /* ========== MEJORAS RESPONSIVE ========== */
         @media (max-width: 768px) {
+            /* Sidebar oculto por defecto */
             .admin-sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                bottom: 0;
-                z-index: 9999;
-                width: 280px;
+                position: fixed !important;
+                left: -280px !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                z-index: 9999 !important;
+                width: 280px !important;
+                display: flex !important;
+                transition: left 0.3s ease !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
-            .admin-sidebar.abierto { left: 0; }
+            
+            /* Sidebar visible */
+            .admin-sidebar.abierto {
+                left: 0 !important;
+            }
+            
+            /* Overlay */
+            #overlayMenu {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: rgba(0, 0, 0, 0.5) !important;
+                z-index: 9998 !important;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            #overlayMenu.visible {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            
+            /* Botón menú siempre visible */
             #btnMenuMovil {
-                display: block;
-                position: fixed;
-                top: 1rem;
-                left: 1rem;
-                background: #1B4F72;
-                color: white;
-                width: 48px;
-                height: 48px;
-                border-radius: 14px;
-                z-index: 10000;
+                display: flex !important;
+                z-index: 10000 !important;
+                position: fixed !important;
+                top: 1rem !important;
+                left: 1rem !important;
+                background: #3b82f6 !important;
+                color: white !important;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
-            .ml-12 { margin-left: 3.5rem; }
+            
+            /* Ajustes de contenido */
+            .ml-12 {
+                margin-left: 3.5rem !important;
+            }
+            
+            .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .grid-cols-2 {
+                gap: 0.75rem !important;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Tablas horizontales */
+            .table-container {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                margin: 0 -1rem !important;
+                padding: 0 1rem !important;
+                width: calc(100% + 2rem) !important;
+            }
+            
+            table {
+                min-width: 600px !important;
+            }
+            
+            /* Botones más grandes para touch */
+            button, 
+            .sidebar-link,
+            [onclick] {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+            
+            /* Inputs sin zoom */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
         }
-        @media (min-width: 769px) {
-            #btnMenuMovil { display: none; }
+        
+        /* Ajustes para tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-2 {
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .stat-card p.text-3xl {
+                font-size: 2rem;
+            }
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Prevenir scroll cuando el menú está abierto */
+        body.menu-open {
+            overflow: hidden !important;
         }
     </style>
 </head>
 <body class="bg-slate-100">
 
-    <button id="btnMenuMovil" class="hidden"><i class="fas fa-bars text-xl"></i></button>
-    <div id="overlayMenu" class="fixed inset-0 bg-black/50 z-9998 hidden"></div>
+    <!-- Botón menú móvil -->
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
 
-    <div class="flex min-h-screen">
+    <!-- Overlay para móvil -->
+    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
+
+    <!-- Modal de carga -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600 font-medium">Cargando...</p>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="admin-sidebar w-64 text-white flex flex-col fixed md:relative h-full z-50">
-            <div class="p-5 border-b border-white/10">
+        <aside id="sidebar" class="admin-sidebar w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
+            <div class="p-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's" class="h-9 w-auto">
+                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
                     <div>
-                        <div class="text-lg font-bold">Tasker's</div>
-                        <div class="text-xs text-[#2E86C1]">Administrador</div>
+                        <div class="text-xl font-bold text-white">Tasker's</div>
+                        <div class="text-xs text-blue-400">Administrador</div>
                     </div>
                 </div>
-                <div id="adminInfo" class="mt-4 text-sm bg-white/10 p-3 rounded-xl">
+            </div>
+            
+            <div class="p-4 border-b border-white/10">
+                <div id="adminInfo" class="text-sm text-white/80">
                     <p class="font-bold">Cargando...</p>
                 </div>
             </div>
             
-            <nav class="flex-1 mt-4 px-3 space-y-1">
-                <div id="btnDashboard" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
-                    <i class="fas fa-chart-pie w-5"></i><span>Dashboard</span>
-                </div>
-                <div id="btnTaskers" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
-                    <i class="fas fa-users w-5"></i><span>Taskers Pendientes</span>
+            <nav class="flex-1 mt-6 px-3 space-y-1">
+                <a href="#" onclick="window.mostrarSeccion('dashboard'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-dashboard">
+                    <i class="fas fa-chart-pie w-6"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('taskers'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-taskers">
+                    <i class="fas fa-users w-6"></i>
+                    <span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
-                </div>
-                <div id="btnServicios" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
-                    <i class="fas fa-briefcase w-5"></i><span>Servicios</span>
-                </div>
-                <div id="btnPagos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
-                    <i class="fas fa-credit-card w-5"></i><span>Pagos</span>
-                </div>
-                <div id="btnGanancias" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white">
-                    <i class="fas fa-chart-line w-5"></i><span>Mis Ganancias</span>
-                </div>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('propuestas'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-propuestas">
+                    <i class="fas fa-file-signature w-6"></i>
+                    <span>Propuestas Pendientes</span>
+                    <span id="propuestasCount" class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('servicios'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
+                    <i class="fas fa-briefcase w-6"></i>
+                    <span>Servicios</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('pagos'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-pagos">
+                    <i class="fas fa-credit-card w-6"></i>
+                    <span>Pagos</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('ganancias'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ganancias">
+                    <i class="fas fa-chart-line w-6"></i>
+                    <span>Mis Ganancias</span>
+                </a>
             </nav>
             
             <div class="p-4 border-t border-white/10">
-                <button id="btnCerrarSesion" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
+                <button onclick="window.cerrarSesionAdmin()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200 p-4 sticky top-0 z-10">
+            <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
                 <div class="flex justify-between items-center">
                     <div class="ml-12 md:ml-0">
                         <h2 id="section-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
                         <p id="section-subtitle" class="text-sm text-slate-500">Panel de control administrativo</p>
                     </div>
-                    <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-[#1B4F72]"></div>
+                    <div class="flex items-center gap-4">
+                        <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-500"></div>
+                    </div>
                 </div>
             </header>
 
-            <div class="p-6">
+            <div class="p-4 md:p-6">
                 <!-- DASHBOARD -->
-                <div id="seccion-dashboard" class="seccion active">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="stat-card bg-white p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-sm">Total Usuarios</p><p id="totalUsuarios" class="text-3xl font-bold text-slate-800 mt-1">0</p></div>
-                        <div class="stat-card bg-white p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-sm">Taskers Pendientes</p><p id="totalPendientes" class="text-3xl font-bold text-slate-800 mt-1">0</p></div>
-                        <div class="stat-card bg-white p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-sm">Servicios Activos</p><p id="totalServicios" class="text-3xl font-bold text-slate-800 mt-1">0</p></div>
-                        <div class="stat-card bg-white p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-sm">Ganancias Totales</p><p id="totalGanancias" class="text-3xl font-bold text-slate-800 mt-1">$0</p></div>
+                <section id="seccion-dashboard" class="seccion-contenido active">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-slate-500 text-sm">Total Usuarios</p>
+                            <p id="totalUsuarios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <p class="text-slate-500 text-sm">Taskers Pendientes</p>
+                            <p id="totalPendientes" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-slate-500 text-sm">Servicios Activos</p>
+                            <p id="totalServicios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
+                        </div>
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-slate-500 text-sm">Ganancias Totales</p>
+                            <p id="totalGanancias" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6"><h3 class="font-bold text-slate-800 mb-4">Actividad Reciente</h3><canvas id="activityChart" height="100"></canvas></div>
-                </div>
 
-                <!-- TASKERS -->
-                <div id="seccion-taskers" class="seccion">
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold">Taskers Pendientes de Verificación</h3></div>
-                        <div class="table-container p-4"><div id="taskersList" class="space-y-3"></div></div>
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Actividad Reciente</h3>
+                        <canvas id="activityChart" height="100"></canvas>
                     </div>
-                </div>
+                </section>
+
+                <!-- TASKERS PENDIENTES -->
+                <section id="seccion-taskers" class="seccion-contenido">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-users"></i>
+                                Taskers Pendientes de Verificación
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Nombre</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Email</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Teléfono</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Documentos</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskersTable">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROPUESTAS PENDIENTES -->
+                <section id="seccion-propuestas" class="seccion-contenido">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-file-signature"></i>
+                                Propuestas Pendientes de Revisión
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Propuesta</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Mensaje</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tiempo</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="propuestasTable">
+                                    <tr><td colspan="7" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- SERVICIOS -->
-                <div id="seccion-servicios" class="seccion">
+                <section id="seccion-servicios" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold">Todos los Servicios</h3></div>
-                        <div class="table-container p-4"><div id="serviciosList" class="space-y-3"></div></div>
+                        <div class="p-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-briefcase"></i>
+                                Todos los Servicios
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="serviciosTable">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- PAGOS -->
-                <div id="seccion-pagos" class="seccion">
+                <section id="seccion-pagos" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-[#1B4F72] to-[#2E86C1] text-white"><h3 class="font-bold">Historial de Pagos</h3></div>
-                        <div class="table-container p-4"><div id="pagosList" class="space-y-3"></div></div>
+                        <div class="p-4 bg-gradient-to-r from-green-600 to-green-500 text-white">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i class="fas fa-credit-card"></i>
+                                Historial de Pagos
+                            </h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="w-full">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
+                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagosTable">
+                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- GANANCIAS -->
-                <div id="seccion-ganancias" class="seccion">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-slate-800 mb-4">Resumen de Ganancias</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between p-3 bg-[#1B4F72]/10 rounded-xl"><span>Ganancias Totales (15%)</span><span id="gananciasTotales" class="font-bold">$0.00</span></div>
-                            <div class="flex justify-between p-3 bg-green-50 rounded-xl"><span>Este mes</span><span id="gananciasMes" class="font-bold">$0.00</span></div>
-                            <div class="flex justify-between p-3 bg-purple-50 rounded-xl"><span>Hoy</span><span id="gananciasHoy" class="font-bold">$0.00</span></div>
+                <section id="seccion-ganancias" class="seccion-contenido">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-blue-600"></i>
+                                Resumen de Ganancias
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Ganancias Totales (15%)</span>
+                                    <span id="gananciasTotales" class="text-xl font-bold text-blue-600">$0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Este mes</span>
+                                    <span id="gananciasMes" class="text-lg font-bold text-green-600">$0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                                    <span class="text-sm text-slate-600">Hoy</span>
+                                    <span id="gananciasHoy" class="text-lg font-bold text-purple-600">$0.00</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mt-6"><canvas id="gananciasChart" height="200"></canvas></div>
-                        <div class="mt-6"><h4 class="font-bold mb-3">Detalle de Comisiones</h4><div id="comisionesList" class="space-y-3"></div></div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Proyección Mensual</h3>
+                            <canvas id="gananciasChart" height="200"></canvas>
+                        </div>
+
+                        <div class="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Detalle de Comisiones</h3>
+                            <div class="table-container">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Cliente</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tasker</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Monto Total</th>
+                                            <th class="p-3 text-left text-sm font-bold text-slate-600">Tu Comisión (15%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="gananciasTable">
+                                        <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </main>
     </div>
 
     <script>
-        // SOLO UNA DECLARACIÓN DE SUPABASE
+        // =============================================
+        // CONFIGURACIÓN ÚNICA DE SUPABASE
+        // =============================================
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+        const adminSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
         let usuarioActual = null;
         let activityChart = null;
         let gananciasChart = null;
 
-        // ============================================
-        // FUNCIONES GLOBALES
-        // ============================================
-        
-        function mostrarSeccion(seccion) {
-            console.log('Mostrando sección:', seccion);
-            
-            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
-            const seccionEl = document.getElementById('seccion-' + seccion);
-            if (seccionEl) seccionEl.classList.add('active');
-            
-            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
-            if (seccion === 'dashboard') document.getElementById('btnDashboard')?.classList.add('active');
-            if (seccion === 'taskers') document.getElementById('btnTaskers')?.classList.add('active');
-            if (seccion === 'servicios') document.getElementById('btnServicios')?.classList.add('active');
-            if (seccion === 'pagos') document.getElementById('btnPagos')?.classList.add('active');
-            if (seccion === 'ganancias') document.getElementById('btnGanancias')?.classList.add('active');
-            
-            const titulos = { dashboard:'Dashboard', taskers:'Taskers Pendientes', servicios:'Servicios', pagos:'Pagos', ganancias:'Mis Ganancias' };
-            document.getElementById('section-title').innerText = titulos[seccion] || 'Admin';
-            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${(titulos[seccion] || 'admin').toLowerCase()}`;
-            
-            if (seccion === 'taskers') cargarTaskers();
-            if (seccion === 'servicios') cargarServicios();
-            if (seccion === 'pagos') cargarPagos();
-            if (seccion === 'ganancias') cargarGanancias();
-            
-            if (window.innerWidth < 768) {
-                document.getElementById('sidebar')?.classList.remove('abierto');
-                document.getElementById('overlayMenu')?.classList.add('hidden');
-            }
-        }
-        
-        async function cerrarSesion() {
-            if (confirm('¿Cerrar sesión?')) {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
-            }
-        }
-        
-        window.mostrarSeccion = mostrarSeccion;
-        window.cerrarSesion = cerrarSesion;
-        
-        // ============================================
-        // MENÚ MÓVIL
-        // ============================================
-        function initMenuMovil() {
-            const btn = document.getElementById('btnMenuMovil');
+        // =============================================
+        // FUNCIONES DE UTILIDAD
+        // =============================================
+        function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
+        function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
+        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white max-w-md`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
+
+        // =============================================
+        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // =============================================
+        function iniciarMenuMovil() {
+            const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
-            if (!btn || !sidebar) return;
-            btn.onclick = () => { sidebar.classList.add('abierto'); if(overlay) overlay.classList.remove('hidden'); };
-            if(overlay) overlay.onclick = () => { sidebar.classList.remove('abierto'); overlay.classList.add('hidden'); };
+            
+            if (!menuBtn || !sidebar || !overlay) {
+                console.error('❌ Elementos del menú no encontrados');
+                return;
+            }
+
+            console.log('✅ Menú móvil inicializado');
+
+            // Abrir menú
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔵 Abriendo menú');
+                
+                sidebar.classList.add('abierto');
+                overlay.classList.add('visible');
+                document.body.classList.add('menu-open');
+            });
+
+            // Cerrar con overlay
+            overlay.addEventListener('click', function() {
+                console.log('⚫ Cerrando menú');
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            });
+
+            // Cerrar con enlaces
+            const links = document.querySelectorAll('.sidebar-link');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('abierto');
+                        overlay.classList.remove('visible');
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            });
         }
-        
-        // ============================================
-        // ASIGNAR EVENTOS
-        // ============================================
-        function asignarEventosBotones() {
-            document.getElementById('btnDashboard')?.addEventListener('click', () => mostrarSeccion('dashboard'));
-            document.getElementById('btnTaskers')?.addEventListener('click', () => mostrarSeccion('taskers'));
-            document.getElementById('btnServicios')?.addEventListener('click', () => mostrarSeccion('servicios'));
-            document.getElementById('btnPagos')?.addEventListener('click', () => mostrarSeccion('pagos'));
-            document.getElementById('btnGanancias')?.addEventListener('click', () => mostrarSeccion('ganancias'));
-            document.getElementById('btnCerrarSesion')?.addEventListener('click', () => cerrarSesion());
+
+        // Función para cerrar menú manualmente
+        function cerrarMenuMovil() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlayMenu');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('abierto');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            }
         }
-        
-        // ============================================
-        // VERIFICAR ADMIN
-        // ============================================
+
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                cerrarMenuMovil();
+            }
+        });
+
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN Y ROL
+        // =============================================
         async function verificarAdmin() {
+            mostrarCarga();
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) { window.location.href = 'login.html'; return false; }
-                
-                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-                if (!perfil || perfil.role !== 'admin') {
-                    alert('Acceso no autorizado');
-                    window.location.href = 'index.html';
-                    return false;
+                const { data: { session }, error } = await adminSupabase.auth.getSession();
+                if (error) throw error;
+                if (!session) { window.location.href = 'login.html'; return null; }
+
+                const { data: perfil, error: perfilError } = await adminSupabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                if (perfilError) {
+                    console.error('Error obteniendo perfil:', perfilError);
+                    return null;
                 }
-                
+
+                if (!perfil || perfil?.role !== 'admin') {
+                    alert('Acceso no autorizado. Esta área es solo para administradores.');
+                    window.location.href = 'index.html';
+                    return null;
+                }
+
                 usuarioActual = perfil;
-                document.getElementById('adminInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Admin'}</p><p class="text-xs">${perfil.email}</p>`;
-                if (perfil.photo_url) document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                return true;
-            } catch(e) { console.error(e); return false; }
+                document.getElementById('adminInfo').innerHTML = `
+                    <p class="font-bold">${perfil.full_name || 'Administrador'}</p>
+                    <p class="text-xs text-blue-300">${perfil.email}</p>
+                `;
+                
+                if (perfil.photo_url) {
+                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                }
+
+                return session;
+            } catch (error) {
+                console.error('Error en autenticación:', error);
+                window.location.href = 'login.html';
+                return null;
+            } finally {
+                ocultarCarga();
+            }
         }
-        
-        // ============================================
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            const session = await verificarAdmin();
+            if (session) {
+                await cargarDashboard();
+                await cargarTaskers();
+                await cargarPropuestas();
+                await cargarServicios();
+                await cargarPagos();
+                await cargarGanancias();
+                iniciarMenuMovil(); // Inicializar menú móvil
+                initCharts();
+            }
+        });
+
+        function menuMovil() {
+            // Esta función se mantiene por compatibilidad
+        }
+        function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
+
+        // =============================================
         // DASHBOARD
-        // ============================================
+        // =============================================
         async function cargarDashboard() {
             try {
-                const { count: totalUsuarios } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-                const { count: totalPendientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
-                const { count: totalServicios } = await supabase.from('servicios').select('*', { count: 'exact', head: true }).in('status', ['publicado', 'asignado', 'en_progreso']);
-                const { data: pagos } = await supabase.from('pagos').select('comision_taskers').eq('status', 'completado');
-                const totalGanancias = pagos?.reduce((s,p) => s + (p.comision_taskers||0), 0) || 0;
-                
+                const { count: totalUsuarios } = await adminSupabase.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: totalPendientes } = await adminSupabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
+                const { count: totalServicios } = await adminSupabase.from('servicios').select('*', { count: 'exact', head: true }).in('status', ['publicado', 'asignado', 'en_progreso']);
+                const { data: pagos } = await adminSupabase.from('pagos').select('comision_taskers').eq('status', 'completado');
+
+                const totalGanancias = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
                 document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
                 document.getElementById('totalPendientes').textContent = totalPendientes || 0;
                 document.getElementById('totalServicios').textContent = totalServicios || 0;
                 document.getElementById('totalGanancias').textContent = `$${totalGanancias.toFixed(2)}`;
                 document.getElementById('pendingCount').textContent = totalPendientes || 0;
-            } catch(e) { console.error(e); }
+
+            } catch (e) { console.error('Error loading dashboard:', e); }
         }
-        
-        // ============================================
+
+        // =============================================
         // TASKERS PENDIENTES
-        // ============================================
+        // =============================================
         async function cargarTaskers() {
-            const container = document.getElementById('taskersList');
+            const tbody = document.getElementById('taskersTable');
             try {
-                const { data: taskers } = await supabase.from('profiles').select('*').eq('role', 'tasker').eq('status', 'pending').order('created_at', false);
-                if (!taskers?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay taskers pendientes</p>'; return; }
-                
-                container.innerHTML = taskers.map(t => `
-                    <div class="bg-white border rounded-xl p-4 flex flex-wrap justify-between items-center gap-3">
-                        <div><p class="font-bold">${t.full_name || 'Sin nombre'}</p><p class="text-sm text-slate-500">${t.email}</p><p class="text-sm">${t.phone || ''}</p></div>
-                        <div class="flex gap-2">
-                            <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Aprobar</button>
-                            <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">Rechazar</button>
-                        </div>
-                    </div>
+                const { data: taskers, error } = await adminSupabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('role', 'tasker')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!taskers || taskers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = taskers.map(t => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td>
+                        <td class="p-4">${t.email || 'No especificado'}</td>
+                        <td class="p-4">${t.phone || 'No especificado'}</td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                ${t.photo_url ? `<a href="${t.photo_url}" target="_blank" class="text-blue-600 hover:underline text-sm">Foto</a>` : ''}
+                                ${t.document_ine_url ? `<a href="${t.document_ine_url}" target="_blank" class="text-blue-600 hover:underline text-sm">INE</a>` : ''}
+                                ${t.document_penal_url ? `<a href="${t.document_penal_url}" target="_blank" class="text-blue-600 hover:underline text-sm">Antecedentes</a>` : ''}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-check mr-1"></i>Aprobar
+                                </button>
+                                <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                    <i class="fas fa-times mr-1"></i>Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                 `).join('');
-            } catch(e) { console.error(e); container.innerHTML = '<p class="text-red-400">Error al cargar</p>'; }
+
+            } catch (e) {
+                console.error('Error:', e);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar datos</td></tr>';
+            }
         }
-        
-        window.aprobarTasker = async (id) => {
-            if(!confirm('¿Aprobar este tasker?')) return;
-            await supabase.from('profiles').update({ status: 'verified' }).eq('id', id);
-            cargarTaskers();
-            cargarDashboard();
+
+        // =============================================
+        // APROBAR / RECHAZAR TASKER
+        // =============================================
+        window.aprobarTasker = async function(id) {
+            if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
+            mostrarCarga();
+            try {
+                const { error } = await adminSupabase
+                    .from('profiles')
+                    .update({ status: 'verified', updated_at: new Date() })
+                    .eq('id', id);
+                if (error) throw error;
+                notificar('Tasker aprobado exitosamente', 'success');
+                await cargarTaskers();
+                await cargarDashboard();
+            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
-        
-        window.rechazarTasker = async (id) => {
-            if(!confirm('¿Rechazar este tasker?')) return;
-            await supabase.from('profiles').update({ status: 'rejected' }).eq('id', id);
-            cargarTaskers();
-            cargarDashboard();
+
+        window.rechazarTasker = async function(id) {
+            if (!confirm('¿Estás seguro de rechazar este tasker?')) return;
+            mostrarCarga();
+            try {
+                const { error } = await adminSupabase
+                    .from('profiles')
+                    .update({ status: 'rejected', updated_at: new Date() })
+                    .eq('id', id);
+                if (error) throw error;
+                notificar('Tasker rechazado', 'info');
+                await cargarTaskers();
+                await cargarDashboard();
+            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
-        
-        // ============================================
+
+        // =============================================
+        // PROPUESTAS PENDIENTES
+        // =============================================
+        async function cargarPropuestas() {
+            const tbody = document.getElementById('propuestasTable');
+            try {
+                const { data: propuestas, error } = await adminSupabase
+                    .from('propuestas')
+                    .select('*')
+                    .eq('status', 'pendiente')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
+
+                if (!propuestas || propuestas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
+                    return;
+                }
+
+                const propuestasCompletas = await Promise.all(propuestas.map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('id, subcategoria, descripcion, monto_ofertado, cliente_id')
+                            .eq('id', p.servicio_id)
+                            .maybeSingle();
+                        p.servicio = servicio || {};
+
+                        if (servicio?.cliente_id) {
+                            const { data: cliente } = await adminSupabase
+                                .from('profiles')
+                                .select('full_name')
+                                .eq('id', servicio.cliente_id)
+                                .maybeSingle();
+                            p.cliente_nombre = cliente?.full_name || 'Cliente';
+                        }
+                    }
+
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('id, full_name, photo_url')
+                            .eq('id', p.tasker_id)
+                            .maybeSingle();
+                        p.tasker = tasker || {};
+                    }
+                    return p;
+                }));
+
+                tbody.innerHTML = propuestasCompletas.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">
+                            <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
+                            <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50) || ''}...</p>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-300" 
+                                     style="background-image: url('${p.tasker?.photo_url || ''}'); background-size: cover;">
+                                </div>
+                                <span>${p.tasker?.full_name || 'Tasker'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
+                        <td class="p-4 text-sm text-slate-600">${p.mensaje || 'Sin mensaje'}</td>
+                        <td class="p-4">${p.tiempo_estimado || '—'} min</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
+                                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-check mr-1"></i>Aprobar
+                                </button>
+                                <button onclick="window.rechazarPropuesta('${p.id}')" 
+                                        class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
+                                    <i class="fas fa-times mr-1"></i>Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error cargando propuestas:', error);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
+            }
+        }
+
+        // =============================================
+        // APROBAR PROPUESTA (Y RECHAZAR LAS DEMÁS)
+        // =============================================
+        window.aprobarPropuesta = async function(propuestaId, servicioId, taskerId) {
+            if (!confirm('¿Estás seguro de aprobar esta propuesta? Las demás serán rechazadas automáticamente.')) return;
+            
+            mostrarCarga();
+            try {
+                const { error: aprobarError } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'aceptada', updated_at: new Date() })
+                    .eq('id', propuestaId);
+
+                if (aprobarError) throw aprobarError;
+
+                const { error: rechazarError } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'rechazada', updated_at: new Date() })
+                    .eq('servicio_id', servicioId)
+                    .neq('id', propuestaId);
+
+                if (rechazarError) throw rechazarError;
+
+                const { error: servicioError } = await adminSupabase
+                    .from('servicios')
+                    .update({ 
+                        status: 'asignado',
+                        tasker_id: taskerId,
+                        updated_at: new Date()
+                    })
+                    .eq('id', servicioId);
+
+                if (servicioError) throw servicioError;
+
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: taskerId,
+                        tipo: 'propuesta',
+                        titulo: '¡Propuesta aceptada!',
+                        mensaje: 'Tu propuesta ha sido aprobada por el administrador. Ya puedes comenzar a trabajar.'
+                    }]);
+
+                const { data: servicio } = await adminSupabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioId)
+                    .single();
+
+                await adminSupabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Tasker asignado!',
+                        mensaje: 'Un profesional ha sido asignado a tu servicio. Ya puedes contactarlo.'
+                    }]);
+
+                notificar('Propuesta aprobada exitosamente', 'success');
+                
+                await cargarPropuestas();
+                await cargarServicios();
+                
+            } catch (error) {
+                console.error('Error al aprobar propuesta:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+        // =============================================
+        // RECHAZAR PROPUESTA
+        // =============================================
+        window.rechazarPropuesta = async function(propuestaId) {
+            if (!confirm('¿Estás seguro de rechazar esta propuesta?')) return;
+            
+            mostrarCarga();
+            try {
+                const { error } = await adminSupabase
+                    .from('propuestas')
+                    .update({ status: 'rechazada', updated_at: new Date() })
+                    .eq('id', propuestaId);
+
+                if (error) throw error;
+
+                notificar('Propuesta rechazada', 'info');
+                await cargarPropuestas();
+                
+            } catch (error) {
+                console.error('Error al rechazar propuesta:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+        // =============================================
         // SERVICIOS
-        // ============================================
+        // =============================================
         async function cargarServicios() {
-            const container = document.getElementById('serviciosList');
+            const tbody = document.getElementById('serviciosTable');
             try {
-                const { data: servicios } = await supabase.from('servicios').select('*').order('created_at', false).limit(50);
-                if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>'; return; }
-                
-                container.innerHTML = servicios.map(s => `
-                    <div class="bg-white border rounded-xl p-4">
-                        <div class="flex justify-between flex-wrap gap-2"><p class="font-bold">${s.subcategoria || 'Servicio'}</p><span class="px-2 py-1 rounded-full text-xs ${s.status === 'completado' ? 'bg-green-100 text-green-700' : s.status === 'en_progreso' ? 'bg-purple-100' : 'bg-yellow-100'}">${s.status}</span></div>
-                        <p class="text-sm text-slate-600 mt-1">${s.descripcion?.substring(0, 100)}</p>
-                        <p class="text-sm font-bold text-[#1B4F72] mt-2">$${s.monto_ofertado?.toFixed(2)}</p>
-                    </div>
+                const { data: servicios, error } = await adminSupabase
+                    .from('servicios')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                if (!servicios || servicios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay servicios</td></tr>';
+                    return;
+                }
+
+                const serviciosCompletos = await Promise.all(servicios.map(async (s) => {
+                    if (s.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', s.cliente_id)
+                            .maybeSingle();
+                        s.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (s.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', s.tasker_id)
+                            .maybeSingle();
+                        s.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return s;
+                }));
+
+                tbody.innerHTML = serviciosCompletos.map(s => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">${s.cliente_nombre || 'Cliente'}</td>
+                        <td class="p-4">${s.subcategoria || 'Servicio'}</td>
+                        <td class="p-4">${s.tasker_nombre || 'Sin asignar'}</td>
+                        <td class="p-4 font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${
+                                s.status === 'completado' ? 'bg-green-100 text-green-700' :
+                                s.status === 'en_progreso' ? 'bg-purple-100 text-purple-700' :
+                                s.status === 'asignado' ? 'bg-blue-100 text-blue-700' :
+                                'bg-yellow-100 text-yellow-700'
+                            }">
+                                ${s.status}
+                            </span>
+                        </td>
+                    </tr>
                 `).join('');
-            } catch(e) { console.error(e); }
+
+            } catch (e) {
+                console.error('Error en cargarServicios:', e);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar servicios</td></tr>';
+            }
         }
-        
-        // ============================================
+
+        // =============================================
         // PAGOS
-        // ============================================
+        // =============================================
         async function cargarPagos() {
-            const container = document.getElementById('pagosList');
+            const tbody = document.getElementById('pagosTable');
             try {
-                const { data: pagos } = await supabase.from('pagos').select('*').eq('status', 'completado').order('fecha_pago', false).limit(50);
-                if (!pagos?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay pagos</p>'; return; }
-                
-                container.innerHTML = pagos.map(p => `
-                    <div class="bg-white border rounded-xl p-4 flex justify-between items-center flex-wrap gap-3">
-                        <div><p class="text-sm">${new Date(p.fecha_pago).toLocaleDateString()}</p><p class="font-bold">$${p.monto_total?.toFixed(2)}</p></div>
-                        <div><p class="text-sm text-green-600">Comisión: $${p.comision_taskers?.toFixed(2)}</p></div>
-                    </div>
+                const { data: pagos, error } = await adminSupabase
+                    .from('pagos')
+                    .select('*')
+                    .eq('status', 'completado')
+                    .order('fecha_pago', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                if (!pagos || pagos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
+                    return;
+                }
+
+                const pagosCompletos = await Promise.all(pagos.map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('subcategoria')
+                            .eq('id', p.servicio_id)
+                            .maybeSingle();
+                        p.servicio_nombre = servicio?.subcategoria || 'Servicio';
+                    }
+                    if (p.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.cliente_id)
+                            .maybeSingle();
+                        p.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.tasker_id)
+                            .maybeSingle();
+                        p.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return p;
+                }));
+
+                tbody.innerHTML = pagosCompletos.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-4">${p.servicio_nombre || 'Servicio'}</td>
+                        <td class="p-4">${p.cliente_nombre || 'Cliente'}</td>
+                        <td class="p-4">${p.tasker_nombre || 'Tasker'}</td>
+                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
+                    </tr>
                 `).join('');
-            } catch(e) { console.error(e); }
+
+            } catch (e) {
+                console.error('Error en cargarPagos:', e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
+            }
         }
-        
-        // ============================================
+
+        // =============================================
         // GANANCIAS
-        // ============================================
+        // =============================================
         async function cargarGanancias() {
             try {
-                const { data: pagos } = await supabase.from('pagos').select('*').eq('status', 'completado');
-                const total = pagos?.reduce((s,p) => s + (p.comision_taskers||0), 0) || 0;
+                const { data: pagos, error } = await adminSupabase
+                    .from('pagos')
+                    .select('*')
+                    .eq('status', 'completado')
+                    .order('fecha_pago', { ascending: false });
+
+                if (error) throw error;
+
+                const total = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
                 const hoy = new Date();
-                const mes = pagos?.filter(p => { const f = new Date(p.fecha_pago); return f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear(); }).reduce((s,p) => s + (p.comision_taskers||0), 0) || 0;
-                const dia = pagos?.filter(p => { const f = new Date(p.fecha_pago); return f.toDateString() === hoy.toDateString(); }).reduce((s,p) => s + (p.comision_taskers||0), 0) || 0;
-                
+                const mes = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const dia = pagos?.filter(p => {
+                    const fecha = new Date(p.fecha_pago);
+                    return fecha.toDateString() === hoy.toDateString();
+                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('gananciasMes').textContent = `$${mes.toFixed(2)}`;
                 document.getElementById('gananciasHoy').textContent = `$${dia.toFixed(2)}`;
-                
-                const container = document.getElementById('comisionesList');
-                if (!pagos?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay comisiones</p>'; return; }
-                container.innerHTML = pagos.slice(0,20).map(p => `<div class="bg-slate-50 rounded-xl p-3 flex justify-between"><span>${new Date(p.fecha_pago).toLocaleDateString()}</span><span class="font-bold text-green-600">$${p.comision_taskers?.toFixed(2)}</span></div>`).join('');
-            } catch(e) { console.error(e); }
-        }
-        
-        // ============================================
-        // INICIALIZAR
-        // ============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('DOM cargado, inicializando...');
-            const ok = await verificarAdmin();
-            if (ok) {
-                await cargarDashboard();
-                initMenuMovil();
-                asignarEventosBotones();
-                console.log('Inicialización completa');
+
+                const pagosCompletos = await Promise.all((pagos || []).map(async (p) => {
+                    if (p.servicio_id) {
+                        const { data: servicio } = await adminSupabase
+                            .from('servicios')
+                            .select('subcategoria')
+                            .eq('id', p.servicio_id)
+                            .maybeSingle();
+                        p.servicio_nombre = servicio?.subcategoria || 'Servicio';
+                    }
+                    if (p.cliente_id) {
+                        const { data: cliente } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.cliente_id)
+                            .maybeSingle();
+                        p.cliente_nombre = cliente?.full_name || 'Cliente';
+                    }
+                    if (p.tasker_id) {
+                        const { data: tasker } = await adminSupabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', p.tasker_id)
+                            .maybeSingle();
+                        p.tasker_nombre = tasker?.full_name || 'Tasker';
+                    }
+                    return p;
+                }));
+
+                const tbody = document.getElementById('gananciasTable');
+                if (!pagosCompletos || pagosCompletos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = pagosCompletos.map(p => `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-3">${p.servicio_nombre || ''}</td>
+                        <td class="p-3">${p.cliente_nombre || ''}</td>
+                        <td class="p-3">${p.tasker_nombre || ''}</td>
+                        <td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                actualizarGraficaGanancias(pagos);
+            } catch (e) {
+                console.error('Error en cargarGanancias:', e);
             }
-        });
+        }
+
+        // =============================================
+        // GRÁFICAS
+        // =============================================
+        function initCharts() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Servicios', data: [0,0,0,0,0,0], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
+            });
+            const ctx2 = document.getElementById('gananciasChart').getContext('2d');
+            gananciasChart = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Tus Ganancias (15%)', data: [0,0,0,0,0,0], backgroundColor: '#3b82f6', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: false }
+            });
+        }
+
+        function actualizarGraficaGanancias(pagos) {
+            if (!gananciasChart || !pagos) return;
+            const meses = [], valores = [];
+            for (let i = 5; i >= 0; i--) {
+                const fecha = new Date(); fecha.setMonth(fecha.getMonth() - i);
+                meses.push(fecha.toLocaleDateString('es', { month: 'short' }));
+                valores.push(pagos.filter(p => { const pf = new Date(p.fecha_pago); return pf.getMonth() === fecha.getMonth() && pf.getFullYear() === fecha.getFullYear(); }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0));
+            }
+            gananciasChart.data.labels = meses;
+            gananciasChart.data.datasets[0].data = valores;
+            gananciasChart.update();
+        }
+
+        // =============================================
+        // NAVEGACIÓN
+        // =============================================
+        window.mostrarSeccion = function(sec) {
+            document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('seccion-' + sec).classList.add('active');
+            document.getElementById('link-' + sec)?.classList.add('active');
+            
+            const tit = { 
+                dashboard:'Dashboard', 
+                taskers:'Taskers Pendientes', 
+                propuestas:'Propuestas Pendientes',
+                servicios:'Servicios', 
+                pagos:'Pagos', 
+                ganancias:'Mis Ganancias' 
+            };
+            
+            document.getElementById('section-title').textContent = tit[sec] || 'Admin';
+            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${tit[sec].toLowerCase()}`;
+            
+            if (sec === 'taskers') cargarTaskers();
+            if (sec === 'propuestas') cargarPropuestas();
+            if (sec === 'servicios') cargarServicios();
+            if (sec === 'pagos') cargarPagos();
+            if (sec === 'ganancias') cargarGanancias();
+            
+            if (window.innerWidth < 768) cerrarMenuMovil();
+        };
+
+        // =============================================
+        // CERRAR SESIÓN
+        // =============================================
+        window.cerrarSesionAdmin = async function() {
+            if (confirm('¿Cerrar sesión?')) {
+                mostrarCarga();
+                await adminSupabase.auth.signOut();
+                window.location.href = 'index.html';
+            }
+        };
     </script>
+
+    <style>
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </body>
 </html>
