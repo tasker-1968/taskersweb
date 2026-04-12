@@ -12,11 +12,8 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente estilo Uber -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -60,33 +57,12 @@
         }
         
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .animate-fadeInUp {
             animation: fadeInUp 0.6s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .animate-slideIn {
-            animation: slideIn 0.4s ease-out;
         }
         
         .subcat-panel {
@@ -94,12 +70,10 @@
             animation: fadeInUp 0.4s ease-out;
         }
         
-        /* Scroll suave */
         html {
             scroll-behavior: smooth;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .category-card {
                 padding: 1rem;
@@ -112,11 +86,10 @@
 </head>
 <body class="bg-white text-slate-900">
 
-    <!-- Navbar estilo Uber -->
+    <!-- Navbar -->
     <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div class="container mx-auto px-4 md:px-6">
             <div class="flex justify-between items-center h-16 md:h-20">
-                <!-- Logo -->
                 <div class="flex items-center gap-2 md:gap-3">
                     <img src="logo-taskers.png" alt="Tasker's México" class="h-8 md:h-10 w-auto">
                     <div>
@@ -125,13 +98,12 @@
                     </div>
                 </div>
                 
-                <!-- Botones dinámicos -->
-                <div id="nav-buttons" class="flex items-center gap-2 md:gap-4"></div>
+                <div id="nav-buttons" class="flex items-center gap-1 sm:gap-2 md:gap-4 flex-wrap justify-end"></div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section estilo Uber -->
+    <!-- Hero Section -->
     <section class="hero-gradient min-h-[85vh] flex items-center justify-center text-center px-4 pt-20 pb-12">
         <div class="max-w-4xl mx-auto animate-fadeInUp">
             <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 md:px-6 py-2 rounded-full text-white text-xs md:text-sm font-semibold uppercase tracking-wider mb-6 md:mb-8">
@@ -157,7 +129,6 @@
                 </a>
             </div>
             
-            <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-12 md:mt-16 px-2">
                 <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20">
                     <div class="text-2xl md:text-3xl font-bold text-white">+5,000</div>
@@ -191,9 +162,7 @@
             </p>
         </div>
 
-        <!-- Grid de categorías -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6 mb-10 md:mb-16">
-            <!-- Mantenimiento -->
             <div onclick="showSubcats('mantenimiento')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
                 <div class="w-12 h-12 md:w-16 md:h-16 bg-[#1B4F72]/10 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
                     <i class="fas fa-wrench text-xl md:text-2xl text-[#1B4F72]"></i>
@@ -201,7 +170,6 @@
                 <h3 class="font-bold text-sm md:text-base text-slate-800">Mantenimiento</h3>
                 <p class="text-xs text-slate-400 mt-1 hidden sm:block">Hogar e Industria</p>
             </div>
-            <!-- Limpieza -->
             <div onclick="showSubcats('limpieza')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
                 <div class="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
                     <i class="fas fa-sparkles text-xl md:text-2xl text-emerald-600"></i>
@@ -209,7 +177,6 @@
                 <h3 class="font-bold text-sm md:text-base text-slate-800">Limpieza</h3>
                 <p class="text-xs text-slate-400 mt-1 hidden sm:block">Residencial y Comercial</p>
             </div>
-            <!-- Cuidados -->
             <div onclick="showSubcats('cuidados')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
                 <div class="w-12 h-12 md:w-16 md:h-16 bg-rose-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
                     <i class="fas fa-heart text-xl md:text-2xl text-rose-600"></i>
@@ -217,7 +184,6 @@
                 <h3 class="font-bold text-sm md:text-base text-slate-800">Cuidados</h3>
                 <p class="text-xs text-slate-400 mt-1 hidden sm:block">Personas y Mascotas</p>
             </div>
-            <!-- Especializados -->
             <div onclick="showSubcats('especializados')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
                 <div class="w-12 h-12 md:w-16 md:h-16 bg-amber-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
                     <i class="fas fa-microchip text-xl md:text-2xl text-amber-600"></i>
@@ -225,7 +191,6 @@
                 <h3 class="font-bold text-sm md:text-base text-slate-800">Especializados</h3>
                 <p class="text-xs text-slate-400 mt-1 hidden sm:block">Técnicos Certificados</p>
             </div>
-            <!-- Belleza -->
             <div onclick="showSubcats('belleza')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
                 <div class="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
                     <i class="fas fa-scissors text-xl md:text-2xl text-purple-600"></i>
@@ -235,7 +200,6 @@
             </div>
         </div>
 
-        <!-- Panel de subcategorías -->
         <div id="subcat-container" class="subcat-panel bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 border border-slate-200 shadow-xl">
             <div class="flex justify-between items-center mb-4 md:mb-6">
                 <h4 id="subcat-title" class="text-lg md:text-2xl font-bold text-[#1B4F72]">Subcategorías</h4>
@@ -247,7 +211,7 @@
         </div>
     </section>
 
-    <!-- Sección de confianza estilo Uber -->
+    <!-- Sección de confianza -->
     <section class="py-12 md:py-16 bg-slate-50 border-t border-slate-100">
         <div class="container mx-auto px-4 md:px-6">
             <div class="text-center mb-8 md:mb-12">
@@ -402,23 +366,23 @@
                     if (profile?.role === 'admin') dashboardLink = 'admin.html';
                     
                     nav.innerHTML = `
-                        <a href="${dashboardLink}" class="text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1">
-                            <i class="fas fa-tachometer-alt"></i> Mi Panel
+                        <a href="${dashboardLink}" class="text-xs sm:text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1 whitespace-nowrap">
+                            <i class="fas fa-tachometer-alt text-xs"></i> Mi Panel
                         </a>
-                        <button onclick="logout()" class="text-sm font-semibold text-red-600 hover:text-red-700 transition flex items-center gap-1">
-                            <i class="fas fa-sign-out-alt"></i> Salir
+                        <button onclick="logout()" class="text-xs sm:text-sm font-semibold text-red-600 hover:text-red-700 transition flex items-center gap-1 whitespace-nowrap">
+                            <i class="fas fa-sign-out-alt text-xs"></i> Salir
                         </button>
                     `;
                 } else {
                     nav.innerHTML = `
-                        <a href="login.html" class="text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1">
-                            <i class="fas fa-sign-in-alt"></i> Ingresar
+                        <a href="login.html" class="text-xs sm:text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1 whitespace-nowrap">
+                            <i class="fas fa-sign-in-alt text-xs"></i> Ingresar
                         </a>
-                        <a href="registro-clientes.html" class="btn-outline px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1">
-                            <i class="fas fa-user"></i> Soy Cliente
+                        <a href="registro-clientes.html" class="btn-outline px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <i class="fas fa-user text-xs"></i> Cliente
                         </a>
-                        <a href="registro-taskers.html" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1 shadow-md">
-                            <i class="fas fa-briefcase"></i> Soy Tasker
+                        <a href="registro-taskers.html" class="btn-primary text-white px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap shadow-md">
+                            <i class="fas fa-briefcase text-xs"></i> Tasker
                         </a>
                     `;
                 }
