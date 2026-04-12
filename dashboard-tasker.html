@@ -153,7 +153,6 @@
             transform: translateX(24px);
         }
         
-        /* Responsive Sidebar */
         @media (max-width: 768px) {
             .sidebar-tasker {
                 position: fixed !important;
@@ -164,11 +163,7 @@
                 width: 280px !important;
                 transition: left 0.3s ease !important;
             }
-            
-            .sidebar-tasker.abierto {
-                left: 0 !important;
-            }
-            
+            .sidebar-tasker.abierto { left: 0 !important; }
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -179,11 +174,7 @@
                 z-index: 9998 !important;
                 display: none;
             }
-            
-            #overlayMenu.visible {
-                display: block !important;
-            }
-            
+            #overlayMenu.visible { display: block !important; }
             #btnMenuMovil {
                 display: flex !important;
                 position: fixed !important;
@@ -199,62 +190,18 @@
                 z-index: 10000 !important;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             }
-            
-            .ml-12 {
-                margin-left: 3.5rem !important;
-            }
-            
-            .p-6 {
-                padding: 1rem !important;
-            }
-            
-            .grid-cols-2 {
-                gap: 0.75rem !important;
-            }
-            
-            .stat-card {
-                padding: 0.875rem !important;
-            }
-            
-            .stat-card p.text-3xl {
-                font-size: 1.5rem !important;
-            }
-            
-            button, .sidebar-link, [onclick] {
-                min-height: 44px !important;
-            }
-            
-            input, select, textarea {
-                font-size: 16px !important;
-            }
-            
-            .chat-message {
-                max-width: 85% !important;
-            }
-        }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 { gap: 1rem; }
-            .stat-card { padding: 1rem; }
-            .stat-card p.text-3xl { font-size: 1.75rem; }
+            .ml-12 { margin-left: 3.5rem !important; }
+            .p-6 { padding: 1rem !important; }
+            .grid-cols-2 { gap: 0.75rem !important; }
+            .stat-card { padding: 0.875rem !important; }
+            .stat-card p.text-3xl { font-size: 1.5rem !important; }
+            button, .sidebar-link, [onclick] { min-height: 44px !important; }
+            input, select, textarea { font-size: 16px !important; }
+            .chat-message { max-width: 85% !important; }
         }
         
         .custom-marker {
             background: #1B4F72;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .custom-marker-service {
-            background: #f59e0b;
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -315,7 +262,6 @@
                 <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio"><i class="fas fa-home w-6"></i><span>Inicio</span></a>
                 <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles"><i class="fas fa-search w-6"></i><span>Servicios Disponibles</span></a>
                 <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos"><i class="fas fa-briefcase w-6"></i><span>Mis Trabajos</span></a>
-                <a href="#" onclick="window.mostrarSeccion('ubicacion'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ubicacion"><i class="fas fa-location-dot w-6"></i><span>Compartir Ubicación</span></a>
                 <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat"><i class="fas fa-comments w-6"></i><span>Mensajes</span><span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span></a>
                 <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas"><i class="fas fa-wallet w-6"></i><span>Finanzas</span></a>
                 <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil"><i class="fas fa-user w-6"></i><span>Mi Perfil</span></a>
@@ -337,7 +283,6 @@
             <div class="p-4 md:p-6">
                 <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido active">
-                    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6"><div class="flex justify-between items-center mb-3"><h3 class="font-semibold text-slate-800"><i class="fas fa-map-marker-alt text-[#1B4F72] mr-2"></i>Servicios cerca de ti</h3><button onclick="obtenerUbicacionTasker()" class="text-xs bg-[#1B4F72]/10 text-[#1B4F72] px-3 py-1 rounded-full"><i class="fas fa-location-dot mr-1"></i>Mi ubicación</button></div><div id="map" style="height: 280px;"></div><p class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-eye text-[#1B4F72] mr-1"></i>Puntos naranjas = servicios disponibles cerca de ti</p></div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-6">
                         <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Ganancias del mes</p><p id="statsGanancias" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">$0</p></div>
                         <div class="stat-card bg-white p-4 md:p-5 rounded-xl shadow-sm"><p class="text-slate-500 text-xs uppercase tracking-wide">Trabajos completados</p><p id="statsCompletados" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">0</p></div>
@@ -357,11 +302,6 @@
                 <section id="seccion-mis-trabajos" class="seccion-contenido">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5"><h3 class="text-xl md:text-2xl font-bold text-slate-800">Mis Trabajos</h3><select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border rounded-lg text-sm"><option value="todos">Todos</option><option value="asignado">Asignados</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
                     <div id="misTrabajosContainer" class="space-y-4"></div>
-                </section>
-
-                <!-- COMPARTIR UBICACIÓN -->
-                <section id="seccion-ubicacion" class="seccion-contenido">
-                    <div class="bg-white rounded-2xl shadow-sm p-6 text-center"><i class="fas fa-map-marked-alt text-5xl text-[#1B4F72] mb-4"></i><h3 class="text-xl font-bold text-slate-800 mb-2">Compartir ubicación en tiempo real</h3><p class="text-slate-500 mb-6">Activa el seguimiento para que tus clientes sepan dónde estás</p><div id="estadoUbicacion" class="bg-slate-100 p-4 rounded-xl mb-6"><i class="fas fa-spinner fa-spin text-[#1B4F72] mr-2"></i>Obteniendo ubicación...</div><button onclick="iniciarCompartirUbicacion()" class="bg-[#1B4F72] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#2E86C1] transition w-full"><i class="fas fa-play mr-2"></i>Activar seguimiento en vivo</button><p class="text-xs text-slate-400 mt-4"><i class="fas fa-shield-alt text-[#1B4F72] mr-1"></i>Tu ubicación solo se comparte con clientes que tienen servicios activos contigo</p></div>
                 </section>
 
                 <!-- CHAT -->
@@ -400,17 +340,11 @@
         let chatActual = null;
         let suscripcionChat = null;
         let servicioSeleccionado = null;
-        let mapa = null;
-        let marcadorUsuario = null;
-        let marcadoresServicios = [];
-        let ubicacionActual = null;
-        let intervalUbicacion = null;
 
         function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
         function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-[#1B4F72]'} text-white max-w-xs`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 
-        // MENÚ MÓVIL CORREGIDO
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
@@ -422,90 +356,6 @@
         }
         function cerrarMenuMovil() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlayMenu'); if (sidebar && overlay) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } }
         window.addEventListener('resize', function() { if (window.innerWidth >= 768) cerrarMenuMovil(); });
-
-        // MAPA
-        function iniciarMapaTasker() {
-            const container = document.getElementById('map');
-            if (!container) return;
-            mapa = L.map('map').setView([19.4326, -99.1332], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(mapa);
-            obtenerUbicacionTasker();
-        }
-
-        function obtenerUbicacionTasker() {
-            if (!mapa) return;
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(pos) {
-                        const lat = pos.coords.latitude;
-                        const lng = pos.coords.longitude;
-                        ubicacionActual = { lat, lng };
-                        mapa.setView([lat, lng], 14);
-                        if (marcadorUsuario) mapa.removeLayer(marcadorUsuario);
-                        marcadorUsuario = L.marker([lat, lng], { icon: L.divIcon({ className: 'custom-marker', html: '<i class="fas fa-briefcase"></i>', iconSize: [32, 32] }) }).addTo(mapa).bindPopup('Tu ubicación').openPopup();
-                        cargarServiciosCercanos(lat, lng);
-                        actualizarUbicacionPerfil(lat, lng);
-                    },
-                    function(error) { console.error('Error:', error); notificar('Activa el GPS para ver servicios cerca de ti', 'error'); }
-                );
-            } else { notificar('Tu navegador no soporta geolocalización', 'error'); }
-        }
-
-        async function actualizarUbicacionPerfil(lat, lng) {
-            if (!usuarioActual) return;
-            try { await taskerSupabase.from('profiles').update({ latitud: lat, longitud: lng, updated_at: new Date() }).eq('id', usuarioActual.id); } catch (error) { console.error(error); }
-        }
-
-        async function cargarServiciosCercanos(lat, lng) {
-            try {
-                const { data: servicios } = await taskerSupabase.from('servicios').select('*').eq('status', 'publicado').order('created_at', false).limit(30);
-                if (!servicios?.length) return;
-                marcadoresServicios.forEach(m => mapa.removeLayer(m));
-                marcadoresServicios = [];
-                servicios.forEach(servicio => {
-                    const offsetLat = (Math.random() - 0.5) * 0.05;
-                    const offsetLng = (Math.random() - 0.5) * 0.05;
-                    const marker = L.marker([lat + offsetLat, lng + offsetLng], { icon: L.divIcon({ className: 'custom-marker-service', html: '<i class="fas fa-tools"></i>', iconSize: [32, 32] }) }).addTo(mapa);
-                    marker.bindPopup(`<div class="text-center"><strong>${servicio.subcategoria || 'Servicio'}</strong><br><span class="text-sm">$${servicio.monto_ofertado?.toFixed(2)}</span><br><button onclick="verServicioDetalle('${servicio.id}')" class="mt-2 bg-[#1B4F72] text-white px-3 py-1 rounded text-xs w-full">Ver detalle</button></div>`);
-                    marcadoresServicios.push(marker);
-                });
-            } catch (error) { console.error(error); }
-        }
-
-        window.verServicioDetalle = function(servicioId) { window.mostrarSeccion('disponibles'); setTimeout(() => { document.getElementById(`servicio-${servicioId}`)?.scrollIntoView({ behavior: 'smooth' }); }, 300); };
-
-        // MODO EN LÍNEA
-        window.toggleModoOnline = async function() {
-            const toggle = document.getElementById('onlineToggle');
-            const isOnline = toggle.checked;
-            try {
-                await taskerSupabase.from('profiles').update({ online: isOnline, updated_at: new Date() }).eq('id', usuarioActual.id);
-                notificar(isOnline ? '✅ Ahora estás en línea' : '⭕ Has entrado en modo offline', 'success');
-                if (isOnline && ubicacionActual) cargarServiciosCercanos(ubicacionActual.lat, ubicacionActual.lng);
-            } catch (error) { toggle.checked = !isOnline; notificar('Error al cambiar estado', 'error'); }
-        };
-
-        // COMPARTIR UBICACIÓN EN VIVO
-        window.iniciarCompartirUbicacion = function() {
-            if (intervalUbicacion) clearInterval(intervalUbicacion);
-            const estadoDiv = document.getElementById('estadoUbicacion');
-            estadoDiv.innerHTML = '<i class="fas fa-spinner fa-spin text-[#1B4F72] mr-2"></i>Activando seguimiento...';
-            if (navigator.geolocation) {
-                intervalUbicacion = setInterval(() => {
-                    navigator.geolocation.getCurrentPosition(
-                        async (pos) => {
-                            const lat = pos.coords.latitude;
-                            const lng = pos.coords.longitude;
-                            await actualizarUbicacionPerfil(lat, lng);
-                            estadoDiv.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-2"></i>Seguimiento activo - Enviando ubicación cada 10 segundos<br><span class="text-xs text-slate-400">Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</span>`;
-                            notificar('Ubicación actualizada', 'success');
-                        },
-                        () => { estadoDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Error al obtener ubicación'; },
-                        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
-                    );
-                }, 10000);
-            } else { estadoDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Geolocalización no soportada'; }
-        };
 
         async function verificarAuth(redirectUrl = 'login.html') { try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; } catch { window.location.href = redirectUrl; return null; } }
 
@@ -528,6 +378,15 @@
                 document.getElementById('perfilExperiencia').value = perfil.experiencia_anios || '';
             } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
         }
+
+        window.toggleModoOnline = async function() {
+            const toggle = document.getElementById('onlineToggle');
+            const isOnline = toggle.checked;
+            try {
+                await taskerSupabase.from('profiles').update({ online: isOnline, updated_at: new Date() }).eq('id', usuarioActual.id);
+                notificar(isOnline ? '✅ Ahora estás en línea' : '⭕ Has entrado en modo offline', 'success');
+            } catch (error) { toggle.checked = !isOnline; notificar('Error al cambiar estado', 'error'); }
+        };
 
         async function cargarDashboard() {
             try {
@@ -565,7 +424,7 @@
                 if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
                 const { data: servicios } = await query;
                 if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
-                container.innerHTML = servicios.map(s => `<div id="servicio-${s.id}" class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion?.substring(0, 100)}${s.descripcion?.length > 100 ? '...' : ''}</p></div><span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div><div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div></div><div class="border-t pt-4 flex justify-end"><button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-[#1B4F72] text-white px-5 py-2 rounded-lg hover:bg-[#2E86C1] transition">Enviar propuesta</button></div></div>`).join('');
+                container.innerHTML = servicios.map(s => `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion?.substring(0, 100)}${s.descripcion?.length > 100 ? '...' : ''}</p></div><span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div><div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div></div><div class="border-t pt-4 flex justify-end"><button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-[#1B4F72] text-white px-5 py-2 rounded-lg hover:bg-[#2E86C1] transition">Enviar propuesta</button></div></div>`).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
         };
 
@@ -605,33 +464,32 @@
                 container.innerHTML = trabajos.map(t => {
                     const esAsignado = t.status === 'asignado';
                     const esProgreso = t.status === 'en_progreso';
-                    const puedeFinalizar = t.status === 'en_progreso';
                     const direccion = t.ubicacion || 'Dirección no especificada';
-                    return `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion?.substring(0, 80)}...</p></div><span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span></div><div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>Dirección</p><p class="text-sm">${direccion}</p></div></div>${esAsignado ? `<div class="border-t pt-4 flex gap-3 flex-wrap"><button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-comment mr-2"></i>Contactar cliente</button></div>` : ''}${esProgreso ? `<div class="border-t pt-4"><div class="bg-yellow-50 p-3 rounded-lg mb-3"><p class="text-sm text-yellow-800"><i class="fas fa-info-circle mr-2"></i>Trabajo en progreso. Cuando termines, solicita la finalización.</p></div>${puedeFinalizar ? `<button onclick="finalizarTrabajo('${t.id}')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>` : ''}</div>` : ''}</div>`;
+                    return `<div class="bg-white rounded-xl shadow-sm p-5"><div class="flex justify-between items-start flex-wrap gap-2 mb-3"><div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion?.substring(0, 80)}...</p></div><span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span></div><div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-[#1B4F72]">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div><div><p class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>Dirección</p><p class="text-sm">${direccion}</p></div></div>${esAsignado ? `<div class="border-t pt-4 flex gap-3 flex-wrap"><button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button><button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-[#1B4F72] text-white py-2 rounded-lg hover:bg-[#2E86C1] transition"><i class="fas fa-comment mr-2"></i>Contactar cliente</button></div>` : ''}${esProgreso ? `<div class="border-t pt-4"><button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 transition"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button></div>` : ''}</div>`;
                 }).join('');
             } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
         };
 
         window.iniciarTrabajo = async (id) => {
-            if (!confirm('¿Confirmas que vas a iniciar este trabajo? Recuerda activar el seguimiento de ubicación.')) return;
+            if (!confirm('¿Confirmas que vas a iniciar este trabajo?')) return;
             mostrarCarga();
             try {
                 await taskerSupabase.from('servicios').update({ status: 'en_progreso', fecha_inicio: new Date() }).eq('id', id);
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar. Podrás ver su ubicación en tiempo real.' }]);
-                notificar('Trabajo iniciado. Activa el seguimiento de ubicación.', 'success');
+                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar.' }]);
+                notificar('Trabajo iniciado', 'success');
                 window.cargarMisTrabajos();
                 await cargarDashboard();
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
-        window.finalizarTrabajo = async (id) => {
+        window.solicitarFinalizacion = async (id) => {
             if (!confirm('¿Solicitar al cliente que confirme la finalización del trabajo?')) return;
             mostrarCarga();
             try {
                 const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
                 await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma y califica.' }]);
-                notificar('Solicitud enviada al cliente. Espera su confirmación y calificación.', 'success');
+                notificar('Solicitud enviada al cliente', 'success');
             } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
         };
 
@@ -667,7 +525,6 @@
             alert('Solicitud de retiro enviada. El administrador la revisará.'); cerrarRetiroModal();
         });
 
-        // CHAT
         window.cargarConversaciones = async function() {
             const c = document.getElementById('conversacionesLista');
             try {
@@ -756,20 +613,20 @@
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', ubicacion:'Compartir Ubicación', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil' };
+            const tit = { inicio:'Inicio', disponibles:'Servicios Disponibles', 'mis-trabajos':'Mis Trabajos', chat:'Mensajes', finanzas:'Finanzas', perfil:'Mi Perfil' };
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
             if (sec === 'disponibles') window.cargarDisponibles();
             if (sec === 'mis-trabajos') window.cargarMisTrabajos();
             if (sec === 'chat') window.cargarConversaciones();
             if (sec === 'finanzas') cargarFinanzas();
-            if (sec === 'inicio') { cargarDashboard(); if (mapa) setTimeout(() => mapa.invalidateSize(), 100); }
+            if (sec === 'inicio') cargarDashboard();
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
         function configurarRealtime() {
             taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => { if (p.new.remitente_id !== usuarioActual?.id) { if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new); else notificar('Nuevo mensaje recibido'); } }).subscribe();
-            taskerSupabase.channel('propuestas-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'propuestas', filter:`tasker_id=eq.${usuarioActual?.id}` }, p => { if (p.new.status === 'aceptada') { notificar('¡Propuesta aceptada! Revisa tus trabajos', 'success'); window.cargarMisTrabajos(); } }).subscribe();
+            taskerSupabase.channel('propuestas-tasker').on('postgres_changes', { event:'UPDATE', schema:'public', table:'propuestas', filter:`tasker_id=eq.${usuarioActual?.id}` }, p => { if (p.new.status === 'aceptada') { notificar('¡Propuesta aceptada! Revisa tus trabajos', 'success'); window.cargarMisTrabajos(); } }).subscribe();
         }
 
         window.cerrarSesionTasker = async function() { if (confirm('¿Cerrar sesión?')) { mostrarCarga(); await taskerSupabase.auth.signOut(); window.location.href = 'index.html'; } };
@@ -781,7 +638,6 @@
             await cargarFinanzas();
             configurarRealtime();
             iniciarMenuMovil();
-            iniciarMapaTasker();
         });
     </script>
 </body>
