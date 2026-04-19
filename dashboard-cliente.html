@@ -5,29 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Tasker's Go | Dashboard Cliente</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS + Fonts + Leaflet (Mapa gratuito) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         * { font-family: 'Inter', sans-serif; }
         
-        /* Sidebar premium */
         .sidebar-moderno {
             background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
             transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 8px 0 24px rgba(0,0,0,0.08);
-            backdrop-filter: blur(4px);
         }
         
         .enlace-moderno {
@@ -35,6 +30,7 @@
             border-radius: 14px;
             margin: 6px 12px;
             font-weight: 500;
+            cursor: pointer;
         }
         
         .enlace-moderno:hover {
@@ -48,15 +44,13 @@
             box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
         
-        /* Tarjetas glassmorph */
         .tarjeta-stats {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(2px);
+            background: white;
             border-radius: 28px;
             padding: 1.5rem;
             box-shadow: 0 12px 28px -8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
-            border: 1px solid rgba(255,255,255,0.6);
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
         .tarjeta-stats:hover {
@@ -64,39 +58,28 @@
             box-shadow: 0 20px 32px -12px rgba(59,130,246,0.2);
         }
         
-        /* Mapa contenedor premium */
         .mapa-container {
             border-radius: 32px;
             overflow: hidden;
             box-shadow: 0 12px 28px -8px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
         }
         
-        .leaflet-popup-content-wrapper {
-            border-radius: 20px;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        /* Badges modernos */
         .badge-estado {
             padding: 0.3rem 1rem;
             border-radius: 40px;
             font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 0.3px;
         }
         .badge-pendiente { background: #ffedd5; color: #9a3412; }
         .badge-asignado { background: #dbeafe; color: #1e40af; }
         .badge-progreso { background: #e0e7ff; color: #3730a3; }
         .badge-completado { background: #dcfce7; color: #166534; }
         
-        /* Mensajes estilo Uber */
         .mensaje-cliente {
             background: #000000;
             color: white;
             border-radius: 24px 24px 4px 24px;
             max-width: 75%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
         .mensaje-tasker {
             background: #f1f5f9;
@@ -105,7 +88,6 @@
             max-width: 75%;
         }
         
-        /* Responsive premium */
         @media (max-width: 768px) {
             .sidebar-moderno {
                 position: fixed !important;
@@ -120,7 +102,6 @@
                 background: rgba(0,0,0,0.6);
                 z-index: 9998;
                 display: none;
-                backdrop-filter: blur(3px);
             }
             #overlayMenu.visible { display: block !important; }
             #btnMenuMovil {
@@ -131,68 +112,72 @@
                 color: white;
                 width: 48px; height: 48px;
                 border-radius: 30px;
-                box-shadow: 0 6px 14px rgba(0,0,0,0.2);
                 z-index: 10000;
+                cursor: pointer;
             }
             .ml-12 { margin-left: 3.5rem; }
             .tarjeta-stats { padding: 1rem; }
-            .grid-cols-2 { gap: 0.75rem; }
         }
+        
+        @media (min-width: 769px) {
+            #btnMenuMovil { display: none !important; }
+        }
+        
+        .seccion-contenido { display: none; }
+        .seccion-contenido.activo { display: block; }
         
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         body.menu-open { overflow: hidden; }
-        
-        /* Iconos personalizados mapa */
-        .tasker-icon {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100">
+<body class="bg-slate-50">
 
-    <!-- Botón menú móvil -->
-    <button id="btnMenuMovil" class="hidden md:hidden bg-black text-white w-12 h-12 rounded-full shadow-xl flex items-center justify-center hover:bg-gray-800 transition-all">
+    <button id="btnMenuMovil" class="hidden bg-black text-white w-12 h-12 rounded-full shadow-xl flex items-center justify-center">
         <i class="fas fa-bars text-xl"></i>
     </button>
-    <div id="overlayMenu" class="hidden md:hidden"></div>
+    <div id="overlayMenu" class="hidden"></div>
 
-    <!-- Modales (carga, pago, servicio) -->
-    <div id="modalCarga" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm"><div class="bg-white p-8 rounded-3xl shadow-2xl"><i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i><p class="text-gray-700 font-medium">Cargando experiencia...</p></div></div>
-    <div id="modalPago" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center"><div class="bg-white rounded-3xl max-w-md w-full mx-4 p-6"><div class="flex justify-between mb-4"><h3 class="text-2xl font-bold">Pago Seguro</h3><button onclick="cerrarModalPago()" class="text-gray-400"><i class="fas fa-times text-xl"></i></button></div><div id="contenidoModalPago"></div></div></div>
-    <div id="modalServicio" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center"><div class="bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto p-6"><div class="flex justify-between border-b pb-3"><h3 class="text-xl font-bold">Detalles</h3><button onclick="cerrarModalServicio()"><i class="fas fa-times"></i></button></div><div id="contenidoModalServicio"></div></div></div>
+    <div id="modalCarga" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl"><i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i><p class="text-gray-700 font-medium">Cargando...</p></div>
+    </div>
+
+    <div id="modalPago" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between mb-4"><h3 class="text-2xl font-bold">Pago Seguro</h3><button onclick="cerrarModalPago()" class="text-gray-400"><i class="fas fa-times text-xl"></i></button></div>
+            <div id="contenidoModalPago"></div>
+        </div>
+    </div>
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar renovado -->
-        <aside id="barraLateral" class="sidebar-moderno w-72 text-white hidden md:flex flex-col fixed md:relative h-full z-50">
+        <aside id="barraLateral" class="sidebar-moderno w-72 text-white hidden md:flex flex-col fixed md:relative h-full">
             <div class="p-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center"><i class="fas fa-bolt text-blue-600 text-xl"></i></div>
-                    <div><div class="text-2xl font-black tracking-tight">Tasker<span class="text-blue-400">'s</span></div><div class="text-xs text-blue-300/80">Cliente Premium</div></div>
+                    <div><div class="text-2xl font-black tracking-tight">Tasker<span class="text-blue-400">'s</span></div><div class="text-xs text-blue-300/80">Cliente</div></div>
                 </div>
-                <div id="infoUsuario" class="mt-5 bg-white/10 rounded-2xl p-3 backdrop-blur-sm"><p class="font-semibold text-sm">Cargando perfil...</p></div>
+                <div id="infoUsuario" class="mt-5 bg-white/10 rounded-2xl p-3"><p class="font-semibold text-sm">Cargando...</p></div>
             </div>
             <nav class="flex-1 mt-4 space-y-1 px-3">
-                <a href="#" onclick="window.cambiarSeccion('inicio'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-inicio"><i class="fas fa-home w-5"></i><span>Inicio</span></a>
-                <a href="#" onclick="window.cambiarSeccion('mapa-taskers'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-mapa"><i class="fas fa-map-marked-alt w-5"></i><span>Taskers Cerca</span></a>
-                <a href="#" onclick="window.cambiarSeccion('nuevo-servicio'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-nuevo-servicio"><i class="fas fa-plus-circle w-5"></i><span>Solicitar Servicio</span></a>
-                <a href="#" onclick="window.cambiarSeccion('mis-servicios'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-mis-servicios"><i class="fas fa-list w-5"></i><span>Mis Servicios</span></a>
-                <a href="#" onclick="window.cambiarSeccion('chat'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-chat"><i class="fas fa-comments w-5"></i><span>Mensajes</span><span id="contadorChat" class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span></a>
-                <a href="#" onclick="window.cambiarSeccion('pagos'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-pagos"><i class="fas fa-credit-card w-5"></i><span>Pagos</span></a>
-                <a href="#" onclick="window.cambiarSeccion('perfil'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 hover:text-white" id="link-perfil"><i class="fas fa-id-card w-5"></i><span>Perfil + Métodos de pago</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="inicio"><i class="fas fa-home w-5"></i><span>Inicio</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="mapa-taskers"><i class="fas fa-map-marked-alt w-5"></i><span>Taskers Cerca</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="nuevo-servicio"><i class="fas fa-plus-circle w-5"></i><span>Solicitar Servicio</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="mis-servicios"><i class="fas fa-list w-5"></i><span>Mis Servicios</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="chat"><i class="fas fa-comments w-5"></i><span>Mensajes</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="pagos"><i class="fas fa-credit-card w-5"></i><span>Pagos</span></a>
+                <a class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-200 cursor-pointer" data-seccion="perfil"><i class="fas fa-id-card w-5"></i><span>Mi Perfil</span></a>
             </nav>
-            <div class="p-5 border-t border-white/10"><button onclick="window.cerrarSesionCliente()" class="w-full bg-red-500/20 hover:bg-red-600 text-red-200 hover:text-white py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i>Salir</button></div>
+            <div class="p-5 border-t border-white/10"><button onclick="cerrarSesionCliente()" class="w-full bg-red-500/20 hover:bg-red-600 text-red-200 hover:text-white py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i>Salir</button></div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 flex flex-col overflow-y-auto">
             <header class="bg-white/70 backdrop-blur-md border-b border-slate-200/60 p-4 sticky top-0 z-20 flex justify-between items-center">
-                <div class="ml-12 md:ml-0"><h2 id="tituloSeccion" class="text-2xl font-black text-slate-800">Inicio</h2><p id="subtituloSeccion" class="text-sm text-slate-500">Panel inteligente</p></div>
-                <div class="flex gap-5 items-center"><button onclick="window.cambiarSeccion('chat')" class="relative"><i class="fas fa-comment-dots text-slate-600 text-xl hover:text-blue-600"></i><span id="badgeChatHeader" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 hidden items-center justify-center">0</span></button><div id="avatarHeader" class="w-11 h-11 rounded-full bg-slate-200 border-2 border-blue-500 cursor-pointer shadow-md" onclick="window.cambiarSeccion('perfil')"></div></div>
+                <div class="ml-12 md:ml-0"><h2 id="tituloSeccion" class="text-2xl font-black text-slate-800">Inicio</h2><p id="subtituloSeccion" class="text-sm text-slate-500">Panel de control</p></div>
+                <div class="flex gap-5 items-center"><div id="avatarHeader" class="w-11 h-11 rounded-full bg-slate-200 border-2 border-blue-500 cursor-pointer shadow-md"></div></div>
             </header>
 
             <div class="p-5 md:p-7">
-                <!-- SECCIÓN INICIO -->
+                <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido activo">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
                         <div class="tarjeta-stats border-l-4 border-l-blue-500"><p class="text-slate-500 text-sm font-medium">Servicios Activos</p><p id="statsActivos" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
@@ -200,84 +185,183 @@
                         <div class="tarjeta-stats border-l-4 border-l-purple-500"><p class="text-slate-500 text-sm">En Progreso</p><p id="statsProgreso" class="text-3xl font-black">0</p></div>
                         <div class="tarjeta-stats border-l-4 border-l-amber-500"><p class="text-slate-500 text-sm">Total Pagado</p><p id="statsPagado" class="text-3xl font-black">$0</p></div>
                     </div>
-                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-md p-6 border"><h3 class="font-bold text-xl mb-4 flex gap-2"><i class="fas fa-clock text-blue-500"></i>Servicios Recientes</h3><div id="listaRecientes" class="space-y-3"></div></div>
+                    <div class="bg-white rounded-3xl shadow-md p-6"><h3 class="font-bold text-xl mb-4 flex gap-2"><i class="fas fa-clock text-blue-500"></i>Servicios Recientes</h3><div id="listaRecientes" class="space-y-3"></div></div>
                 </section>
 
-                <!-- NUEVA SECCIÓN: MAPA TASKERS CERCANOS (MODERNO, ICONOS POR OFICIO) -->
+                <!-- MAPA TASKERS -->
                 <section id="seccion-mapa-taskers" class="seccion-contenido">
                     <div class="bg-white rounded-3xl shadow-xl p-5 mb-6">
-                        <div class="flex flex-wrap justify-between items-center mb-4"><h3 class="text-2xl font-black flex gap-2"><i class="fas fa-location-dot text-blue-600"></i>Taskers activos cerca de ti</h3><button onclick="ubicarUsuarioYTaskers()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-800"><i class="fas fa-crosshairs mr-2"></i>Mi ubicación</button></div>
-                        <div id="mapaTaskers" class="mapa-container w-full h-96 md:h-[500px] bg-slate-200 relative rounded-2xl"></div>
-                        <p class="text-xs text-center text-slate-400 mt-3"><i class="fas fa-info-circle"></i> Los taskers se muestran con iconos representativos de su oficio. Haz clic para ver perfil y contacto.</p>
+                        <div class="flex flex-wrap justify-between items-center mb-4"><h3 class="text-2xl font-black flex gap-2"><i class="fas fa-location-dot text-blue-600"></i>Taskers cerca de ti</h3><button onclick="ubicarUsuarioYTaskers()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold"><i class="fas fa-crosshairs mr-2"></i>Mi ubicación</button></div>
+                        <div id="mapaTaskers" class="mapa-container w-full h-96 md:h-[500px] bg-slate-200 rounded-2xl"></div>
+                        <p class="text-xs text-center text-slate-400 mt-3"><i class="fas fa-info-circle"></i> Los taskers aparecen con iconos según su oficio</p>
                     </div>
                 </section>
 
-                <!-- NUEVO SERVICIO, MIS SERVICIOS, CHAT, PAGOS, PERFIL (TODAS LAS FUNCIONES ORIGINALES MANTENIDAS) -->
-                <section id="seccion-nuevo-servicio" class="seccion-contenido"><div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-8"><h3 class="text-2xl font-black mb-2">Solicitar Servicio</h3><form id="formNuevoServicio" class="space-y-5">...</form></div></section>
-                <section id="seccion-mis-servicios" class="seccion-contenido"><div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-black">Mis Servicios</h3><select id="filtroStatus" onchange="window.cargarMisServicios()" class="border rounded-xl p-2"><option value="todos">Todos</option><option value="pendiente_pago">Pendiente pago</option><option value="publicado">Buscando tasker</option><option value="asignado">Asignado</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div><div id="contenedorServicios" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div></section>
-                <section id="seccion-chat" class="seccion-contenido"><div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[80vh]"><div class="bg-white rounded-3xl shadow-md overflow-hidden"><div class="p-4 bg-black text-white"><i class="fas fa-comments mr-2"></i>Conversaciones</div><div id="listaConversaciones" class="overflow-y-auto h-full"></div></div><div class="lg:col-span-2 bg-white rounded-3xl shadow-md flex flex-col"><div id="cabeceraChat" class="p-4 border-b hidden"><div class="flex gap-3"><div id="avatarTasker" class="w-12 h-12 rounded-full bg-slate-300"></div><div><h4 id="nombreTasker" class="font-bold"></h4><p id="infoServicio" class="text-xs"></p></div></div></div><div id="mensajesChat" class="flex-1 overflow-y-auto p-4 space-y-3"></div><div id="inputChat" class="p-4 border-t hidden"><form id="formMensaje" class="flex gap-2"><input type="text" id="textoMensaje" class="flex-1 p-3 border rounded-2xl" placeholder="Escribe un mensaje..."><button type="submit" class="bg-black text-white px-5 rounded-2xl"><i class="fas fa-paper-plane"></i></button></form></div></div></div></section>
+                <!-- NUEVO SERVICIO -->
+                <section id="seccion-nuevo-servicio" class="seccion-contenido">
+                    <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-8">
+                        <h3 class="text-2xl font-black mb-2">Solicitar Nuevo Servicio</h3>
+                        <p class="text-slate-500 text-sm mb-6">Recibe propuestas de profesionales verificados</p>
+                        <form id="formNuevoServicio" class="space-y-5">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-2">Categoría</label><select id="categoria" required class="w-full p-3 border rounded-xl"><option value="">Seleccionar</option></select></div>
+                                <div><label class="block text-sm font-medium mb-2">Subcategoría</label><select id="subcategoria" required class="w-full p-3 border rounded-xl" disabled><option value="">Primero selecciona categoría</option></select></div>
+                            </div>
+                            <div><textarea id="descripcion" required rows="4" class="w-full p-3 border rounded-xl" placeholder="Describe lo que necesitas..."></textarea></div>
+                            <div class="grid grid-cols-2 gap-4"><div><input type="text" id="cp" required maxlength="5" class="w-full p-3 border rounded-xl" placeholder="Código Postal"></div><div><input type="text" id="colonia" class="w-full p-3 border rounded-xl" placeholder="Colonia"></div></div>
+                            <div><input type="number" id="monto" required min="100" step="100" class="w-full p-3 border rounded-xl" placeholder="Presupuesto máximo"><p class="text-xs text-slate-500 mt-2">Comisión Tasker's: 15%</p></div>
+                            <div><input type="datetime-local" id="fecha" class="w-full p-3 border rounded-xl"></div>
+                            <div class="flex items-start gap-3"><input type="checkbox" id="terminos" required class="mt-1"><label class="text-sm text-slate-600">Acepto términos y condiciones</label></div>
+                            <button type="submit" class="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition">Publicar Solicitud</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- MIS SERVICIOS -->
+                <section id="seccion-mis-servicios" class="seccion-contenido">
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-black">Mis Servicios</h3><select id="filtroStatus" class="border rounded-xl p-2"><option value="todos">Todos</option><option value="pendiente_pago">Pendiente pago</option><option value="publicado">Buscando tasker</option><option value="asignado">Asignado</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
+                    <div id="contenedorServicios" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+                </section>
+
+                <!-- CHAT -->
+                <section id="seccion-chat" class="seccion-contenido">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[80vh]">
+                        <div class="bg-white rounded-3xl shadow-md overflow-hidden"><div class="p-4 bg-black text-white"><i class="fas fa-comments mr-2"></i>Conversaciones</div><div id="listaConversaciones" class="overflow-y-auto h-full"></div></div>
+                        <div class="lg:col-span-2 bg-white rounded-3xl shadow-md flex flex-col"><div id="cabeceraChat" class="p-4 border-b hidden"><div class="flex gap-3"><div id="avatarTasker" class="w-12 h-12 rounded-full bg-slate-300"></div><div><h4 id="nombreTasker" class="font-bold"></h4><p id="infoServicio" class="text-xs"></p></div></div></div><div id="mensajesChat" class="flex-1 overflow-y-auto p-4 space-y-3"></div><div id="inputChat" class="p-4 border-t hidden"><form id="formMensaje" class="flex gap-2"><input type="text" id="textoMensaje" class="flex-1 p-3 border rounded-2xl" placeholder="Escribe un mensaje..."><button type="submit" class="bg-black text-white px-5 rounded-2xl"><i class="fas fa-paper-plane"></i></button></form></div></div>
+                    </div>
+                </section>
+
+                <!-- PAGOS -->
                 <section id="seccion-pagos" class="seccion-contenido"><h3 class="text-2xl font-black mb-6">Historial de Pagos</h3><div class="bg-white rounded-3xl shadow-md overflow-hidden"><div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="p-4">Fecha</th><th>Servicio</th><th>Monto</th><th>Comisión</th><th>Estado</th></tr></thead><tbody id="tablaPagos"></tbody></table></div></div></section>
-                <section id="seccion-perfil" class="seccion-contenido"><div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8"><h3 class="text-2xl font-black mb-6">Mi Perfil + Datos de pago</h3><div class="flex flex-col items-center mb-6"><div class="relative"><div id="avatarPerfil" class="w-32 h-32 rounded-full bg-slate-200 border-4 border-blue-500"></div><button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full"><i class="fas fa-camera"></i></button></div><input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()"></div><form id="formPerfil" class="space-y-4"><input type="text" id="perfilNombre" placeholder="Nombre completo" class="w-full p-3 border rounded-xl"><input type="email" id="perfilEmail" readonly class="w-full p-3 bg-slate-50 rounded-xl"><input type="tel" id="perfilTelefono" placeholder="Teléfono" class="w-full p-3 border rounded-xl"><button type="submit" class="w-full bg-black text-white py-3 rounded-xl font-bold">Guardar Cambios</button></form><hr class="my-6"><div class="bg-slate-50 p-5 rounded-2xl"><h4 class="font-bold flex gap-2"><i class="fas fa-credit-card"></i>Métodos de pago</h4><p class="text-sm text-slate-600 mt-2">💳 Tarjetas guardadas: **** **** **** 4242 (Visa)</p><button onclick="alert('Simulación: agregar nueva tarjeta')" class="mt-3 text-blue-600 text-sm font-semibold"><i class="fas fa-plus-circle"></i> Agregar tarjeta de crédito/débito</button><p class="text-xs text-slate-400 mt-4"><i class="fas fa-shield-alt"></i> Pagos seguros con encriptación</p></div></div></section>
+
+                <!-- PERFIL -->
+                <section id="seccion-perfil" class="seccion-contenido">
+                    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8"><h3 class="text-2xl font-black mb-6">Mi Perfil + Métodos de pago</h3><div class="flex flex-col items-center mb-6"><div class="relative"><div id="avatarPerfil" class="w-32 h-32 rounded-full bg-slate-200 border-4 border-blue-500"></div><button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full"><i class="fas fa-camera"></i></button></div><input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()"></div><form id="formPerfil" class="space-y-4"><input type="text" id="perfilNombre" placeholder="Nombre completo" class="w-full p-3 border rounded-xl"><input type="email" id="perfilEmail" readonly class="w-full p-3 bg-slate-50 rounded-xl"><input type="tel" id="perfilTelefono" placeholder="Teléfono" class="w-full p-3 border rounded-xl"><button type="submit" class="w-full bg-black text-white py-3 rounded-xl font-bold">Guardar Cambios</button></form><hr class="my-6"><div class="bg-slate-50 p-5 rounded-2xl"><h4 class="font-bold flex gap-2"><i class="fas fa-credit-card"></i>Métodos de pago</h4><p class="text-sm text-slate-600 mt-2">💳 Tarjetas guardadas: **** **** **** 4242 (Visa)</p><button onclick="alert('Demo: agregar nueva tarjeta')" class="mt-3 text-blue-600 text-sm font-semibold"><i class="fas fa-plus-circle"></i> Agregar tarjeta</button></div></div>
+                </section>
             </div>
         </main>
     </div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE (KEYS ORIGINALES)
+        // ========== CONFIGURACIÓN ==========
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let usuarioActual = null, chatActual = null, mapaGlobal = null, marcadoresTaskers = [];
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Helper
+        let usuarioActual = null;
+        let chatActual = null;
+        let mapaGlobal = null;
+        let marcadoresTaskers = [];
+
+        // ========== UTILIDADES ==========
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
-        function notificar(m, t='info'){ const d=document.createElement('div'); d.className=`fixed bottom-5 right-5 bg-black text-white px-5 py-3 rounded-2xl shadow-xl z-50 text-sm animate-slideIn`; d.innerText=m; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); }
-        
-        // Autenticación
-        async function verificarAuth(r='login.html'){ const {data:{session}} = await clienteSupabase.auth.getSession(); if(!session){ window.location.href=r; return null;} return session; }
-        
-        // Mapa: iconos personalizados según oficio (tasker.category)
-        function obtenerIconoPorCategoria(categoriaNombre) {
-            const mapIconos = {
-                'mecanico': '🔧', 'mecánica': '🔧', 'mecanico': '🔧',
-                'carpintero': '🪚', 'carpintería': '🪚',
-                'enfermera': '🩺', 'enfermero': '🩺', 'salud': '🩺',
-                'maestro': '📐', 'profesor': '📐', 'educación': '📐',
-                'electricista': '⚡', 'plomero': '🚰', 'pintor': '🎨', 'jardinero': '🌿', 'limpieza': '🧹'
+        function notificar(m, t='info'){ const d=document.createElement('div'); d.className=`fixed bottom-5 right-5 bg-black text-white px-5 py-3 rounded-2xl shadow-xl z-50 text-sm`; d.innerText=m; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); }
+
+        // ========== AUTENTICACIÓN ==========
+        async function verificarAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return null; }
+            return session;
+        }
+
+        async function cargarUsuario() {
+            mostrarCarga();
+            try {
+                const sesion = await verificarAuth();
+                if (!sesion) return;
+                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', sesion.user.id).maybeSingle();
+                if (!perfil) throw new Error('Perfil no encontrado');
+                usuarioActual = perfil;
+                document.getElementById('infoUsuario').innerHTML = `<p class="font-semibold">${perfil.full_name || 'Cliente'}</p><p class="text-xs opacity-70">Cliente</p>`;
+                if (perfil.photo_url) {
+                    document.getElementById('avatarHeader').style.backgroundImage = `url('${perfil.photo_url}')`;
+                    document.getElementById('avatarPerfil').style.backgroundImage = `url('${perfil.photo_url}')`;
+                }
+                document.getElementById('perfilNombre').value = perfil.full_name || '';
+                document.getElementById('perfilEmail').value = perfil.email || '';
+                document.getElementById('perfilTelefono').value = perfil.phone || '';
+            } catch(e) { console.error(e); notificar('Error al cargar usuario','error'); }
+            finally { ocultarCarga(); }
+        }
+
+        // ========== CATEGORÍAS ==========
+        async function cargarCategorias() {
+            try {
+                const { data: cats } = await supabase.from('categorias').select('id, nombre').eq('activo', true);
+                const select = document.getElementById('categoria');
+                if (select && cats) {
+                    select.innerHTML = '<option value="">Selecciona categoría</option>';
+                    cats.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat.id;
+                        opt.textContent = cat.nombre;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.getElementById('categoria')?.addEventListener('change', async function() {
+            const subSelect = document.getElementById('subcategoria');
+            if (!this.value) { subSelect.disabled = true; subSelect.innerHTML = '<option value="">Primero selecciona categoría</option>'; return; }
+            subSelect.disabled = false;
+            subSelect.innerHTML = '<option value="">Cargando...</option>';
+            try {
+                const { data: subs } = await supabase.from('subcategorias').select('id, nombre').eq('categoria_id', this.value).eq('activo', true);
+                subSelect.innerHTML = '<option value="">Selecciona subcategoría</option>';
+                subs?.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.nombre;
+                    subSelect.appendChild(opt);
+                });
+            } catch(e) { subSelect.innerHTML = '<option value="">Error</option>'; }
+        });
+
+        // ========== MAPA Y TASKERS (CORREGIDO - sin columna rol) ==========
+        function obtenerIconoPorOficio(oficio) {
+            const iconos = {
+                'mecanico': '🔧', 'carpintero': '🪚', 'enfermera': '🩺', 'enfermero': '🩺',
+                'maestro': '📐', 'profesor': '📐', 'electricista': '⚡', 'plomero': '🚰',
+                'pintor': '🎨', 'jardinero': '🌿', 'limpieza': '🧹', 'albañil': '🧱'
             };
-            const lower = (categoriaNombre || '').toLowerCase();
-            for(let [key, emoji] of Object.entries(mapIconos)) if(lower.includes(key)) return emoji;
+            const lower = (oficio || '').toLowerCase();
+            for(let [key, emoji] of Object.entries(iconos)) if(lower.includes(key)) return emoji;
             return '👤';
         }
-        
-        function crearIconoTasker(emoji, colorFondo='#3b82f6') {
+
+        function crearIconoTasker(emoji) {
             const div = document.createElement('div');
-            div.innerHTML = `<div style="background:${colorFondo}; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(0,0,0,0.2); border:2px solid white; font-size:24px;">${emoji}</div>`;
-            return L.divIcon({ html: div.innerHTML, iconSize: [44,44], popupAnchor: [0,-10], className: 'tasker-icon' });
+            div.innerHTML = `<div style="background:#1e293b; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(0,0,0,0.2); border:2px solid white; font-size:24px;">${emoji}</div>`;
+            return L.divIcon({ html: div.innerHTML, iconSize: [44,44], popupAnchor: [0,-10] });
         }
-        
+
         async function cargarTaskersCercanos(lat, lng) {
             if(!mapaGlobal) return;
-            // Limpiar marcadores previos
             marcadoresTaskers.forEach(m => mapaGlobal.removeLayer(m));
             marcadoresTaskers = [];
-            // Obtener taskers con rol 'tasker' desde profiles (rol debe existir en la tabla)
-            const { data: taskers, error } = await clienteSupabase.from('profiles').select('id, full_name, photo_url, calificacion_promedio, categoria_principal, latitud, longitud').eq('rol', 'tasker').not('latitud', 'is', null);
-            if(error) { console.error(error); return; }
-            if(!taskers || taskers.length===0) { notificar("No hay taskers con ubicación compartida", "info"); return; }
-            // Filtrar cercanos (radio 5km aprox)
+            
+            // CORREGIDO: No usar columna 'rol', usar 'tipo_usuario' o simplemente traer profiles con ubicación
+            const { data: taskers, error } = await supabase
+                .from('profiles')
+                .select('id, full_name, photo_url, calificacion_promedio, oficio, latitud, longitud')
+                .not('latitud', 'is', null);
+            
+            if(error) { console.error('Error cargando taskers:', error); return; }
+            if(!taskers || taskers.length === 0) { notificar("No hay taskers con ubicación compartida", "info"); return; }
+            
             taskers.forEach(t => {
-                if(t.latitud && t.longitud){
-                    const distancia = Math.hypot(t.latitud - lat, t.longitud - lng) * 111; // km aprox
-                    if(distancia < 10) { // 10km
-                        const emoji = obtenerIconoPorCategoria(t.categoria_principal || '');
-                        const icon = crearIconoTasker(emoji, '#1e293b');
-                        const marker = L.marker([t.latitud, t.longitud], { icon }).addTo(mapaGlobal);
+                if(t.latitud && t.longitud) {
+                    const distancia = Math.hypot(t.latitud - lat, t.longitud - lng) * 111;
+                    if(distancia < 10) {
+                        const emoji = obtenerIconoPorOficio(t.oficio || '');
+                        const marker = L.marker([t.latitud, t.longitud], { icon: crearIconoTasker(emoji) }).addTo(mapaGlobal);
                         marker.bindPopup(`
                             <div style="font-family:Inter; min-width:160px;">
                                 <div class="font-bold text-lg">${t.full_name || 'Tasker'}</div>
-                                <div class="flex gap-1 items-center text-sm"><span>⭐ ${t.calificacion_promedio?.toFixed(1) || 'Nuevo'}</span> <span class="ml-2 text-blue-600">${emoji} ${t.categoria_principal || 'Servicios'}</span></div>
+                                <div class="flex gap-1 items-center text-sm">⭐ ${t.calificacion_promedio?.toFixed(1) || 'Nuevo'}</div>
+                                <div class="text-xs text-blue-600 mt-1">${emoji} ${t.oficio || 'Servicios'}</div>
                                 <button onclick="verPerfilTasker('${t.id}')" class="mt-2 bg-black text-white text-xs px-3 py-1 rounded-full w-full">Ver perfil</button>
                             </div>
                         `);
@@ -285,57 +369,246 @@
                     }
                 }
             });
-            if(marcadoresTaskers.length === 0) notificar("No hay taskers cercanos en un radio de 10km", "info");
+            if(marcadoresTaskers.length === 0) notificar("No hay taskers cercanos (radio 10km)", "info");
         }
-        
+
+        window.verPerfilTasker = function(taskerId) {
+            alert(`Perfil del tasker: ${taskerId}\nPuedes contactarlo desde la sección de chat cuando tengas un servicio asignado.`);
+        };
+
         window.ubicarUsuarioYTaskers = function() {
             if(!mapaGlobal) return;
             mostrarCarga();
-            if(navigator.geolocation){
+            if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
                     const { latitude, longitude } = pos.coords;
                     mapaGlobal.setView([latitude, longitude], 13);
-                    // Guardar ubicación del cliente en su perfil opcionalmente
-                    await clienteSupabase.from('profiles').update({ latitud: latitude, longitud: longitude }).eq('id', usuarioActual.id);
+                    await supabase.from('profiles').update({ latitud: latitude, longitud: longitude }).eq('id', usuarioActual.id);
                     L.marker([latitude, longitude], { icon: L.divIcon({ html: '<div style="background:#2563eb; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>', iconSize: [20,20] }) }).addTo(mapaGlobal).bindPopup("Tu ubicación").openPopup();
                     await cargarTaskersCercanos(latitude, longitude);
                     ocultarCarga();
                 }, () => { ocultarCarga(); notificar("Activa GPS para ver taskers cerca", "error"); });
             } else { ocultarCarga(); notificar("Geolocalización no soportada", "error"); }
         };
-        
+
         function inicializarMapa() {
             if(mapaGlobal) return;
-            mapaGlobal = L.map('mapaTaskers').setView([20.6597, -103.3496], 12); // Centro por defecto GDL
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB' }).addTo(mapaGlobal);
+            mapaGlobal = L.map('mapaTaskers').setView([20.6597, -103.3496], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>' }).addTo(mapaGlobal);
         }
-        
-        // Funciones de perfil y pago (originales extendidas)
-        window.verPerfilTasker = (taskerId) => { alert(`Perfil del tasker: ${taskerId} - funcionalidad de contacto disponible en el chat.`); };
-        
-        // ========== REUTILIZACIÓN DE FUNCIONES ORIGINALES (preservando estructura) ==========
-        async function cargarUsuario() { mostrarCarga(); try{ const sesion=await verificarAuth(); if(!sesion) return; const {data:perfil}=await clienteSupabase.from('profiles').select('*').eq('id',sesion.user.id).maybeSingle(); usuarioActual=perfil; document.getElementById('infoUsuario').innerHTML=`<p class="font-semibold">${perfil.full_name||'Cliente'}</p><p class="text-xs opacity-70">⭐ Cliente</p>`; if(perfil.photo_url){ document.getElementById('avatarHeader').style.backgroundImage=`url('${perfil.photo_url}')`; document.getElementById('avatarPerfil').style.backgroundImage=`url('${perfil.photo_url}')`; } document.getElementById('perfilNombre').value=perfil.full_name||''; document.getElementById('perfilEmail').value=perfil.email||''; document.getElementById('perfilTelefono').value=perfil.phone||''; }catch(e){console.error(e)}finally{ocultarCarga();} }
-        async function cargarCategorias(){ try{ const {data:cats}=await clienteSupabase.from('categorias').select('id,nombre').eq('activo',true); const select=document.getElementById('categoria'); if(select){ select.innerHTML='<option value="">Selecciona categoría</option>'; cats?.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.nombre; select.appendChild(opt); }); } }catch(e){console.error(e)} }
-        document.getElementById('categoria')?.addEventListener('change', async function(){ const sub=document.getElementById('subcategoria'); if(!this.value){ sub.disabled=true; sub.innerHTML='<option>Primero selecciona categoría</option>'; return; } sub.disabled=false; sub.innerHTML='<option>Cargando...</option>'; const {data:subs}=await clienteSupabase.from('subcategorias').select('id,nombre').eq('categoria_id',this.value).eq('activo',true); sub.innerHTML='<option value="">Selecciona subcategoría</option>'; subs?.forEach(s=>{ const opt=document.createElement('option'); opt.value=s.id; opt.textContent=s.nombre; sub.appendChild(opt); }); });
-        async function cargarDashboard(){ const {data:s}=await clienteSupabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id); if(s){ document.getElementById('statsActivos').textContent=s.filter(x=>['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length; document.getElementById('statsCompletados').textContent=s.filter(x=>x.status==='completado').length; document.getElementById('statsProgreso').textContent=s.filter(x=>x.status==='en_progreso').length; document.getElementById('statsPagado').textContent=`$${s.filter(x=>x.status==='completado').reduce((a,b)=>a+(b.monto_final||0),0).toFixed(2)}`; const rec=s.slice(0,5); document.getElementById('listaRecientes').innerHTML=rec.map(x=>`<div class="border rounded-2xl p-4 hover:shadow-md cursor-pointer" onclick="verServicio('${x.id}')"><div class="flex justify-between"><div><h4 class="font-bold">${x.subcategoria||''}</h4><p class="text-sm">${x.descripcion?.substring(0,60)}</p></div><span class="badge-estado ${x.status==='completado'?'badge-completado':'badge-pendiente'}">${x.status}</span></div></div>`).join(''); } }
-        window.cargarMisServicios = async function(){ const filtro=document.getElementById('filtroStatus')?.value; const {data:servicios}=await clienteSupabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id).order('created_at',false); const contenedor=document.getElementById('contenedorServicios'); if(!servicios?.length){ contenedor.innerHTML='<p class="text-center text-slate-400">Sin servicios</p>'; return; } let filtrados=filtro==='todos'?servicios:servicios.filter(s=>s.status===filtro); contenedor.innerHTML=filtrados.map(s=>`<div class="bg-white rounded-2xl shadow p-5"><div class="flex justify-between"><h4 class="font-black">${s.subcategoria}</h4><span class="badge-estado">${s.status}</span></div><p class="text-sm mt-2">${s.descripcion}</p><div class="mt-3 flex justify-between"><span class="font-bold">$${s.monto_ofertado}</span><button onclick="abrirChat('${s.id}','${s.tasker_id||''}')" class="bg-black text-white px-4 py-1 rounded-full text-xs">Chat</button></div></div>`).join(''); };
-        document.getElementById('formNuevoServicio')?.addEventListener('submit', async(e)=>{ e.preventDefault(); mostrarCarga(); const data={ cliente_id:usuarioActual.id, categoria:document.getElementById('categoria').value, subcategoria:document.getElementById('subcategoria').value, descripcion:document.getElementById('descripcion').value, ubicacion:document.getElementById('colonia').value, cp:document.getElementById('cp').value, monto_ofertado:parseFloat(document.getElementById('monto').value), status:'pendiente_pago', pago_status:'pendiente', created_at:new Date() }; const {data:serv}=await clienteSupabase.from('servicios').insert([data]).select().single(); ocultarCarga(); mostrarModalPago(serv); });
-        async function mostrarModalPago(serv){ const m=document.getElementById('modalPago'); document.getElementById('contenidoModalPago').innerHTML=`<div class="text-center"><i class="fas fa-lock text-4xl text-green-600"></i><p class="mt-2">Total: $${serv.monto_ofertado}</p><button onclick="procesarPago('${serv.id}',${serv.monto_ofertado})" class="mt-4 bg-black w-full py-3 rounded-xl text-white">Pagar</button><button onclick="cerrarModalPago()" class="mt-2 w-full border py-2 rounded-xl">Cancelar</button></div>`; m.classList.remove('hidden'); m.classList.add('flex'); }
-        window.procesarPago=async(id,monto)=>{ mostrarCarga(); await clienteSupabase.from('servicios').update({status:'publicado',pago_status:'completado'}).eq('id',id); await clienteSupabase.from('pagos').insert([{ servicio_id:id, cliente_id:usuarioActual.id, monto_total:monto, comision_taskers:monto*0.15, status:'completado' }]); cerrarModalPago(); window.cambiarSeccion('mis-servicios'); notificar('Pago exitoso!'); ocultarCarga(); };
-        function cerrarModalPago(){ document.getElementById('modalPago').classList.add('hidden'); }
-        window.cambiarSeccion=function(sec){ document.querySelectorAll('.seccion-contenido').forEach(s=>s.classList.remove('activo')); document.querySelectorAll('.enlace-moderno').forEach(l=>l.classList.remove('activo')); document.getElementById(`seccion-${sec}`).classList.add('activo'); document.getElementById(`link-${sec}`)?.classList.add('activo'); const titulos={ inicio:'Inicio','mapa-taskers':'Taskers Cerca','nuevo-servicio':'Solicitar','mis-servicios':'Mis Servicios',chat:'Mensajes',pagos:'Pagos',perfil:'Mi Perfil' }; document.getElementById('tituloSeccion').textContent=titulos[sec]; if(sec==='mapa-taskers'){ if(!mapaGlobal) inicializarMapa(); else setTimeout(()=>mapaGlobal.invalidateSize(),200); ubicarUsuarioYTaskers(); } if(sec==='mis-servicios') window.cargarMisServicios(); if(sec==='chat') window.cargarConversaciones(); if(sec==='pagos') window.cargarPagos(); if(window.innerWidth<768) document.getElementById('barraLateral')?.classList.remove('abierto'), document.getElementById('overlayMenu')?.classList.remove('visible'), document.body.classList.remove('menu-open'); };
-        window.cargarConversaciones=async()=>{ const {data:chats}=await clienteSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`); const cont=document.getElementById('listaConversaciones'); if(!chats?.length){ cont.innerHTML='<p class="p-4 text-center">Sin mensajes</p>'; return; } cont.innerHTML=chats.map(ch=>{ const otro=ch.usuario1_id===usuarioActual.id?ch.usuario2:ch.usuario1; return `<div onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}')" class="p-3 border-b hover:bg-slate-50 cursor-pointer"><div class="flex gap-3"><div class="w-10 h-10 rounded-full bg-slate-300"></div><div><p class="font-semibold">${otro.full_name}</p></div></div></div>`; }).join(''); };
-        window.seleccionarChat=async(id,oid,nombre,avatar)=>{ chatActual={id,oid,nombre,avatar}; document.getElementById('cabeceraChat').classList.remove('hidden'); document.getElementById('inputChat').classList.remove('hidden'); document.getElementById('nombreTasker').innerHTML=nombre; await cargarMensajes(id); };
-        async function cargarMensajes(id){ const {data:msgs}=await clienteSupabase.from('mensajes').select('*').eq('chat_id',id).order('created_at'); const cont=document.getElementById('mensajesChat'); if(!msgs?.length){ cont.innerHTML='<p class="text-center text-slate-400">Envía un mensaje</p>'; return; } cont.innerHTML=msgs.map(m=>`<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p>${m.mensaje}</p><p class="text-xs opacity-70 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join(''); cont.scrollTop=cont.scrollHeight; }
-        document.getElementById('formMensaje')?.addEventListener('submit', async(e)=>{ e.preventDefault(); if(!chatActual) return; const txt=document.getElementById('textoMensaje').value.trim(); if(!txt) return; await clienteSupabase.from('mensajes').insert([{ chat_id:chatActual.id, remitente_id:usuarioActual.id, mensaje:txt }]); await clienteSupabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date() }).eq('id',chatActual.id); document.getElementById('textoMensaje').value=''; cargarMensajes(chatActual.id); });
-        window.cargarPagos=async()=>{ const {data:p}=await clienteSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',usuarioActual.id); const tbody=document.getElementById('tablaPagos'); if(!p?.length){ tbody.innerHTML='<tr><td colspan="5" class="text-center p-4">Sin pagos</td></tr>'; return; } tbody.innerHTML=p.map(x=>`<tr class="border-b"><td class="p-3">${new Date(x.fecha_pago).toLocaleDateString()}</td><td>${x.servicio?.subcategoria||''}</td><td>$${x.monto_total}</td><td>$${x.comision_taskers}</td><td><span class="badge-completado badge-estado">Pagado</span></td></tr>`).join(''); };
-        document.getElementById('formPerfil')?.addEventListener('submit', async(e)=>{ e.preventDefault(); await clienteSupabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value }).eq('id',usuarioActual.id); notificar('Perfil actualizado','success'); cargarUsuario(); });
-        window.subirFotoPerfil=async function(){ const input=document.getElementById('fotoPerfil'); if(!input.files[0]) return; mostrarCarga(); const file=input.files[0]; const path=`profiles/${usuarioActual.id}/${Date.now()}_${file.name}`; await clienteSupabase.storage.from('profiles-photos').upload(path,file); const {data:{publicUrl}}=clienteSupabase.storage.from('profiles-photos').getPublicUrl(path); await clienteSupabase.from('profiles').update({ photo_url:publicUrl }).eq('id',usuarioActual.id); document.getElementById('avatarHeader').style.backgroundImage=`url('${publicUrl}')`; document.getElementById('avatarPerfil').style.backgroundImage=`url('${publicUrl}')`; notificar('Foto subida'); ocultarCarga(); };
-        window.cerrarSesionCliente=async()=>{ if(confirm('Cerrar sesión?')){ await clienteSupabase.auth.signOut(); window.location.href='index.html'; } };
-        function iniciarMenuMovil(){ const btn=document.getElementById('btnMenuMovil'), sidebar=document.getElementById('barraLateral'), overlay=document.getElementById('overlayMenu'); if(btn) btn.onclick=()=>{ sidebar.classList.add('abierto'); overlay.classList.add('visible'); document.body.classList.add('menu-open'); }; if(overlay) overlay.onclick=()=>{ sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); }; }
-        window.verServicio=(id)=>window.cambiarSeccion('mis-servicios');
-        document.addEventListener('DOMContentLoaded', async()=>{ await cargarUsuario(); await cargarCategorias(); await cargarDashboard(); iniciarMenuMovil(); });
+
+        // ========== DASHBOARD ==========
+        async function cargarDashboard() {
+            const { data: s } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id);
+            if(s) {
+                document.getElementById('statsActivos').textContent = s.filter(x => ['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length;
+                document.getElementById('statsCompletados').textContent = s.filter(x => x.status === 'completado').length;
+                document.getElementById('statsProgreso').textContent = s.filter(x => x.status === 'en_progreso').length;
+                document.getElementById('statsPagado').textContent = `$${s.filter(x => x.status === 'completado').reduce((a,b)=>a+(b.monto_final||0),0).toFixed(2)}`;
+                const rec = s.slice(0,5);
+                document.getElementById('listaRecientes').innerHTML = rec.map(x => `<div class="border rounded-2xl p-4 hover:shadow-md cursor-pointer" onclick="cambiarSeccion('mis-servicios')"><div class="flex justify-between"><div><h4 class="font-bold">${x.subcategoria || ''}</h4><p class="text-sm">${(x.descripcion || '').substring(0,60)}</p></div><span class="badge-estado ${x.status === 'completado' ? 'badge-completado' : 'badge-pendiente'}">${x.status}</span></div></div>`).join('');
+            }
+        }
+
+        // ========== SERVICIOS ==========
+        window.cargarMisServicios = async function() {
+            const filtro = document.getElementById('filtroStatus')?.value || 'todos';
+            const { data: servicios } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', false);
+            const contenedor = document.getElementById('contenedorServicios');
+            if(!servicios?.length) { contenedor.innerHTML = '<p class="text-center text-slate-400">No hay servicios</p>'; return; }
+            let filtrados = filtro === 'todos' ? servicios : servicios.filter(s => s.status === filtro);
+            contenedor.innerHTML = filtrados.map(s => `
+                <div class="bg-white rounded-2xl shadow p-5">
+                    <div class="flex justify-between"><h4 class="font-black">${s.subcategoria || 'Servicio'}</h4><span class="badge-estado ${s.status === 'completado' ? 'badge-completado' : 'badge-pendiente'}">${s.status}</span></div>
+                    <p class="text-sm mt-2">${s.descripcion?.substring(0,100) || ''}</p>
+                    <div class="mt-3 flex justify-between items-center"><span class="font-bold">$${s.monto_ofertado}</span>${s.tasker_id ? `<button onclick="abrirChat('${s.id}', '${s.tasker_id}')" class="bg-black text-white px-4 py-2 rounded-full text-xs">Chat con tasker</button>` : '<span class="text-xs text-slate-400">Esperando tasker...</span>'}</div>
+                </div>
+            `).join('');
+        };
+
+        // ========== CHAT (CORREGIDO - abrirChat global) ==========
+        window.abrirChat = async function(servicioId, taskerId) {
+            if(!taskerId) { notificar("Aún no hay tasker asignado", "error"); return; }
+            try {
+                const { data: existing } = await supabase.from('chats').select('*').eq('servicio_id', servicioId).maybeSingle();
+                let chatId;
+                if(existing) { chatId = existing.id; } 
+                else {
+                    const { data: newChat } = await supabase.from('chats').insert([{ servicio_id: servicioId, usuario1_id: usuarioActual.id, usuario2_id: taskerId }]).select().single();
+                    chatId = newChat.id;
+                }
+                const { data: tasker } = await supabase.from('profiles').select('full_name, photo_url').eq('id', taskerId).single();
+                cambiarSeccion('chat');
+                setTimeout(async () => {
+                    await cargarConversaciones();
+                    await seleccionarChat(chatId, taskerId, tasker.full_name, tasker.photo_url);
+                }, 100);
+            } catch(e) { console.error(e); notificar("Error al abrir chat", "error"); }
+        };
+
+        window.cargarConversaciones = async function() {
+            const { data: chats } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`);
+            const cont = document.getElementById('listaConversaciones');
+            if(!chats?.length) { cont.innerHTML = '<p class="p-4 text-center text-slate-400">Sin conversaciones</p>'; return; }
+            cont.innerHTML = chats.map(ch => {
+                const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
+                return `<div onclick="seleccionarChat('${ch.id}', '${otro.id}', '${otro.full_name || ''}', '${otro.photo_url || ''}')" class="p-3 border-b hover:bg-slate-50 cursor-pointer"><div class="flex gap-3"><div class="w-10 h-10 rounded-full bg-slate-300" style="background-image: url('${otro.photo_url || ''}'); background-size: cover;"></div><div><p class="font-semibold">${otro.full_name || 'Tasker'}</p></div></div></div>`;
+            }).join('');
+        };
+
+        window.seleccionarChat = async function(chatId, otroId, nombre, avatar) {
+            chatActual = { id: chatId, otroId, nombre, avatar };
+            document.getElementById('cabeceraChat').classList.remove('hidden');
+            document.getElementById('inputChat').classList.remove('hidden');
+            document.getElementById('nombreTasker').innerHTML = nombre;
+            if(avatar) document.getElementById('avatarTasker').style.backgroundImage = `url('${avatar}')`;
+            await cargarMensajes(chatId);
+        };
+
+        async function cargarMensajes(chatId) {
+            const { data: msgs } = await supabase.from('mensajes').select('*').eq('chat_id', chatId).order('created_at');
+            const cont = document.getElementById('mensajesChat');
+            if(!msgs?.length) { cont.innerHTML = '<p class="text-center text-slate-400">No hay mensajes</p>'; return; }
+            cont.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3 max-w-[75%]"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-70 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+            cont.scrollTop = cont.scrollHeight;
+        }
+
+        document.getElementById('formMensaje')?.addEventListener('submit', async(e) => {
+            e.preventDefault();
+            if(!chatActual) return;
+            const txt = document.getElementById('textoMensaje').value.trim();
+            if(!txt) return;
+            await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
+            await supabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date() }).eq('id', chatActual.id);
+            document.getElementById('textoMensaje').value = '';
+            cargarMensajes(chatActual.id);
+        });
+
+        // ========== PAGOS ==========
+        window.cargarPagos = async function() {
+            const { data: p } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id', usuarioActual.id);
+            const tbody = document.getElementById('tablaPagos');
+            if(!p?.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4">Sin pagos</td></tr>'; return; }
+            tbody.innerHTML = p.map(x => `<tr class="border-b"><td class="p-3">${new Date(x.fecha_pago).toLocaleDateString()}</td><td>${x.servicio?.subcategoria || ''}</td><td>$${x.monto_total}</td><td>$${x.comision_taskers}</td><td><span class="badge-completado badge-estado">Pagado</span></td></tr>`).join('');
+        };
+
+        // ========== NUEVO SERVICIO ==========
+        document.getElementById('formNuevoServicio')?.addEventListener('submit', async(e) => {
+            e.preventDefault();
+            mostrarCarga();
+            const data = {
+                cliente_id: usuarioActual.id,
+                categoria: document.getElementById('categoria').value,
+                subcategoria: document.getElementById('subcategoria').value,
+                descripcion: document.getElementById('descripcion').value,
+                ubicacion: document.getElementById('colonia').value,
+                cp: document.getElementById('cp').value,
+                monto_ofertado: parseFloat(document.getElementById('monto').value),
+                status: 'pendiente_pago',
+                pago_status: 'pendiente',
+                created_at: new Date()
+            };
+            const { data: servicio } = await supabase.from('servicios').insert([data]).select().single();
+            ocultarCarga();
+            mostrarModalPago(servicio);
+        });
+
+        function mostrarModalPago(servicio) {
+            const modal = document.getElementById('modalPago');
+            document.getElementById('contenidoModalPago').innerHTML = `
+                <div class="text-center"><i class="fas fa-lock text-4xl text-green-600"></i><p class="mt-2 font-bold">Total: $${servicio.monto_ofertado}</p><p class="text-sm text-slate-500">Comisión: $${(servicio.monto_ofertado * 0.15).toFixed(2)}</p><button onclick="procesarPago('${servicio.id}', ${servicio.monto_ofertado})" class="mt-4 bg-black w-full py-3 rounded-xl text-white">Pagar ahora</button><button onclick="cerrarModalPago()" class="mt-2 w-full border py-2 rounded-xl">Cancelar</button></div>`;
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        window.procesarPago = async function(id, monto) {
+            mostrarCarga();
+            await supabase.from('servicios').update({ status: 'publicado', pago_status: 'completado' }).eq('id', id);
+            await supabase.from('pagos').insert([{ servicio_id: id, cliente_id: usuarioActual.id, monto_total: monto, comision_taskers: monto * 0.15, status: 'completado', fecha_pago: new Date() }]);
+            cerrarModalPago();
+            cambiarSeccion('mis-servicios');
+            notificar('Pago exitoso!');
+            ocultarCarga();
+        };
+
+        window.cerrarModalPago = function() {
+            document.getElementById('modalPago').classList.add('hidden');
+            document.getElementById('modalPago').classList.remove('flex');
+        };
+
+        // ========== PERFIL ==========
+        document.getElementById('formPerfil')?.addEventListener('submit', async(e) => {
+            e.preventDefault();
+            await supabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value }).eq('id', usuarioActual.id);
+            notificar('Perfil actualizado', 'success');
+            cargarUsuario();
+        });
+
+        window.subirFotoPerfil = async function() {
+            const input = document.getElementById('fotoPerfil');
+            if(!input.files[0]) return;
+            mostrarCarga();
+            const file = input.files[0];
+            const path = `profiles/${usuarioActual.id}/${Date.now()}_${file.name}`;
+            await supabase.storage.from('profiles-photos').upload(path, file);
+            const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(path);
+            await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
+            document.getElementById('avatarHeader').style.backgroundImage = `url('${publicUrl}')`;
+            document.getElementById('avatarPerfil').style.backgroundImage = `url('${publicUrl}')`;
+            notificar('Foto actualizada');
+            ocultarCarga();
+        };
+
+        // ========== NAVEGACIÓN ==========
+        window.cambiarSeccion = function(seccion) {
+            document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('activo'));
+            document.querySelectorAll('.enlace-moderno').forEach(l => l.classList.remove('activo'));
+            const target = document.getElementById(`seccion-${seccion}`);
+            if(target) target.classList.add('activo');
+            const linkActivo = Array.from(document.querySelectorAll('.enlace-moderno')).find(l => l.getAttribute('data-seccion') === seccion);
+            if(linkActivo) linkActivo.classList.add('activo');
+            
+            const titulos = { inicio: 'Inicio', 'mapa-taskers': 'Taskers Cerca', 'nuevo-servicio': 'Solicitar Servicio', 'mis-servicios': 'Mis Servicios', chat: 'Mensajes', pagos: 'Pagos', perfil: 'Mi Perfil' };
+            document.getElementById('tituloSeccion').textContent = titulos[seccion] || seccion;
+            
+            if(seccion === 'mapa-taskers') { if(!mapaGlobal) inicializarMapa(); else setTimeout(() => mapaGlobal.invalidateSize(), 200); ubicarUsuarioYTaskers(); }
+            if(seccion === 'mis-servicios') window.cargarMisServicios();
+            if(seccion === 'chat') window.cargarConversaciones();
+            if(seccion === 'pagos') window.cargarPagos();
+            
+            if(window.innerWidth < 768) {
+                document.getElementById('barraLateral')?.classList.remove('abierto');
+                document.getElementById('overlayMenu')?.classList.remove('visible');
+                document.body.classList.remove('menu-open');
+            }
+        };
+
+        window.cerrarSesionCliente = async function() {
+            if(confirm('¿Cerrar sesión?')) { await supabase.auth.signOut(); window.location.href = 'index.html'; }
+        };
+
+        // ========== MENÚ MÓVIL ==========
+        function iniciarMenuMovil() {
+            const btn = document.getElementById('btnMenuMovil');
+            const sidebar = document.getElementById('barraLateral');
+            const overlay = document.getElementById('overlayMenu');
+            if(btn) btn.onclick = () => { sidebar.classList.add('abierto'); overlay.classList.add('visible'); document.body.classList.add('menu-open'); };
+            if(overlay) overlay.onclick = () => { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); };
+            document.querySelectorAll('.enlace-moderno').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const seccion = link.getAttribute('data-seccion');
+                    if(seccion) window.cambiarSeccion(seccion);
+                });
+            });
+        }
+
+        // ========== INICIALIZACIÓN ==========
+        document.addEventListener('DOMContentLoaded', async() => {
+            await cargarUsuario();
+            await cargarCategorias();
+            await cargarDashboard();
+            iniciarMenuMovil();
+        });
     </script>
-    <style>.animate-slideIn{animation:slideIn 0.2s ease;} @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}} .seccion-contenido{display:none;} .seccion-contenido.activo{display:block;}</style>
 </body>
 </html>
