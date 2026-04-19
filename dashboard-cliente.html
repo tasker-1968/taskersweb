@@ -132,8 +132,6 @@
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         body.menu-open { overflow: hidden; }
-        
-        select, input, textarea { font-size: 16px !important; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -202,7 +200,7 @@
                     </div>
                 </section>
 
-                <!-- NUEVO SERVICIO - FORMULARIO COMPLETO -->
+                <!-- NUEVO SERVICIO -->
                 <section id="seccion-nuevo-servicio" class="seccion-contenido">
                     <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-8">
                         <h3 class="text-2xl font-black mb-2">Solicitar Nuevo Servicio</h3>
@@ -253,14 +251,14 @@
 
                 <!-- MIS SERVICIOS -->
                 <section id="seccion-mis-servicios" class="seccion-contenido">
-                    <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-black">Mis Servicios</h3><select id="filtroStatus" class="border rounded-xl p-2"><option value="todos">Todos</option><option value="pendiente_pago">Pendiente pago</option><option value="publicado">Buscando tasker</option><option value="asignado">Asignado</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
+                    <div class="flex justify-between items-center mb-6 flex-wrap gap-4"><h3 class="text-2xl font-black">Mis Servicios</h3><select id="filtroStatus" class="border rounded-xl p-2"><option value="todos">Todos</option><option value="pendiente_pago">Pendiente pago</option><option value="publicado">Buscando tasker</option><option value="asignado">Asignado</option><option value="en_progreso">En progreso</option><option value="completado">Completados</option></select></div>
                     <div id="contenedorServicios" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
                 </section>
 
                 <!-- CHAT -->
                 <section id="seccion-chat" class="seccion-contenido">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[80vh]">
-                        <div class="bg-white rounded-3xl shadow-md overflow-hidden"><div class="p-4 bg-black text-white"><i class="fas fa-comments mr-2"></i>Conversaciones</div><div id="listaConversaciones" class="overflow-y-auto h-full"></div></div>
+                        <div class="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col"><div class="p-4 bg-black text-white"><i class="fas fa-comments mr-2"></i>Conversaciones</div><div id="listaConversaciones" class="overflow-y-auto flex-1"></div></div>
                         <div class="lg:col-span-2 bg-white rounded-3xl shadow-md flex flex-col"><div id="cabeceraChat" class="p-4 border-b hidden"><div class="flex gap-3"><div id="avatarTasker" class="w-12 h-12 rounded-full bg-slate-300"></div><div><h4 id="nombreTasker" class="font-bold"></h4><p id="infoServicio" class="text-xs"></p></div></div></div><div id="mensajesChat" class="flex-1 overflow-y-auto p-4 space-y-3"></div><div id="inputChat" class="p-4 border-t hidden"><form id="formMensaje" class="flex gap-2"><input type="text" id="textoMensaje" class="flex-1 p-3 border rounded-2xl" placeholder="Escribe un mensaje..."><button type="submit" class="bg-black text-white px-5 rounded-2xl"><i class="fas fa-paper-plane"></i></button></form></div></div>
                     </div>
                 </section>
@@ -277,14 +275,17 @@
     </div>
 
     <script>
-        // ========== CONFIGURACIÓN ==========
+        // CONFIGURACIÓN SUPABASE
         const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        let usuarioActual = null, chatActual = null, mapaGlobal = null, marcadoresTaskers = [];
+        let usuarioActual = null;
+        let chatActual = null;
+        let mapaGlobal = null;
+        let marcadoresTaskers = [];
 
-        // ========== SUBCATEGORÍAS POR CATEGORÍA ==========
+        // SUBCATEGORÍAS
         const subcategoriasPorCategoria = {
             mantenimiento: ['Plomería', 'Carpintería', 'Albañilería', 'Pintura', 'Electricidad', 'Impermeabilización', 'Cerrajería', 'Herrería', 'Aluminio y Vidrio'],
             limpieza: ['Limpieza de Hogar', 'Limpieza de Oficinas', 'Lavado de Alfombras', 'Limpieza Post-Obra', 'Sanitización', 'Limpieza de Vidrios', 'Limpieza Profunda'],
@@ -293,12 +294,11 @@
             belleza: ['Barbería', 'Manicura y Pedicura', 'Maquillaje', 'Estilismo', 'Masajes', 'Depilación']
         };
 
-        // ========== UTILIDADES ==========
         function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
         function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
-        function notificar(m, t='info'){ const d=document.createElement('div'); d.className=`fixed bottom-5 right-5 bg-black text-white px-5 py-3 rounded-2xl shadow-xl z-50 text-sm`; d.innerText=m; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); }
+        function notificar(m) { const d=document.createElement('div'); d.className='fixed bottom-5 right-5 bg-black text-white px-5 py-3 rounded-2xl shadow-xl z-50 text-sm'; d.innerText=m; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); }
 
-        // ========== AUTENTICACIÓN ==========
+        // AUTENTICACIÓN
         async function verificarAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) { window.location.href = 'login.html'; return null; }
@@ -320,21 +320,19 @@
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
-            } catch(e) { console.error(e); notificar('Error al cargar usuario','error'); }
+            } catch(e) { console.error(e); notificar('Error al cargar usuario'); }
             finally { ocultarCarga(); }
         }
 
-        // ========== SELECCIÓN DE SUBCATEGORÍAS ==========
+        // SUBCATEGORÍAS DINÁMICAS
         document.getElementById('categoria')?.addEventListener('change', function() {
             const subSelect = document.getElementById('subcategoria');
             const categoria = this.value;
-            
             if (!categoria || !subcategoriasPorCategoria[categoria]) {
                 subSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
                 subSelect.disabled = true;
                 return;
             }
-            
             subSelect.disabled = false;
             subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
             subcategoriasPorCategoria[categoria].forEach(sub => {
@@ -345,12 +343,9 @@
             });
         });
 
-        // ========== MAPA Y TASKERS ==========
+        // MAPA
         function obtenerIconoPorOficio(oficio) {
-            const iconos = {
-                'mecanico': '🔧', 'carpintero': '🪚', 'enfermera': '🩺', 'maestro': '📐',
-                'electricista': '⚡', 'plomero': '🚰', 'pintor': '🎨', 'jardinero': '🌿'
-            };
+            const iconos = { 'mecanico': '🔧', 'carpintero': '🪚', 'enfermera': '🩺', 'maestro': '📐', 'electricista': '⚡', 'plomero': '🚰', 'pintor': '🎨' };
             const lower = (oficio || '').toLowerCase();
             for(let [key, emoji] of Object.entries(iconos)) if(lower.includes(key)) return emoji;
             return '👤';
@@ -366,10 +361,8 @@
             if(!mapaGlobal) return;
             marcadoresTaskers.forEach(m => mapaGlobal.removeLayer(m));
             marcadoresTaskers = [];
-            
             const { data: taskers } = await supabase.from('profiles').select('id, full_name, calificacion_promedio, oficio, latitud, longitud').not('latitud', 'is', null);
             if(!taskers) return;
-            
             taskers.forEach(t => {
                 if(t.latitud && t.longitud) {
                     const distancia = Math.hypot(t.latitud - lat, t.longitud - lng) * 111;
@@ -392,8 +385,8 @@
                     L.marker([pos.coords.latitude, pos.coords.longitude], { icon: L.divIcon({ html: '<div style="background:#2563eb; width:20px; height:20px; border-radius:50%; border:2px solid white;"></div>', iconSize: [20,20] }) }).addTo(mapaGlobal).bindPopup("Tu ubicación");
                     await cargarTaskersCercanos(pos.coords.latitude, pos.coords.longitude);
                     ocultarCarga();
-                }, () => { ocultarCarga(); notificar("Activa GPS", "error"); });
-            } else { ocultarCarga(); notificar("GPS no soportado", "error"); }
+                }, () => { ocultarCarga(); notificar("Activa el GPS"); });
+            } else { ocultarCarga(); notificar("GPS no soportado"); }
         };
 
         function inicializarMapa() {
@@ -402,7 +395,7 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(mapaGlobal);
         }
 
-        // ========== DASHBOARD ==========
+        // DASHBOARD
         async function cargarDashboard() {
             const { data: s } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id);
             if(s) {
@@ -414,7 +407,7 @@
             }
         }
 
-        // ========== NUEVO SERVICIO ==========
+        // NUEVO SERVICIO
         document.getElementById('formNuevoServicio')?.addEventListener('submit', async(e) => {
             e.preventDefault();
             mostrarCarga();
@@ -432,7 +425,6 @@
             };
             const { data: servicio } = await supabase.from('servicios').insert([data]).select().single();
             ocultarCarga();
-            
             document.getElementById('contenidoModalPago').innerHTML = `<div class="text-center"><i class="fas fa-lock text-4xl text-green-600"></i><p class="mt-2 font-bold">Total: $${servicio.monto_ofertado}</p><p class="text-sm text-slate-500">Comisión: $${(servicio.monto_ofertado * 0.15).toFixed(2)}</p><button onclick="procesarPago('${servicio.id}', ${servicio.monto_ofertado})" class="mt-4 bg-black w-full py-3 rounded-xl text-white">Pagar ahora</button><button onclick="cerrarModalPago()" class="mt-2 w-full border py-2 rounded-xl">Cancelar</button></div>`;
             document.getElementById('modalPago').classList.remove('hidden');
             document.getElementById('modalPago').classList.add('flex');
@@ -444,7 +436,7 @@
             await supabase.from('pagos').insert([{ servicio_id: id, cliente_id: usuarioActual.id, monto_total: monto, comision_taskers: monto * 0.15, status: 'completado', fecha_pago: new Date() }]);
             cerrarModalPago();
             cambiarSeccion('mis-servicios');
-            notificar('¡Pago exitoso! Tu servicio está publicado');
+            notificar('¡Pago exitoso!');
             ocultarCarga();
         };
 
@@ -453,17 +445,19 @@
             document.getElementById('modalPago').classList.remove('flex');
         };
 
-        // ========== MIS SERVICIOS ==========
+        // MIS SERVICIOS
         window.cargarMisServicios = async function() {
+            const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const { data: servicios } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', false);
             const contenedor = document.getElementById('contenedorServicios');
             if(!servicios?.length) { contenedor.innerHTML = '<p class="text-center text-slate-400">No hay servicios</p>'; return; }
-            contenedor.innerHTML = servicios.map(s => `<div class="bg-white rounded-2xl shadow p-5"><div class="flex justify-between"><h4 class="font-black">${s.subcategoria || 'Servicio'}</h4><span class="badge-estado ${s.status === 'completado' ? 'badge-completado' : 'badge-pendiente'}">${s.status}</span></div><p class="text-sm mt-2">${s.descripcion?.substring(0,100)}</p><div class="mt-3 flex justify-between items-center"><span class="font-bold">$${s.monto_ofertado}</span>${s.tasker_id ? `<button onclick="abrirChat('${s.id}', '${s.tasker_id}')" class="bg-black text-white px-4 py-2 rounded-full text-xs">Chat con tasker</button>` : '<span class="text-xs text-slate-400">Esperando tasker...</span>'}</div></div>`).join('');
+            let filtrados = filtro === 'todos' ? servicios : servicios.filter(s => s.status === filtro);
+            contenedor.innerHTML = filtrados.map(s => `<div class="bg-white rounded-2xl shadow p-5"><div class="flex justify-between"><h4 class="font-black">${s.subcategoria || 'Servicio'}</h4><span class="badge-estado ${s.status === 'completado' ? 'badge-completado' : 'badge-pendiente'}">${s.status}</span></div><p class="text-sm mt-2">${(s.descripcion || '').substring(0,100)}</p><div class="mt-3 flex justify-between items-center"><span class="font-bold">$${s.monto_ofertado}</span>${s.tasker_id ? `<button onclick="abrirChat('${s.id}', '${s.tasker_id}')" class="bg-black text-white px-4 py-2 rounded-full text-xs">Chat</button>` : '<span class="text-xs text-slate-400">Esperando...</span>'}</div></div>`).join('');
         };
 
-        // ========== CHAT ==========
+        // CHAT
         window.abrirChat = async function(servicioId, taskerId) {
-            if(!taskerId) { notificar("Aún no hay tasker asignado", "error"); return; }
+            if(!taskerId) { notificar("Aún no hay tasker asignado"); return; }
             const { data: existing } = await supabase.from('chats').select('*').eq('servicio_id', servicioId).maybeSingle();
             let chatId = existing?.id;
             if(!chatId) {
@@ -503,7 +497,7 @@
             seleccionarChat(chatActual.id, chatActual.otroId, chatActual.nombre);
         });
 
-        // ========== PAGOS ==========
+        // PAGOS
         window.cargarPagos = async function() {
             const { data: p } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id', usuarioActual.id);
             const tbody = document.getElementById('tablaPagos');
@@ -511,11 +505,11 @@
             tbody.innerHTML = p.map(x => `<tr class="border-b"><td class="p-3">${new Date(x.fecha_pago).toLocaleDateString()}</td><td>${x.servicio?.subcategoria || ''}</td><td>$${x.monto_total}</td><td>$${x.comision_taskers}</td><td><span class="badge-completado badge-estado">Pagado</span></td></tr>`).join('');
         };
 
-        // ========== PERFIL ==========
+        // PERFIL
         document.getElementById('formPerfil')?.addEventListener('submit', async(e) => {
             e.preventDefault();
             await supabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value }).eq('id', usuarioActual.id);
-            notificar('Perfil actualizado', 'success');
+            notificar('Perfil actualizado');
             cargarUsuario();
         });
 
@@ -534,12 +528,14 @@
             ocultarCarga();
         };
 
-        // ========== NAVEGACIÓN ==========
+        // NAVEGACIÓN
         window.cambiarSeccion = function(seccion) {
             document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('activo'));
             document.querySelectorAll('.enlace-moderno').forEach(l => l.classList.remove('activo'));
             const target = document.getElementById(`seccion-${seccion}`);
             if(target) target.classList.add('activo');
+            const linkActivo = Array.from(document.querySelectorAll('.enlace-moderno')).find(l => l.getAttribute('data-seccion') === seccion);
+            if(linkActivo) linkActivo.classList.add('activo');
             
             const titulos = { inicio: 'Inicio', 'mapa-taskers': 'Taskers Cerca', 'nuevo-servicio': 'Solicitar Servicio', 'mis-servicios': 'Mis Servicios', chat: 'Mensajes', pagos: 'Pagos', perfil: 'Mi Perfil' };
             document.getElementById('tituloSeccion').textContent = titulos[seccion] || seccion;
@@ -560,7 +556,7 @@
             if(confirm('¿Cerrar sesión?')) { await supabase.auth.signOut(); window.location.href = 'index.html'; }
         };
 
-        // ========== MENÚ MÓVIL ==========
+        // MENÚ MÓVIL
         function iniciarMenuMovil() {
             const btn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('barraLateral');
@@ -576,13 +572,12 @@
             });
         }
 
-        // ========== INICIALIZACIÓN ==========
+        // INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', async() => {
             await cargarUsuario();
             await cargarDashboard();
             iniciarMenuMovil();
         });
     </script>
-    <style>.seccion-contenido{display:none;}.seccion-contenido.activo{display:block;}</style>
 </body>
 </html>
