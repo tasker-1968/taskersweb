@@ -5,25 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Redirigiendo | Tasker's México</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .gradient-bg {
-            background: linear-gradient(135deg, #0A2540 0%, #1B4F72 50%, #2E86C1 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
             animation: gradient 10s ease infinite;
             background-size: 200% 200%;
         }
@@ -37,8 +32,8 @@
         .loader {
             width: 48px;
             height: 48px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-bottom-color: #fff;
+            border: 4px solid #e2e8f0;
+            border-bottom-color: #3b82f6;
             border-radius: 50%;
             display: inline-block;
             box-sizing: border-box;
@@ -51,11 +46,11 @@
         }
         
         .fade-in {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.5s ease-in;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-15px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
@@ -64,8 +59,9 @@
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
         
         @media (max-width: 640px) {
@@ -73,41 +69,41 @@
                 margin: 1rem;
                 padding: 1.5rem;
             }
-            .loader {
-                width: 40px;
-                height: 40px;
-            }
         }
     </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 text-center fade-in">
+    <div class="max-w-md w-full bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center fade-in">
+        
         <!-- Logo -->
         <div class="flex justify-center mb-6">
-            <img src="logo-taskers.png" alt="Tasker's México" class="h-12 md:h-14 w-auto">
+            <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-2xl">T</span>
+            </div>
         </div>
         
         <!-- Loader -->
-        <div class="flex justify-center my-6 md:my-8">
+        <div class="flex justify-center my-8">
             <span class="loader"></span>
         </div>
         
         <!-- Mensaje principal -->
-        <h1 class="text-xl md:text-2xl font-bold text-slate-800 mb-2">
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-800 mb-2">
             Procesando tu acceso
         </h1>
         
-        <p class="text-slate-500 text-sm mb-4 pulse" id="mensajeEstado">
-            Estamos verificando tu cuenta...
+        <p class="text-sm sm:text-base text-slate-500 mb-6">
+            Estamos verificando tu cuenta y te redirigiremos en unos segundos...
         </p>
         
-        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-6 overflow-hidden">
-            <div class="bg-[#1B4F72] h-1.5 rounded-full transition-all duration-300" id="progressBar" style="width: 0%"></div>
+        <div class="space-y-2 text-xs text-slate-400">
+            <p><i class="fas fa-shield-alt text-blue-600 mr-1"></i> Conexión segura</p>
+            <p class="pulse">Por favor espera...</p>
         </div>
         
         <!-- Mensaje de error (oculto por defecto) -->
-        <div id="errorMessage" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+        <div id="errorMessage" class="hidden mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
             <div class="flex items-center gap-3">
                 <div class="bg-red-100 rounded-full p-2">
                     <i class="fas fa-exclamation-triangle text-red-600"></i>
@@ -120,60 +116,41 @@
         </div>
         
         <!-- Botón manual (solo si hay error) -->
-        <div id="manualRedirect" class="hidden">
-            <p class="text-xs text-slate-500 mb-3">Si no eres redirigido automáticamente:</p>
-            <a href="dashboard-cliente.html" class="inline-block bg-[#1B4F72] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#2E86C1] transition shadow-md">
+        <div id="manualRedirect" class="hidden mt-6">
+            <p class="text-xs text-slate-500 mb-3">Haz clic en el botón si no eres redirigido automáticamente</p>
+            <a href="dashboard-cliente.html" class="inline-block bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-2 rounded-xl font-bold hover:from-blue-700 hover:to-blue-600 transition shadow-lg">
                 <i class="fas fa-arrow-right mr-2"></i>Ir a mi panel
             </a>
         </div>
         
-        <!-- Pie de página -->
-        <p class="text-xs text-slate-400 mt-6">
-            <i class="fas fa-shield-alt text-[#1B4F72] mr-1"></i>
-            Tu información está segura con nosotros
-        </p>
+        <!-- Barra de progreso -->
+        <div class="mt-6 w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+            <div id="progressBar" class="bg-blue-600 h-1 rounded-full transition-all duration-100" style="width: 0%"></div>
+        </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
         // =============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN
         // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
+        let progressInterval = null;
+        let progressWidth = 0;
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        let progressInterval;
-        let currentProgress = 0;
-        
-        function iniciarProgressBar() {
-            progressInterval = setInterval(() => {
-                if (currentProgress < 90) {
-                    currentProgress += 10;
-                    document.getElementById('progressBar').style.width = currentProgress + '%';
-                }
-            }, 300);
-        }
-        
-        function completarProgressBar() {
-            clearInterval(progressInterval);
-            document.getElementById('progressBar').style.width = '100%';
-        }
-        
-        function actualizarMensaje(mensaje) {
-            const mensajeEl = document.getElementById('mensajeEstado');
-            if (mensajeEl) mensajeEl.textContent = mensaje;
-        }
-
         // =============================================
         // FUNCIÓN PRINCIPAL DE REDIRECCIÓN
         // =============================================
         async function handleRedirect() {
-            iniciarProgressBar();
+            // Iniciar barra de progreso
+            startProgressBar();
             
             try {
                 console.log('🔍 Iniciando proceso de redirección...');
-                actualizarMensaje('Verificando tu sesión...');
+                
+                const supabase = initSupabase();
+                if (!supabase) {
+                    throw new Error('No se pudo conectar con el servidor');
+                }
                 
                 // 1. Obtener la sesión actual
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -183,21 +160,22 @@
                 // 2. Si no hay sesión, redirigir al login
                 if (!session) {
                     console.log('⚠️ No hay sesión activa, redirigiendo a login...');
-                    actualizarMensaje('No encontramos una sesión activa. Redirigiendo...');
-                    completarProgressBar();
+                    mostrarError('No hay sesión activa');
                     setTimeout(() => {
                         window.location.href = 'login.html';
-                    }, 1500);
+                    }, 2000);
                     return;
                 }
 
                 console.log('✅ Sesión encontrada:', session.user.email);
-                actualizarMensaje(`Bienvenido ${session.user.email.split('@')[0]}...`);
+                
+                // Completar barra de progreso al 50%
+                updateProgressBar(50);
 
                 // 3. Obtener el perfil del usuario
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
-                    .select('role')
+                    .select('role, full_name, phone, status')
                     .eq('id', session.user.id)
                     .maybeSingle();
 
@@ -206,80 +184,207 @@
                     throw profileError;
                 }
 
-                // 4. Si no hay perfil, crearlo automáticamente (por si acaso)
+                // 4. Si no existe perfil, crearlo automáticamente (para login social)
                 if (!profile) {
-                    actualizarMensaje('Configurando tu perfil por primera vez...');
-                    console.log('📝 Creando perfil para usuario OAuth...');
+                    console.log('📝 Creando perfil para usuario nuevo...');
+                    
+                    const nombreCompleto = session.user.user_metadata?.full_name || 
+                                           session.user.user_metadata?.name || 
+                                           session.user.email?.split('@')[0] || 
+                                           'Usuario';
+                    
+                    const telefono = session.user.user_metadata?.phone || '';
                     
                     const { error: insertError } = await supabase
                         .from('profiles')
                         .insert([{
                             id: session.user.id,
                             email: session.user.email,
-                            full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                            full_name: nombreCompleto,
+                            phone: telefono,
                             role: 'client',
                             status: 'active',
+                            photo_url: session.user.user_metadata?.avatar_url || null,
                             created_at: new Date(),
                             updated_at: new Date()
                         }]);
-                    
+
                     if (insertError) {
                         console.error('Error al crear perfil:', insertError);
+                        throw new Error('Error al configurar tu perfil');
                     }
+                    
+                    console.log('✅ Perfil creado exitosamente');
+                    
+                    // Redirigir a dashboard de cliente
+                    updateProgressBar(100);
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-cliente.html';
+                    }, 1000);
+                    return;
                 }
 
-                // 5. Determinar la URL según el rol
+                // 5. Completar barra de progreso al 75%
+                updateProgressBar(75);
+
+                // 6. Determinar la URL según el rol
                 let redirectUrl = 'dashboard-cliente.html';
-                let rolTexto = 'cliente';
+                let mensaje = 'Redirigiendo al panel de cliente...';
                 
                 if (profile?.role === 'tasker') {
                     redirectUrl = 'dashboard-tasker.html';
-                    rolTexto = 'profesional';
+                    mensaje = 'Redirigiendo al panel de tasker...';
+                    
+                    // Verificar si el tasker necesita completar documentos
+                    if (profile.status === 'pending') {
+                        mensaje = 'Redirigiendo... Tu cuenta está en revisión';
+                    }
                 } else if (profile?.role === 'admin') {
                     redirectUrl = 'admin.html';
-                    rolTexto = 'administrador';
+                    mensaje = 'Redirigiendo al panel de administración...';
                 }
 
-                console.log('🎯 Redirigiendo a panel de', rolTexto, ':', redirectUrl);
-                actualizarMensaje(`Redirigiendo a tu panel de ${rolTexto}...`);
-                completarProgressBar();
-
-                // 6. Redirigir después de 1.5 segundos
+                console.log('🎯 Redirigiendo a:', redirectUrl);
+                
+                // Actualizar mensaje
+                const mensajeElement = document.querySelector('p.text-slate-500');
+                if (mensajeElement) mensajeElement.textContent = mensaje;
+                
+                // Completar barra de progreso
+                updateProgressBar(100);
+                
+                // 7. Redirigir después de 1.5 segundos
                 setTimeout(() => {
                     window.location.href = redirectUrl;
                 }, 1500);
 
             } catch (error) {
                 console.error('🔥 Error en redirección:', error);
-                completarProgressBar();
                 
-                // Mostrar mensaje de error
-                document.getElementById('errorMessage').classList.remove('hidden');
-                document.getElementById('errorText').textContent = error.message || 'Error al procesar la autenticación';
-                actualizarMensaje('Ocurrió un error. Por favor intenta de nuevo.');
+                let mensajeError = error.message || 'Error al procesar la autenticación';
+                if (mensajeError.includes('permission denied')) {
+                    mensajeError = 'Error de permisos. Contacta al administrador.';
+                }
                 
-                // Mostrar opción manual
-                document.getElementById('manualRedirect').classList.remove('hidden');
+                mostrarError(mensajeError);
+                stopProgressBar();
             }
         }
-
+        
         // =============================================
-        // INICIAR PROCESO AL CARGAR LA PÁGINA
+        // BARRA DE PROGRESO
         // =============================================
-        document.addEventListener('DOMContentLoaded', handleRedirect);
-
+        function startProgressBar() {
+            progressWidth = 0;
+            const progressBar = document.getElementById('progressBar');
+            
+            if (progressInterval) clearInterval(progressInterval);
+            
+            progressInterval = setInterval(() => {
+                if (progressWidth < 90) {
+                    progressWidth += Math.random() * 10;
+                    if (progressWidth > 90) progressWidth = 90;
+                    updateProgressBar(progressWidth);
+                }
+            }, 300);
+        }
+        
+        function updateProgressBar(width) {
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                progressBar.style.width = Math.min(width, 100) + '%';
+            }
+        }
+        
+        function stopProgressBar() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+        
+        function completeProgressBar() {
+            stopProgressBar();
+            updateProgressBar(100);
+        }
+        
+        // =============================================
+        // MOSTRAR ERROR
+        // =============================================
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const manualDiv = document.getElementById('manualRedirect');
+            
+            errorText.textContent = mensaje;
+            errorDiv.classList.remove('hidden');
+            manualDiv.classList.remove('hidden');
+            
+            // Detener la animación de carga
+            const loader = document.querySelector('.loader');
+            if (loader) {
+                loader.style.animation = 'none';
+                loader.style.borderColor = '#ef4444';
+                loader.style.borderBottomColor = '#ef4444';
+            }
+            
+            // Cambiar el mensaje principal
+            const title = document.querySelector('h1');
+            if (title) {
+                title.textContent = 'Error de conexión';
+                title.classList.add('text-red-600');
+            }
+            
+            const subtitle = document.querySelector('p.text-slate-500');
+            if (subtitle) {
+                subtitle.textContent = 'Hubo un problema al procesar tu acceso';
+            }
+        }
+        
         // =============================================
         // RESPALDO: Si no hay redirección en 8 segundos
         // =============================================
         setTimeout(() => {
             const manualDiv = document.getElementById('manualRedirect');
+            const errorDiv = document.getElementById('errorMessage');
+            
             if (manualDiv.classList.contains('hidden')) {
                 manualDiv.classList.remove('hidden');
-                document.getElementById('errorMessage').classList.remove('hidden');
+                errorDiv.classList.remove('hidden');
                 document.getElementById('errorText').textContent = 'Tiempo de espera agotado. Haz clic en el botón para continuar.';
-                actualizarMensaje('La redirección está tomando más tiempo de lo normal.');
+                stopProgressBar();
+                
+                // Cambiar estilo del loader
+                const loader = document.querySelector('.loader');
+                if (loader) {
+                    loader.style.animation = 'none';
+                    loader.style.borderColor = '#f59e0b';
+                    loader.style.borderBottomColor = '#f59e0b';
+                }
             }
         }, 8000);
+        
+        // =============================================
+        // VERIFICAR PARÁMETROS URL
+        // =============================================
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+            
+            if (error) {
+                mostrarError(errorDescription || 'Error de autenticación: ' + error);
+                stopProgressBar();
+            }
+        }
+        
+        // =============================================
+        // INICIAR PROCESO AL CARGAR LA PÁGINA
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUrlParams();
+            handleRedirect();
+        });
     </script>
 </body>
 </html>
