@@ -36,6 +36,27 @@
             box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.4);
         }
         
+        /* Scroll personalizado para el formulario */
+        .form-scroll {
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .form-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .form-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .form-scroll::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+        
         .file-upload {
             border: 2px dashed #e2e8f0;
             transition: all 0.3s ease;
@@ -82,11 +103,6 @@
             transform: scale(1.1);
         }
         
-        .step.completed {
-            background: #10b981;
-            color: white;
-        }
-        
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
             33% { transform: translate(30px, -50px) scale(1.1); }
@@ -104,16 +120,28 @@
         @media (max-width: 640px) {
             .glass-card {
                 margin: 1rem;
-                padding: 1.5rem;
+                padding: 1rem;
             }
             .step {
                 width: 32px;
                 height: 32px;
                 font-size: 0.875rem;
             }
+            .form-scroll {
+                max-height: calc(100vh - 160px);
+            }
             .file-upload {
                 padding: 1rem;
             }
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
@@ -142,7 +170,7 @@
         </div>
     </nav>
 
-    <!-- Contenedor principal -->
+    <!-- Contenedor principal con scroll -->
     <div class="container mx-auto max-w-3xl pt-20 sm:pt-24 pb-8">
         
         <!-- Steps indicator -->
@@ -154,142 +182,183 @@
             <div class="step">3</div>
         </div>
 
-        <!-- Tarjeta de Registro -->
-        <div class="glass-card rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 animate-slideUp">
+        <!-- Tarjeta de Registro CON SCROLL -->
+        <div class="glass-card rounded-3xl shadow-2xl p-6 sm:p-8 animate-slideUp">
             
             <!-- Header -->
-            <div class="text-center mb-6 sm:mb-8">
+            <div class="text-center mb-6">
                 <div class="inline-block p-3 bg-blue-100 rounded-2xl mb-4">
                     <i class="fas fa-briefcase text-2xl sm:text-3xl text-blue-600"></i>
                 </div>
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">Conviértete en Tasker</h1>
-                <p class="text-sm sm:text-base text-slate-500">Completa tu registro y comienza a ofrecer tus servicios</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-2">Conviértete en Tasker</h1>
+                <p class="text-sm text-slate-500">Completa tu registro y comienza a ofrecer tus servicios</p>
             </div>
 
-            <!-- Formulario -->
-            <form id="registerForm" class="space-y-6 sm:space-y-8">
-                
-                <!-- Sección 1: Datos personales -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 border-b pb-2">
-                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-user text-blue-600"></i>
-                        </div>
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-700">Datos personales</h2>
-                    </div>
+            <!-- Formulario con scroll -->
+            <div class="form-scroll">
+                <form id="registerForm" class="space-y-6">
                     
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Nombre completo *</label>
-                        <input type="text" id="fullName" required 
-                            class="input-moderno w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                            placeholder="Ej: Juan Carlos Pérez García">
+                    <!-- Sección 1: Datos personales -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 border-b pb-2">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-700">Datos personales</h2>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Nombre completo *</label>
+                            <input type="text" id="fullName" required 
+                                class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                placeholder="Ej: Juan Carlos Pérez García">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Correo electrónico *</label>
+                            <input type="email" id="email" required 
+                                class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                placeholder="tucorreo@ejemplo.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Teléfono de contacto *</label>
+                            <input type="tel" id="phone" required 
+                                class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                placeholder="5512345678">
+                        </div>
+
+                        <!-- Contraseña CON OJO -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Contraseña *</label>
+                            <div class="relative">
+                                <input type="password" id="password" required minlength="6"
+                                    class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pr-12"
+                                    placeholder="Mínimo 6 caracteres">
+                                <button type="button" onclick="togglePassword('password')" 
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition">
+                                    <i id="passwordIcon" class="fas fa-eye-slash text-lg"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                                <i class="fas fa-info-circle text-blue-500"></i>
+                                La contraseña debe tener al menos 6 caracteres
+                            </p>
+                        </div>
+
+                        <!-- Confirmar Contraseña CON OJO -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Confirmar Contraseña *</label>
+                            <div class="relative">
+                                <input type="password" id="confirmPassword" required minlength="6"
+                                    class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pr-12"
+                                    placeholder="Repite tu contraseña">
+                                <button type="button" onclick="togglePassword('confirmPassword')" 
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition">
+                                    <i id="confirmPasswordIcon" class="fas fa-eye-slash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Correo electrónico *</label>
-                        <input type="email" id="email" required 
-                            class="input-moderno w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                            placeholder="tucorreo@ejemplo.com">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Teléfono de contacto *</label>
-                        <input type="tel" id="phone" required 
-                            class="input-moderno w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                            placeholder="5512345678">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Contraseña *</label>
-                        <input type="password" id="password" required minlength="6"
-                            class="input-moderno w-full px-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                            placeholder="Mínimo 6 caracteres">
-                        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                            <i class="fas fa-info-circle text-blue-500"></i>
-                            La contraseña debe tener al menos 6 caracteres
+                    <!-- Sección 2: Documentación -->
+                    <div class="space-y-4 pt-4">
+                        <div class="flex items-center gap-2 border-b pb-2">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-alt text-blue-600"></i>
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-700">Documentación requerida</h2>
+                        </div>
+                        
+                        <p class="text-sm text-slate-500 bg-blue-50 p-3 rounded-lg">
+                            <i class="fas fa-shield-alt mr-2 text-blue-600"></i>
+                            Todos los documentos son necesarios para verificar tu identidad.
                         </p>
-                    </div>
-                </div>
 
-                <!-- Sección 2: Documentación -->
-                <div class="space-y-4 pt-4">
-                    <div class="flex items-center gap-2 border-b pb-2">
-                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-file-alt text-blue-600"></i>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            <!-- Foto -->
+                            <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('filePhoto').click()">
+                                <i class="fas fa-camera text-2xl text-slate-400 mb-2"></i>
+                                <p class="text-sm font-medium text-slate-600">Foto de perfil</p>
+                                <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx 5MB</p>
+                                <input type="file" id="filePhoto" accept="image/*" class="hidden" required>
+                                <div id="photoName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                            </div>
+
+                            <!-- INE -->
+                            <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('fileINE').click()">
+                                <i class="fas fa-id-card text-2xl text-slate-400 mb-2"></i>
+                                <p class="text-sm font-medium text-slate-600">INE/Identificación</p>
+                                <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
+                                <input type="file" id="fileINE" accept=".pdf,image/*" class="hidden" required>
+                                <div id="ineName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                            </div>
+
+                            <!-- Antecedentes -->
+                            <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('filePenal').click()">
+                                <i class="fas fa-gavel text-2xl text-slate-400 mb-2"></i>
+                                <p class="text-sm font-medium text-slate-600">Carta antecedentes</p>
+                                <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
+                                <input type="file" id="filePenal" accept=".pdf,image/*" class="hidden" required>
+                                <div id="penalName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
+                            </div>
                         </div>
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-700">Documentación requerida</h2>
                     </div>
-                    
-                    <p class="text-sm text-slate-500 bg-blue-50 p-3 rounded-lg">
-                        <i class="fas fa-shield-alt mr-2 text-blue-600"></i>
-                        Todos los documentos son necesarios para verificar tu identidad.
+
+                    <!-- Sección 3: Términos -->
+                    <div class="pt-4">
+                        <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+                            <input type="checkbox" id="terms" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                            <label class="text-sm text-slate-600 leading-relaxed">
+                                Acepto los 
+                                <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Términos y condiciones</a> 
+                                y la 
+                                <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Política de privacidad</a>.
+                                Confirmo que la información es verídica.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <button type="submit" id="submitBtn" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 rounded-xl font-bold text-base transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-briefcase"></i> Completar registro
+                    </button>
+                </form>
+
+                <!-- Enlace a login -->
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-slate-500">
+                        ¿Ya tienes cuenta? 
+                        <a href="login.html" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                            Inicia sesión aquí
+                        </a>
                     </p>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                        <!-- Foto -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('filePhoto').click()">
-                            <i class="fas fa-camera text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">Foto de perfil</p>
-                            <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx 5MB</p>
-                            <input type="file" id="filePhoto" accept="image/*" class="hidden" required>
-                            <div id="photoName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
-                        </div>
-
-                        <!-- INE -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('fileINE').click()">
-                            <i class="fas fa-id-card text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">INE/Identificación</p>
-                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
-                            <input type="file" id="fileINE" accept=".pdf,image/*" class="hidden" required>
-                            <div id="ineName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
-                        </div>
-
-                        <!-- Antecedentes -->
-                        <div class="file-upload p-4 rounded-xl text-center" onclick="document.getElementById('filePenal').click()">
-                            <i class="fas fa-gavel text-2xl text-slate-400 mb-2"></i>
-                            <p class="text-sm font-medium text-slate-600">Carta antecedentes</p>
-                            <p class="text-xs text-slate-400 mt-1">PDF o imagen</p>
-                            <input type="file" id="filePenal" accept=".pdf,image/*" class="hidden" required>
-                            <div id="penalName" class="text-xs text-green-600 mt-2 hidden font-medium"></div>
-                        </div>
-                    </div>
                 </div>
-
-                <!-- Sección 3: Términos -->
-                <div class="pt-4">
-                    <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-                        <input type="checkbox" id="terms" required class="mt-1 w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                        <label class="text-sm text-slate-600 leading-relaxed">
-                            Acepto los 
-                            <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Términos y condiciones</a> 
-                            y la 
-                            <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Política de privacidad</a>.
-                            Confirmo que la información es verídica.
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Botón -->
-                <button type="submit" id="submitBtn" 
-                    class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-4 sm:py-5 rounded-xl font-bold text-base transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
-                    <i class="fas fa-briefcase"></i> Completar registro
-                </button>
-            </form>
-
-            <!-- Enlace a login -->
-            <div class="mt-6 text-center">
-                <p class="text-sm text-slate-500">
-                    ¿Ya tienes cuenta? 
-                    <a href="login.html" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">
-                        Inicia sesión aquí
-                    </a>
-                </p>
             </div>
         </div>
     </div>
 
     <script src="config.js"></script>
     <script>
+        // =============================================
+        // FUNCIÓN PARA MOSTRAR/OCULTAR CONTRASEÑA
+        // =============================================
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + 'Icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+
         // =============================================
         // MANEJO DE ARCHIVOS
         // =============================================
@@ -338,6 +407,15 @@
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerHTML;
             
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validar que las contraseñas coincidan
+            if (password !== confirmPassword) {
+                mostrarToast('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando registro...';
 
@@ -345,14 +423,12 @@
                 const fullName = document.getElementById('fullName').value.trim();
                 const email = document.getElementById('email').value.trim();
                 const phone = document.getElementById('phone').value.trim();
-                const password = document.getElementById('password').value;
                 const terms = document.getElementById('terms').checked;
 
                 const filePhoto = document.getElementById('filePhoto').files[0];
                 const fileINE = document.getElementById('fileINE').files[0];
                 const filePenal = document.getElementById('filePenal').files[0];
 
-                // Validaciones
                 if (!fullName || !email || !phone || !password) {
                     throw new Error('Todos los campos son obligatorios');
                 }
@@ -375,7 +451,6 @@
 
                 mostrarCarga('Creando cuenta y subiendo documentos...');
 
-                // 1. Registrar en Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
                     password: password,
@@ -392,8 +467,6 @@
                 if (!authData || !authData.user) throw new Error('No se pudo crear el usuario');
 
                 const userId = authData.user.id;
-
-                // 2. Subir archivos
                 const fileUrls = {};
 
                 const files = [
@@ -419,7 +492,6 @@
                     fileUrls[f.key] = publicUrl;
                 }
 
-                // 3. Crear perfil
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([{
@@ -452,7 +524,6 @@
                 ocultarCarga();
                 console.error('Error:', error);
                 mostrarToast(error.message, 'error');
-                
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
