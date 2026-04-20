@@ -14,7 +14,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Leaflet CSS y JS para el mapa (gratuito, reemplazable por Google Maps después) -->
+    <!-- Leaflet CSS y JS para el mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -102,7 +102,6 @@
             max-width: 70%;
         }
         
-        /* Mapa */
         #mapaServicios {
             height: 300px;
             border-radius: 16px;
@@ -363,7 +362,7 @@
                         </div>
                     </div>
 
-                    <!-- Mapa de seguimiento (estilo Uber) -->
+                    <!-- Mapa de seguimiento -->
                     <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-semibold text-lg text-slate-800 flex items-center gap-2">
@@ -391,46 +390,72 @@
                     </div>
                 </section>
 
-                <!-- NUEVO SERVICIO -->
+                <!-- NUEVO SERVICIO - VERSIÓN CORREGIDA -->
                 <section id="seccion-nuevo-servicio" class="seccion-contenido">
-                    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-6 sm:p-8">
                         <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
-                        <p class="text-slate-500 text-sm mb-6">Recibe propuestas de profesionales verificados</p>
-                        <form id="formNuevoServicio" class="space-y-5">
-                            <div class="grid grid-cols-2 gap-4">
+                        <p class="text-slate-500 text-sm mb-6">Completa el formulario y recibe propuestas de profesionales verificados</p>
+                        
+                        <!-- Indicador de carga para categorías -->
+                        <div id="categoriasLoading" class="bg-blue-50 p-4 rounded-xl mb-4 text-center">
+                            <i class="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
+                            Cargando categorías...
+                        </div>
+                        
+                        <form id="formNuevoServicio" class="space-y-5" style="display: none;">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">Categoría</label>
-                                    <select id="categoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
-                                        <option value="">Seleccionar</option>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Categoría *</label>
+                                    <select id="categoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-white">
+                                        <option value="">Selecciona una categoría</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">Subcategoría</label>
-                                    <select id="subcategoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" disabled>
-                                        <option value="">Primero selecciona categoría</option>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Subcategoría *</label>
+                                    <select id="subcategoria" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-white" disabled>
+                                        <option value="">Primero selecciona una categoría</option>
                                     </select>
                                 </div>
                             </div>
+                            
                             <div>
-                                <textarea id="descripcion" required rows="4" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Describe lo que necesitas..."></textarea>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Descripción del servicio *</label>
+                                <textarea id="descripcion" required rows="4" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" 
+                                    placeholder="Describe detalladamente lo que necesitas..."></textarea>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><input type="text" id="cp" required maxlength="5" class="w-full p-3 border rounded-xl" placeholder="C.P."></div>
-                                <div><input type="text" id="colonia" class="w-full p-3 border rounded-xl" placeholder="Colonia"></div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Código Postal *</label>
+                                    <input type="text" id="cp" required maxlength="5" class="w-full p-3 border rounded-xl" placeholder="Ej. 12345">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Colonia</label>
+                                    <input type="text" id="colonia" class="w-full p-3 border rounded-xl" placeholder="Ej. Centro">
+                                </div>
                             </div>
+                            
                             <div>
-                                <input type="number" id="monto" required min="100" step="100" class="w-full p-3 border rounded-xl" placeholder="Presupuesto máximo">
-                                <p class="text-xs text-slate-500 mt-2">Comisión Tasker's: 15%</p>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Presupuesto máximo ($MXN) *</label>
+                                <input type="number" id="monto" required min="100" step="100" class="w-full p-3 border rounded-xl" placeholder="Ej. 500">
+                                <div class="flex justify-between text-xs mt-2">
+                                    <span class="text-slate-500">Comisión Tasker's (15%): <span id="comisionEstimada">$0.00</span></span>
+                                    <span class="text-green-600">El profesional recibe: <span id="taskerRecibe">$0.00</span></span>
+                                </div>
                             </div>
+                            
                             <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Fecha deseada (opcional)</label>
                                 <input type="datetime-local" id="fecha" class="w-full p-3 border rounded-xl">
                             </div>
+                            
                             <div class="flex items-start gap-3">
-                                <input type="checkbox" id="terminos" required class="mt-1">
-                                <label class="text-sm text-slate-600">Acepto términos y condiciones</label>
+                                <input type="checkbox" id="terminos" required class="mt-1 w-5 h-5 text-blue-600 rounded">
+                                <label class="text-sm text-slate-600">Acepto los <a href="#" class="text-blue-600 hover:underline">términos y condiciones</a></label>
                             </div>
-                            <button type="submit" id="btnPublicar" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition">
-                                Publicar Solicitud
+                            
+                            <button type="submit" id="btnPublicar" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-search"></i> Publicar y buscar profesionales
                             </button>
                         </form>
                     </div>
@@ -538,9 +563,7 @@
             const contenedor = document.getElementById('mapaServicios');
             if (!contenedor) return;
             
-            if (mapa) {
-                mapa.remove();
-            }
+            if (mapa) mapa.remove();
             
             mapa = L.map('mapaServicios').setView([lat, lng], 13);
             
@@ -550,7 +573,6 @@
                 maxZoom: 19
             }).addTo(mapa);
             
-            // Marcador de ubicación del usuario
             const iconoUsuario = L.divIcon({
                 className: 'custom-div-icon',
                 html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6;"></div>',
@@ -577,66 +599,42 @@
                 async (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    
                     iniciarMapa(lat, lng);
-                    
-                    // Guardar ubicación en localStorage para futuras sesiones
                     localStorage.setItem('tasker_ubicacion', JSON.stringify({ lat, lng }));
-                    
                     ocultarCarga();
                     mostrarToast('Ubicación actualizada', 'success');
-                    
-                    // Cargar taskers cercanos
                     await cargarTaskersCercanos(lat, lng);
                 },
                 (error) => {
                     ocultarCarga();
-                    console.error('Error de geolocalización:', error);
-                    
                     let mensaje = 'No se pudo obtener tu ubicación';
                     if (error.code === 1) mensaje = 'Permite el acceso a tu ubicación';
-                    if (error.code === 2) mensaje = 'Ubicación no disponible';
-                    
                     mostrarToast(mensaje, 'error');
-                    
-                    // Usar ubicación por defecto (CDMX)
                     iniciarMapa();
                 }
             );
         }
 
         // =============================================
-        // CARGAR TASKERS CERCANOS (para el mapa)
+        // CARGAR TASKERS CERCANOS
         // =============================================
         async function cargarTaskersCercanos(lat, lng) {
             try {
                 const supabase = initSupabase();
-                if (!supabase) return;
-                
-                // Obtener taskers con ubicaciones activas
                 const { data: ubicaciones, error } = await supabase
                     .from('ubicaciones_activas')
                     .select('*, profiles(full_name, photo_url, calificacion_promedio)')
                     .eq('disponible', true)
                     .limit(20);
                 
-                if (error) {
-                    console.error('Error cargando ubicaciones:', error);
-                    return;
-                }
+                if (error) throw error;
                 
-                // Limpiar marcadores anteriores
                 marcadoresTaskers.forEach(m => mapa.removeLayer(m));
                 marcadoresTaskers = [];
                 
-                if (!ubicaciones || ubicaciones.length === 0) {
-                    mostrarToast('No hay taskers disponibles cerca', 'info');
-                    return;
-                }
+                if (!ubicaciones?.length) return;
                 
-                // Icono para taskers
                 const iconoTasker = L.divIcon({
-                    className: 'custom-div-icon',
                     html: '<div style="background-color: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #10b981;"></div>',
                     iconSize: [16, 16]
                 });
@@ -644,25 +642,12 @@
                 ubicaciones.forEach(ubic => {
                     if (ubic.latitud && ubic.longitud) {
                         const marker = L.marker([ubic.latitud, ubic.longitud], { icon: iconoTasker }).addTo(mapa);
-                        const nombre = ubic.profiles?.full_name || 'Tasker';
-                        const calif = ubic.profiles?.calificacion_promedio || 'Nuevo';
-                        
-                        marker.bindPopup(`
-                            <b>${nombre}</b><br>
-                            ⭐ ${typeof calif === 'number' ? calif.toFixed(1) : calif}<br>
-                            <span class="text-xs text-green-600">✓ Disponible</span>
-                        `);
-                        
+                        marker.bindPopup(`<b>${ubic.profiles?.full_name || 'Tasker'}</b><br>⭐ Disponible`);
                         marcadoresTaskers.push(marker);
                     }
                 });
-                
-                if (marcadoresTaskers.length > 0) {
-                    mostrarToast(`${marcadoresTaskers.length} tasker(s) disponible(s) cerca`, 'success');
-                }
-                
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error cargando taskers:', error);
             }
         }
 
@@ -672,12 +657,8 @@
         async function verificarAuth() {
             const supabase = initSupabase();
             if (!supabase) return null;
-            
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return null;
-            }
+            if (!session) window.location.href = 'login.html';
             return session;
         }
 
@@ -715,7 +696,6 @@
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
                 
-                // Iniciar mapa con ubicación guardada o por defecto
                 const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
                 if (ubicacionGuardada) {
                     const { lat, lng } = JSON.parse(ubicacionGuardada);
@@ -743,22 +723,21 @@
             
             if (!menuBtn || !sidebar || !overlay) return;
             
-            menuBtn.addEventListener('click', function(e) {
+            menuBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
             
-            overlay.addEventListener('click', function() {
+            overlay.addEventListener('click', () => {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
             
-            const links = document.querySelectorAll('.enlace-moderno');
-            links.forEach(link => {
-                link.addEventListener('click', function() {
+            document.querySelectorAll('.enlace-moderno').forEach(link => {
+                link.addEventListener('click', () => {
                     if (window.innerWidth < 768) {
                         sidebar.classList.remove('abierto');
                         overlay.classList.remove('visible');
@@ -778,42 +757,68 @@
             }
         }
         
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', () => {
             if (window.innerWidth >= 768) cerrarMenuMovil();
         });
 
         // =============================================
-        // CATEGORÍAS
+        // CARGAR CATEGORÍAS (CORREGIDO)
         // =============================================
         async function cargarCategorias() {
+            const loadingDiv = document.getElementById('categoriasLoading');
+            const form = document.getElementById('formNuevoServicio');
+            const selectCategoria = document.getElementById('categoria');
+            
             try {
                 const supabase = initSupabase();
+                console.log('🔄 Cargando categorías desde Supabase...');
+                
                 const { data: cats, error } = await supabase
                     .from('categorias')
                     .select('id, nombre')
                     .eq('activo', true)
-                    .order('orden');
-                    
+                    .order('orden', { ascending: true });
+
                 if (error) throw error;
-                
-                const selectCategoria = document.getElementById('categoria');
-                if (!selectCategoria) return;
+
+                if (!cats || cats.length === 0) {
+                    loadingDiv.innerHTML = `
+                        <div class="bg-yellow-50 p-4 rounded-xl text-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            No hay categorías disponibles. Contacta al administrador.
+                        </div>
+                    `;
+                    return;
+                }
+
+                console.log(`✅ ${cats.length} categorías cargadas`);
                 
                 selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
+                cats.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.nombre;
+                    selectCategoria.appendChild(option);
+                });
                 
-                if (cats && cats.length > 0) {
-                    cats.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.id;
-                        option.textContent = cat.nombre;
-                        selectCategoria.appendChild(option);
-                    });
-                }
+                loadingDiv.style.display = 'none';
+                form.style.display = 'block';
+                
             } catch (error) {
-                console.error('Error en cargarCategorias:', error);
+                console.error('❌ Error:', error);
+                loadingDiv.innerHTML = `
+                    <div class="bg-red-50 p-4 rounded-xl text-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        Error al cargar categorías: ${error.message}
+                        <button onclick="cargarCategorias()" class="ml-3 text-blue-600 hover:underline">Reintentar</button>
+                    </div>
+                `;
             }
         }
 
+        // =============================================
+        // CARGAR SUBCATEGORÍAS
+        // =============================================
         document.getElementById('categoria')?.addEventListener('change', async function() {
             const subSelect = document.getElementById('subcategoria');
             const categoriaId = this.value;
@@ -824,7 +829,7 @@
                 return;
             }
             
-            subSelect.innerHTML = '<option value="">Cargando...</option>';
+            subSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
             subSelect.disabled = true;
             
             try {
@@ -833,7 +838,8 @@
                     .from('subcategorias')
                     .select('id, nombre')
                     .eq('categoria_id', categoriaId)
-                    .eq('activo', true);
+                    .eq('activo', true)
+                    .order('nombre', { ascending: true });
                     
                 if (error) throw error;
                 
@@ -848,12 +854,24 @@
                     });
                     subSelect.disabled = false;
                 } else {
-                    subSelect.innerHTML = '<option value="">No hay subcategorías</option>';
+                    subSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
                 }
+                
             } catch (error) {
-                console.error('Error cargando subcategorías:', error);
-                subSelect.innerHTML = '<option value="">Error al cargar</option>';
+                console.error('❌ Error:', error);
+                subSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
             }
+        });
+
+        // =============================================
+        // ACTUALIZAR COMISIÓN AL CAMBIAR MONTO
+        // =============================================
+        document.getElementById('monto')?.addEventListener('input', function() {
+            const monto = parseFloat(this.value) || 0;
+            const comision = monto * 0.15;
+            const taskerRecibe = monto * 0.85;
+            document.getElementById('comisionEstimada').textContent = `$${comision.toFixed(2)}`;
+            document.getElementById('taskerRecibe').textContent = `$${taskerRecibe.toFixed(2)}`;
         });
 
         // =============================================
@@ -923,7 +941,6 @@
             try {
                 const subcategoriaId = document.getElementById('subcategoria').value;
                 
-                // Obtener nombre de la subcategoría
                 const { data: subData } = await supabase
                     .from('subcategorias')
                     .select('nombre')
@@ -1042,14 +1059,11 @@
                     .eq('cliente_id', usuarioActual.id)
                     .order('created_at', { ascending: false });
                     
-                if (filtro !== 'todos') {
-                    query = query.eq('status', filtro);
-                }
+                if (filtro !== 'todos') query = query.eq('status', filtro);
                 
-                const { data: servicios, error: servError } = await query;
-                if (servError) throw servError;
+                const { data: servicios } = await query;
                 
-                if (!servicios || servicios.length === 0) {
+                if (!servicios?.length) {
                     contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
                     return;
                 }
@@ -1199,6 +1213,7 @@
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
+            const supabase = initSupabase();
             chatActual = { id, oid, nombre, avatar, info };
             document.getElementById('cabeceraChat').classList.remove('hidden');
             document.getElementById('nombreTasker').textContent = nombre;
@@ -1208,7 +1223,6 @@
             await cargarMensajes(id);
             
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            const supabase = initSupabase();
             suscripcionChat = supabase
                 .channel(`chat-${id}`)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new))
@@ -1440,6 +1454,29 @@
             return textos[s] || s;
         }
 
+        function cerrarModalServicio() {
+            document.getElementById('modalServicio').classList.add('hidden');
+            document.getElementById('modalServicio').classList.remove('flex');
+        }
+        
+        window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
+
+        // =============================================
+        // REALTIME
+        // =============================================
+        function configurarRealtime() {
+            const supabase = initSupabase();
+            supabase
+                .channel('mensajes-cliente')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                    if (p.new.remitente_id !== usuarioActual?.id) {
+                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                        else mostrarToast('Nuevo mensaje recibido', 'info');
+                    }
+                })
+                .subscribe();
+        }
+
         // =============================================
         // NAVEGACIÓN
         // =============================================
@@ -1461,6 +1498,7 @@
             document.getElementById('tituloSeccion').textContent = tit[sec];
             document.getElementById('subtituloSeccion').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
             
+            if (sec === 'nuevo-servicio') cargarCategorias();
             if (sec === 'mis-servicios') window.cargarMisServicios();
             if (sec === 'chat') window.cargarConversaciones();
             if (sec === 'pagos') window.cargarPagos();
@@ -1471,24 +1509,6 @@
             
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
-
-        window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
-
-        // =============================================
-        // REALTIME
-        // =============================================
-        function configurarRealtime() {
-            const supabase = initSupabase();
-            supabase
-                .channel('mensajes-cliente')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
-                    if (p.new.remitente_id !== usuarioActual?.id) {
-                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                        else mostrarToast('Nuevo mensaje recibido', 'info');
-                    }
-                })
-                .subscribe();
-        }
 
         // =============================================
         // CERRAR SESIÓN
@@ -1507,7 +1527,6 @@
         // =============================================
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarUsuario();
-            await cargarCategorias();
             await cargarDashboard();
             configurarRealtime();
             iniciarMenuMovil();
