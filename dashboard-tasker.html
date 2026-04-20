@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Panel Tasker | Tasker's Profesional</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet CSS y JS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .sidebar-tasker {
-            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             transition: left 0.3s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
@@ -80,29 +81,16 @@
         }
         
         .status-badge {
-            @apply px-3 py-1 rounded-full text-xs font-bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         
-        .status-disponible { 
-            background: #d1fae5; 
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-        .status-asignado { 
-            background: #dbeafe; 
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-        .status-progreso { 
-            background: #ede9fe; 
-            color: #5b21b6;
-            border: 1px solid #c4b5fd;
-        }
-        .status-completado { 
-            background: #f1f5f9; 
-            color: #475569;
-            border: 1px solid #cbd5e1;
-        }
+        .status-disponible { background: #d1fae5; color: #065f46; }
+        .status-asignado { background: #dbeafe; color: #1e40af; }
+        .status-progreso { background: #ede9fe; color: #5b21b6; }
+        .status-completado { background: #f1f5f9; color: #475569; }
         
         .stat-card {
             transition: all 0.3s ease;
@@ -123,9 +111,14 @@
             box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
         
-        /* ========== MEJORAS RESPONSIVE ========== */
+        /* Mapa */
+        #mapaServicios {
+            height: 300px;
+            border-radius: 16px;
+            z-index: 1;
+        }
+        
         @media (max-width: 768px) {
-            /* Sidebar oculto por defecto */
             .sidebar-tasker {
                 position: fixed !important;
                 left: -280px !important;
@@ -138,12 +131,10 @@
                 box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
-            /* Sidebar visible */
             .sidebar-tasker.abierto {
                 left: 0 !important;
             }
             
-            /* Overlay */
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -162,7 +153,6 @@
                 opacity: 1 !important;
             }
             
-            /* Botón menú siempre visible */
             #btnMenuMovil {
                 display: flex !important;
                 z-index: 10000 !important;
@@ -179,17 +169,12 @@
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
-            /* Ajustes de contenido */
             .ml-12 {
                 margin-left: 3.5rem !important;
             }
             
             .p-6 {
                 padding: 1rem !important;
-            }
-            
-            .grid-cols-2 {
-                gap: 0.75rem !important;
             }
             
             .stat-card {
@@ -200,7 +185,6 @@
                 font-size: 1.5rem !important;
             }
             
-            /* Tablas horizontales */
             .table-container {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
@@ -213,35 +197,28 @@
                 min-width: 600px !important;
             }
             
-            /* Botones más grandes para touch */
-            button, 
-            .sidebar-link,
-            [onclick] {
+            button, .sidebar-link, [onclick] {
                 min-height: 44px !important;
                 min-width: 44px !important;
             }
             
-            /* Inputs sin zoom */
             input, select, textarea {
                 font-size: 16px !important;
             }
             
-            /* Ajustes de chat */
             .chat-message {
                 max-width: 85% !important;
             }
+            
+            #mapaServicios {
+                height: 250px !important;
+            }
         }
         
-        /* Ajustes para tablets */
         @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 {
-                gap: 1rem;
-            }
-            
             .stat-card {
                 padding: 1.25rem;
             }
-            
             .stat-card p.text-3xl {
                 font-size: 2rem;
             }
@@ -272,9 +249,17 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Prevenir scroll cuando el menú está abierto */
         body.menu-open {
             overflow: hidden !important;
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         ::-webkit-scrollbar {
@@ -328,8 +313,8 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label>
                     <input type="number" id="propuestaMonto" required min="100" step="100"
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <p class="text-xs text-slate-500 mt-2">
                         <i class="fas fa-info-circle text-blue-600"></i>
                         Recibirás el 85% (comisión Tasker's: 15%)
                     </p>
@@ -337,12 +322,12 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label>
                     <textarea id="propuestaMensaje" rows="3" 
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                         placeholder="Describe por qué eres la mejor opción..."></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label>
-                    <select id="propuestaTiempo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <select id="propuestaTiempo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                         <option value="60">1 hora</option>
                         <option value="120">2 horas</option>
                         <option value="180">3 horas</option>
@@ -371,12 +356,12 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label>
                     <input type="number" id="retiroMonto" required min="100" step="100"
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                     <p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label>
-                    <select id="retiroMetodo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <select id="retiroMetodo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                         <option value="transferencia">Transferencia bancaria</option>
                         <option value="paypal">PayPal</option>
                     </select>
@@ -384,7 +369,7 @@
                 <div id="datosBancarios">
                     <label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label>
                     <input type="text" id="retiroClabe" maxlength="18" 
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
                 <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
                     Solicitar Retiro
@@ -398,7 +383,9 @@
         <aside id="sidebar" class="sidebar-tasker w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
             <div class="p-6 border-b border-white/20">
                 <div class="flex items-center gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">T</span>
+                    </div>
                     <div>
                         <div class="text-xl font-bold text-white">Tasker's</div>
                         <div class="text-xs text-yellow-400">Panel Profesional</div>
@@ -435,7 +422,6 @@
                     <i class="fas fa-user w-6"></i>
                     <span>Mi Perfil</span>
                 </a>
-                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </nav>
             
             <div class="p-4 border-t border-white/20">
@@ -487,6 +473,23 @@
                         </div>
                     </div>
 
+                    <!-- Mapa de servicios cercanos -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-map-marked-alt text-blue-600"></i>
+                                Servicios cerca de ti
+                            </h3>
+                            <button onclick="actualizarUbicacion()" class="text-sm text-blue-600 hover:text-blue-700 transition">
+                                <i class="fas fa-location-dot mr-1"></i> Actualizar
+                            </button>
+                        </div>
+                        <div id="mapaServicios" class="w-full bg-slate-100 rounded-xl"></div>
+                        <p class="text-xs text-slate-400 mt-3 text-center">
+                            <i class="fas fa-info-circle"></i> Muestra servicios disponibles cerca de tu ubicación actual
+                        </p>
+                    </div>
+
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="font-bold text-lg text-slate-800 mb-4">Próximos trabajos</h3>
                         <div id="proximosTrabajos" class="space-y-3">
@@ -499,7 +502,7 @@
                 <section id="seccion-disponibles" class="seccion-contenido">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Servicios Disponibles</h3>
-                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
                             <option value="">Todas las categorías</option>
                         </select>
                     </div>
@@ -510,7 +513,7 @@
                 <section id="seccion-mis-trabajos" class="seccion-contenido">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Mis Trabajos</h3>
-                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
                             <option value="todos">Todos</option>
                             <option value="asignado">Asignados</option>
                             <option value="en_progreso">En progreso</option>
@@ -550,7 +553,7 @@
                             <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
                                 <form id="mensajeForm" class="flex gap-2">
                                     <input type="text" id="mensajeTexto" 
-                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                                         placeholder="Escribe tu mensaje...">
                                     <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                         <i class="fas fa-paper-plane"></i>
@@ -626,7 +629,7 @@
                         <form id="perfilForm" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label>
-                                <input type="text" id="perfilNombre" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <input type="text" id="perfilNombre" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label>
@@ -634,17 +637,17 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label>
-                                <input type="tel" id="perfilTelefono" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <input type="tel" id="perfilTelefono" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                                 <p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label>
-                                <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                                     placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label>
-                                <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                             </div>
                             <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
                                 Guardar Cambios
@@ -652,20 +655,12 @@
                         </form>
                     </div>
                 </section>
-
-                <!-- SECCIÓN DE DOCUMENTOS ELIMINADA -->
             </div>
         </main>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        // =============================================
-        // CONFIGURACIÓN ÚNICA - VARIABLE RENOMBRADA
-        // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const taskerSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         // =============================================
         // VARIABLES GLOBALES
         // =============================================
@@ -673,57 +668,266 @@
         let chatActual = null;
         let suscripcionChat = null;
         let servicioSeleccionado = null;
+        let mapa = null;
+        let marcadorUbicacion = null;
+        let marcadoresServicios = [];
+        let intervaloUbicacion = null;
 
         // =============================================
-        // FUNCIONES DE UTILIDAD
+        // INICIALIZAR MAPA
         // =============================================
-        function mostrarCarga() { document.getElementById('loadingModal').classList.remove('hidden'); document.getElementById('loadingModal').classList.add('flex'); }
-        function ocultarCarga() { document.getElementById('loadingModal').classList.add('hidden'); document.getElementById('loadingModal').classList.remove('flex'); }
-        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white max-w-md`; n.innerHTML = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
+        function iniciarMapa(lat = 19.4326, lng = -99.1332) {
+            const contenedor = document.getElementById('mapaServicios');
+            if (!contenedor) return;
+            
+            if (mapa) {
+                mapa.remove();
+            }
+            
+            mapa = L.map('mapaServicios').setView([lat, lng], 13);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(mapa);
+            
+            // Marcador de ubicación del tasker
+            const iconoTaskerUbicacion = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6;"></div>',
+                iconSize: [20, 20],
+                popupAnchor: [0, -10]
+            });
+            
+            marcadorUbicacion = L.marker([lat, lng], { icon: iconoTaskerUbicacion }).addTo(mapa);
+            marcadorUbicacion.bindPopup('<b>Tu ubicación</b><br>Estás aquí').openPopup();
+        }
+
+        // =============================================
+        // ACTUALIZAR UBICACIÓN DEL TASKER
+        // =============================================
+        async function actualizarUbicacion() {
+            if (!navigator.geolocation) {
+                mostrarToast('Tu navegador no soporta geolocalización', 'warning');
+                return;
+            }
+            
+            mostrarCarga('Obteniendo tu ubicación...');
+            
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    iniciarMapa(lat, lng);
+                    
+                    // Guardar ubicación en localStorage
+                    localStorage.setItem('tasker_ubicacion', JSON.stringify({ lat, lng }));
+                    
+                    // Guardar ubicación en Supabase (para que los clientes vean al tasker)
+                    await guardarUbicacionEnSupabase(lat, lng);
+                    
+                    ocultarCarga();
+                    mostrarToast('Ubicación actualizada', 'success');
+                    
+                    // Cargar servicios cercanos
+                    await cargarServiciosCercanos(lat, lng);
+                },
+                (error) => {
+                    ocultarCarga();
+                    console.error('Error de geolocalización:', error);
+                    
+                    let mensaje = 'No se pudo obtener tu ubicación';
+                    if (error.code === 1) mensaje = 'Permite el acceso a tu ubicación';
+                    if (error.code === 2) mensaje = 'Ubicación no disponible';
+                    
+                    mostrarToast(mensaje, 'error');
+                    iniciarMapa();
+                }
+            );
+        }
+
+        // =============================================
+        // GUARDAR UBICACIÓN EN SUPABASE
+        // =============================================
+        async function guardarUbicacionEnSupabase(lat, lng) {
+            if (!usuarioActual) return;
+            
+            try {
+                const supabase = initSupabase();
+                
+                // Verificar si ya existe una ubicación activa
+                const { data: existente } = await supabase
+                    .from('ubicaciones_activas')
+                    .select('id')
+                    .eq('tasker_id', usuarioActual.id)
+                    .maybeSingle();
+                
+                if (existente) {
+                    // Actualizar ubicación existente
+                    await supabase
+                        .from('ubicaciones_activas')
+                        .update({
+                            latitud: lat,
+                            longitud: lng,
+                            disponible: true,
+                            ultima_actualizacion: new Date()
+                        })
+                        .eq('tasker_id', usuarioActual.id);
+                } else {
+                    // Crear nueva ubicación
+                    await supabase
+                        .from('ubicaciones_activas')
+                        .insert([{
+                            tasker_id: usuarioActual.id,
+                            latitud: lat,
+                            longitud: lng,
+                            disponible: true,
+                            ultima_actualizacion: new Date()
+                        }]);
+                }
+                
+                console.log('✅ Ubicación guardada en Supabase');
+            } catch (error) {
+                console.error('Error guardando ubicación:', error);
+            }
+        }
+
+        // =============================================
+        // INICIAR ACTUALIZACIÓN PERIÓDICA DE UBICACIÓN
+        // =============================================
+        function iniciarActualizacionPeriodica() {
+            if (intervaloUbicacion) clearInterval(intervaloUbicacion);
+            
+            // Actualizar ubicación cada 30 segundos
+            intervaloUbicacion = setInterval(() => {
+                if (navigator.geolocation && usuarioActual) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            guardarUbicacionEnSupabase(position.coords.latitude, position.coords.longitude);
+                        },
+                        (error) => {
+                            console.error('Error actualizando ubicación periódica:', error);
+                        }
+                    );
+                }
+            }, 30000);
+        }
+
+        // =============================================
+        // CARGAR SERVICIOS CERCANOS EN EL MAPA
+        // =============================================
+        async function cargarServiciosCercanos(lat, lng) {
+            try {
+                const supabase = initSupabase();
+                
+                // Obtener servicios publicados
+                const { data: servicios, error } = await supabase
+                    .from('servicios')
+                    .select('*, profiles:cliente_id(full_name)')
+                    .eq('status', 'publicado')
+                    .limit(30);
+                
+                if (error) {
+                    console.error('Error cargando servicios:', error);
+                    return;
+                }
+                
+                // Limpiar marcadores anteriores
+                marcadoresServicios.forEach(m => mapa.removeLayer(m));
+                marcadoresServicios = [];
+                
+                if (!servicios || servicios.length === 0) {
+                    mostrarToast('No hay servicios disponibles cerca', 'info');
+                    return;
+                }
+                
+                // Icono para servicios
+                const iconoServicio = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #f59e0b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #f59e0b;"></div>',
+                    iconSize: [16, 16]
+                });
+                
+                // Mostrar servicios (por ahora con ubicación simulada, en Fase 2 se usará geolocalización real)
+                servicios.forEach(serv => {
+                    // Por ahora usamos una ubicación aleatoria cerca del usuario
+                    // En la Fase 2, los servicios tendrán lat/lng reales
+                    const offsetLat = (Math.random() - 0.5) * 0.05;
+                    const offsetLng = (Math.random() - 0.5) * 0.05;
+                    const servLat = lat + offsetLat;
+                    const servLng = lng + offsetLng;
+                    
+                    const marker = L.marker([servLat, servLng], { icon: iconoServicio }).addTo(mapa);
+                    const clienteNombre = serv.profiles?.full_name || 'Cliente';
+                    
+                    marker.bindPopup(`
+                        <b>${serv.subcategoria || 'Servicio'}</b><br>
+                        <span class="text-xs">Cliente: ${clienteNombre}</span><br>
+                        <span class="text-xs">$${serv.monto_ofertado?.toFixed(2)}</span><br>
+                        <button onclick="window.verServicioDetalle('${serv.id}')" 
+                                class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700">
+                            Ver detalles
+                        </button>
+                    `);
+                    
+                    marcadoresServicios.push(marker);
+                });
+                
+                if (marcadoresServicios.length > 0) {
+                    mostrarToast(`${marcadoresServicios.length} servicio(s) disponible(s) cerca`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        window.verServicioDetalle = (servicioId) => {
+            // Navegar a la sección de disponibles y mostrar detalles
+            window.mostrarSeccion('disponibles');
+            document.getElementById('disponiblesContainer').scrollIntoView({ behavior: 'smooth' });
+        };
 
         // =============================================
         // VERIFICAR AUTENTICACIÓN
         // =============================================
         async function verificarAuth(redirectUrl = 'login.html') {
-            try { const { data: { session } } = await taskerSupabase.auth.getSession(); if (!session) { window.location.href = redirectUrl; return null; } return session; }
-            catch { window.location.href = redirectUrl; return null; }
+            const supabase = initSupabase();
+            if (!supabase) return null;
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = redirectUrl;
+                return null;
+            }
+            return session;
         }
 
         // =============================================
-        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // MENÚ MÓVIL
         // =============================================
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
             
-            if (!menuBtn || !sidebar || !overlay) {
-                console.error('❌ Elementos del menú no encontrados');
-                return;
-            }
-
-            console.log('✅ Menú móvil inicializado');
-
-            // Abrir menú
+            if (!menuBtn || !sidebar || !overlay) return;
+            
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('🔵 Abriendo menú');
-                
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
-
-            // Cerrar con overlay
+            
             overlay.addEventListener('click', function() {
-                console.log('⚫ Cerrando menú');
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
-
-            // Cerrar con enlaces
+            
             const links = document.querySelectorAll('.sidebar-link');
             links.forEach(link => {
                 link.addEventListener('click', function() {
@@ -735,65 +939,81 @@
                 });
             });
         }
-
-        // Función para cerrar menú manualmente
+        
         function cerrarMenuMovil() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
-            
             if (sidebar && overlay) {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             }
         }
-
-        // Detectar cambios de tamaño
+        
         window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                cerrarMenuMovil();
-            }
+            if (window.innerWidth >= 768) cerrarMenuMovil();
         });
 
         // =============================================
-        // INICIALIZACIÓN
+        // CARGAR USUARIO
         // =============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarUsuario();
-            await cargarCategoriasFiltro();
-            await cargarDashboard();
-            await cargarFinanzas();
-            configurarRealtime();
-            iniciarMenuMovil(); // Inicializar menú móvil
-        });
-
-        function menuMovil() {
-            // Esta función se mantiene por compatibilidad
-        }
-        function toggleMobileMenu() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.add('hidden'); }
-
         async function cargarUsuario() {
             mostrarCarga();
             try {
                 const session = await verificarAuth('login.html');
                 if (!session) return;
-                const { data: perfil } = await taskerSupabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+                
+                const supabase = initSupabase();
+                const { data: perfil } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+                    
                 if (!perfil) throw new Error('Perfil no encontrado');
+                
                 usuarioActual = perfil;
-                document.getElementById('userInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Tasker'}</p><p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>`;
+                
+                document.getElementById('userInfo').innerHTML = `
+                    <p class="font-bold">${perfil.full_name || 'Tasker'}</p>
+                    <p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
+                `;
+                
                 if (perfil.photo_url) {
                     document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                     document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                 }
+                
                 if (perfil.status === 'pending') {
                     document.getElementById('verificationBadge').classList.remove('hidden');
                 }
+                
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
                 document.getElementById('perfilDescripcion').value = perfil.descripcion || '';
                 document.getElementById('perfilExperiencia').value = perfil.experiencia_anios || '';
-            } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
+                
+                // Iniciar mapa con ubicación guardada
+                const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
+                if (ubicacionGuardada) {
+                    const { lat, lng } = JSON.parse(ubicacionGuardada);
+                    iniciarMapa(lat, lng);
+                    await cargarServiciosCercanos(lat, lng);
+                    await guardarUbicacionEnSupabase(lat, lng);
+                } else {
+                    actualizarUbicacion();
+                }
+                
+                // Iniciar actualización periódica de ubicación
+                iniciarActualizacionPeriodica();
+                
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al cargar usuario', 'error');
+            } finally {
+                ocultarCarga();
+            }
         }
 
         // =============================================
@@ -801,26 +1021,35 @@
         // =============================================
         async function cargarDashboard() {
             try {
-                const { data: trabajos } = await taskerSupabase.from('servicios').select('*').eq('tasker_id', usuarioActual.id).order('created_at', false);
+                const supabase = initSupabase();
+                const { data: trabajos } = await supabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('tasker_id', usuarioActual.id)
+                    .order('created_at', { ascending: false });
+                    
                 const ahora = new Date();
                 const mesActual = ahora.getMonth();
                 const anioActual = ahora.getFullYear();
+                
                 let ganancias = 0;
                 (trabajos || []).forEach(t => {
                     if (t.status === 'completado') {
                         const fecha = new Date(t.fecha_completado || t.created_at);
                         if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
-                            ganancias += (t.monto_final || 0) * 0.85;
+                            ganancias += (t.monto_ofertado || 0) * 0.85;
                         }
                     }
                 });
+                
                 document.getElementById('statsGanancias').textContent = `$${ganancias.toFixed(2)}`;
                 document.getElementById('statsCompletados').textContent = (trabajos || []).filter(t => t.status === 'completado').length;
                 document.getElementById('statsProgreso').textContent = (trabajos || []).filter(t => t.status === 'en_progreso').length;
                 document.getElementById('statsCalificacion').textContent = usuarioActual.calificacion_promedio?.toFixed(1) || '0.0';
-
+                
                 const proximos = (trabajos || []).filter(t => ['asignado', 'en_progreso'].includes(t.status)).slice(0, 5);
                 const container = document.getElementById('proximosTrabajos');
+                
                 if (proximos.length === 0) {
                     container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>';
                 } else {
@@ -838,7 +1067,9 @@
                         </div>
                     `).join('');
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         // =============================================
@@ -846,11 +1077,20 @@
         // =============================================
         async function cargarCategoriasFiltro() {
             try {
-                const { data: cats } = await taskerSupabase.from('categorias').select('*').eq('activo', true);
+                const supabase = initSupabase();
+                const { data: cats } = await supabase
+                    .from('categorias')
+                    .select('*')
+                    .eq('activo', true);
+                    
                 const select = document.getElementById('filtroCategoria');
                 select.innerHTML = '<option value="">Todas las categorías</option>';
-                (cats || []).forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
-            } catch (e) { console.error(e); }
+                (cats || []).forEach(c => {
+                    select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+                });
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         // =============================================
@@ -859,11 +1099,24 @@
         window.cargarDisponibles = async function() {
             const container = document.getElementById('disponiblesContainer');
             const categoriaFiltro = document.getElementById('filtroCategoria').value;
+            
             try {
-                let query = taskerSupabase.from('servicios').select('*').eq('status', 'publicado').order('created_at', false);
+                const supabase = initSupabase();
+                let query = supabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('status', 'publicado')
+                    .order('created_at', { ascending: false });
+                    
                 if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
+                
                 const { data: servicios } = await query;
-                if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
+                
+                if (!servicios?.length) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>';
+                    return;
+                }
+                
                 container.innerHTML = servicios.map(s => `
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <div class="flex justify-between items-start mb-4">
@@ -874,16 +1127,33 @@
                             <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span>
                         </div>
                         <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div>
-                            <div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
+                            <div>
+                                <p class="text-slate-500">Presupuesto</p>
+                                <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
+                                <p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500">Ubicación</p>
+                                <p>${s.ubicacion || ''}</p>
+                                <p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500">Publicado</p>
+                                <p>${new Date(s.created_at).toLocaleDateString()}</p>
+                            </div>
                         </div>
                         <div class="border-t pt-4 flex justify-end">
-                            <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Enviar propuesta</button>
+                            <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" 
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                                Enviar propuesta
+                            </button>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
+            }
         };
 
         // =============================================
@@ -895,23 +1165,75 @@
             document.getElementById('propuestaModal').classList.remove('hidden');
             document.getElementById('propuestaModal').classList.add('flex');
         };
-
-        function cerrarPropuestaModal() { document.getElementById('propuestaModal').classList.add('hidden'); document.getElementById('propuestaModal').classList.remove('flex'); servicioSeleccionado = null; }
-
+        
+        function cerrarPropuestaModal() {
+            document.getElementById('propuestaModal').classList.add('hidden');
+            document.getElementById('propuestaModal').classList.remove('flex');
+            servicioSeleccionado = null;
+        }
+        
         document.getElementById('propuestaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!servicioSeleccionado) return;
+            
             const monto = parseFloat(document.getElementById('propuestaMonto').value);
-            if (monto > servicioSeleccionado.maximo) { alert('Tu propuesta no puede superar el presupuesto del cliente'); return; }
+            if (monto > servicioSeleccionado.maximo) {
+                mostrarToast('Tu propuesta no puede superar el presupuesto del cliente', 'error');
+                return;
+            }
+            
             mostrarCarga();
             try {
-                const { data: existente } = await taskerSupabase.from('propuestas').select('id').eq('servicio_id', servicioSeleccionado.id).eq('tasker_id', usuarioActual.id).maybeSingle();
-                if (existente) { alert('Ya enviaste una propuesta para este servicio'); cerrarPropuestaModal(); return; }
-                await taskerSupabase.from('propuestas').insert([{ servicio_id: servicioSeleccionado.id, tasker_id: usuarioActual.id, monto_propuesto: monto, mensaje: document.getElementById('propuestaMensaje').value, tiempo_estimado: parseInt(document.getElementById('propuestaTiempo').value), status: 'pendiente', created_at: new Date() }]);
-                const { data: servicio } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', servicioSeleccionado.id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: servicio.cliente_id, tipo: 'propuesta', titulo: '¡Nueva propuesta recibida!', mensaje: 'Un tasker ha enviado una propuesta para tu servicio' }]);
-                alert('¡Propuesta enviada!'); cerrarPropuestaModal();
-            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
+                const supabase = initSupabase();
+                
+                const { data: existente } = await supabase
+                    .from('propuestas')
+                    .select('id')
+                    .eq('servicio_id', servicioSeleccionado.id)
+                    .eq('tasker_id', usuarioActual.id)
+                    .maybeSingle();
+                    
+                if (existente) {
+                    mostrarToast('Ya enviaste una propuesta para este servicio', 'warning');
+                    cerrarPropuestaModal();
+                    return;
+                }
+                
+                await supabase
+                    .from('propuestas')
+                    .insert([{
+                        servicio_id: servicioSeleccionado.id,
+                        tasker_id: usuarioActual.id,
+                        monto_propuesto: monto,
+                        mensaje: document.getElementById('propuestaMensaje').value,
+                        tiempo_estimado: parseInt(document.getElementById('propuestaTiempo').value),
+                        status: 'pendiente',
+                        created_at: new Date()
+                    }]);
+                    
+                const { data: servicio } = await supabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', servicioSeleccionado.id)
+                    .single();
+                    
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.cliente_id,
+                        tipo: 'propuesta',
+                        titulo: '¡Nueva propuesta recibida!',
+                        mensaje: 'Un tasker ha enviado una propuesta para tu servicio'
+                    }]);
+                    
+                mostrarToast('¡Propuesta enviada exitosamente!', 'success');
+                cerrarPropuestaModal();
+                
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         });
 
         // =============================================
@@ -920,61 +1242,160 @@
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
             const container = document.getElementById('misTrabajosContainer');
+            
             try {
-                let query = taskerSupabase.from('servicios').select('*').eq('tasker_id', usuarioActual.id).order('created_at', false);
+                const supabase = initSupabase();
+                let query = supabase
+                    .from('servicios')
+                    .select('*, profiles:cliente_id(full_name, photo_url)')
+                    .eq('tasker_id', usuarioActual.id)
+                    .order('created_at', { ascending: false });
+                    
                 if (filtro !== 'todos') query = query.eq('status', filtro);
+                
                 const { data: trabajos } = await query;
-                if (!trabajos?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>'; return; }
+                
+                if (!trabajos?.length) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>';
+                    return;
+                }
+                
                 container.innerHTML = trabajos.map(t => {
                     const esAsignado = t.status === 'asignado';
                     const esProgreso = t.status === 'en_progreso';
                     const esCompletado = t.status === 'completado';
+                    const cliente = t.profiles;
                     
                     return `
                     <div class="bg-white rounded-xl shadow-sm p-6 ${!esCompletado ? 'service-card' : ''}">
                         <div class="flex justify-between items-start mb-4">
-                            <div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion}</p></div>
+                            <div>
+                                <h4 class="font-bold text-lg">${t.subcategoria || ''}</h4>
+                                <p class="text-sm text-slate-600">${t.descripcion}</p>
+                            </div>
                             <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">
-                                ${t.status}
+                                ${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}
                             </span>
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${(t.monto_final || t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-slate-400">Recibirás: $${((t.monto_final || t.monto_ofertado) * 0.85).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${t.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p></div>
+                            <div>
+                                <p class="text-slate-500">Presupuesto</p>
+                                <p class="font-bold text-blue-600">$${(t.monto_ofertado).toFixed(2)}</p>
+                                <p class="text-xs text-slate-400">Recibirás: $${(t.monto_ofertado * 0.85).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500">Ubicación</p>
+                                <p>${t.ubicacion || ''}</p>
+                                <p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p>
+                            </div>
                         </div>
+                        
+                        ${cliente ? `
+                        <div class="border-t pt-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-300" 
+                                     style="background-image: url('${cliente.photo_url || ''}'); background-size: cover;">
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-800">${cliente.full_name || 'Cliente'}</p>
+                                    <p class="text-xs text-slate-500">Cliente</p>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
                         ${esAsignado ? `
                         <div class="border-t pt-4 flex gap-3">
-                            <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button>
-                            <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Contactar cliente</button>
+                            <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-play mr-2"></i>Iniciar trabajo
+                            </button>
+                            <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-comment mr-2"></i>Contactar cliente
+                            </button>
                         </div>
                         ` : esProgreso ? `
                         <div class="border-t pt-4">
-                            <p class="text-sm text-slate-600 mb-3"><i class="fas fa-info-circle text-blue-600 mr-2"></i>Esperando confirmación del cliente</p>
-                            <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button>
+                            <p class="text-sm text-slate-600 mb-3">
+                                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                Esperando confirmación del cliente
+                            </p>
+                            <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700">
+                                <i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización
+                            </button>
                         </div>
                         ` : ''}
                     </div>
                 `}).join('');
-            } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>';
+            }
         };
 
         window.iniciarTrabajo = async (id) => {
             if (!confirm('¿Confirmas que vas a iniciar este trabajo?')) return;
+            
+            mostrarCarga();
             try {
-                await taskerSupabase.from('servicios').update({ status: 'en_progreso', fecha_inicio: new Date() }).eq('id', id);
-                const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar' }]);
-                alert('Trabajo iniciado'); window.cargarMisTrabajos();
-            } catch (e) { alert('Error: ' + e.message); }
+                const supabase = initSupabase();
+                await supabase
+                    .from('servicios')
+                    .update({ status: 'en_progreso', fecha_inicio: new Date() })
+                    .eq('id', id);
+                    
+                const { data: s } = await supabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', id)
+                    .single();
+                    
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: s.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Trabajo iniciado!',
+                        mensaje: 'El tasker ha comenzado a trabajar en tu servicio'
+                    }]);
+                    
+                mostrarToast('Trabajo iniciado correctamente', 'success');
+                window.cargarMisTrabajos();
+                await cargarDashboard();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
 
         window.solicitarFinalizacion = async (id) => {
             if (!confirm('¿Solicitar al cliente que confirme la finalización?')) return;
+            
+            mostrarCarga();
             try {
-                const { data: s } = await taskerSupabase.from('servicios').select('cliente_id').eq('id', id).single();
-                await taskerSupabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma.' }]);
-                alert('Solicitud enviada');
-            } catch (e) { alert('Error: ' + e.message); }
+                const supabase = initSupabase();
+                const { data: s } = await supabase
+                    .from('servicios')
+                    .select('cliente_id')
+                    .eq('id', id)
+                    .single();
+                    
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: s.cliente_id,
+                        tipo: 'servicio',
+                        titulo: '¡Trabajo finalizado!',
+                        mensaje: 'El tasker ha completado el trabajo. Por favor confirma la finalización.'
+                    }]);
+                    
+                mostrarToast('Solicitud enviada al cliente', 'success');
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
 
         // =============================================
@@ -982,102 +1403,244 @@
         // =============================================
         async function cargarFinanzas() {
             try {
-                const { data: pagos } = await taskerSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('tasker_id', usuarioActual.id).order('fecha_pago', false);
+                const supabase = initSupabase();
+                const { data: pagos } = await supabase
+                    .from('pagos')
+                    .select('*, servicio:servicio_id(subcategoria)')
+                    .eq('tasker_id', usuarioActual.id)
+                    .order('fecha_pago', { ascending: false });
+                    
                 let saldo = 0, total = 0, comisiones = 0;
                 (pagos || []).forEach(p => {
                     if (p.status === 'completado') {
                         total += p.monto_tasker || 0;
                         comisiones += p.comision_taskers || 0;
-                        const dias = Math.floor((new Date() - new Date(p.fecha_pago)) / (1000*60*60*24));
+                        const dias = Math.floor((new Date() - new Date(p.fecha_pago)) / (1000 * 60 * 60 * 24));
                         if (dias >= 7) saldo += p.monto_tasker || 0;
                     }
                 });
+                
                 document.getElementById('saldoActual').textContent = `$${saldo.toFixed(2)}`;
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('comisionesTotales').textContent = `$${comisiones.toFixed(2)}`;
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
-
+                
                 const tbody = document.getElementById('pagosTableBody');
-                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                if (!pagos?.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
+                    return;
+                }
+                
                 tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>
+                    <tr class="border-b">
+                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-3">${p.servicio?.subcategoria || ''}</td>
+                        <td class="p-3">$${p.monto_total?.toFixed(2)}</td>
+                        <td class="p-3">$${p.comision_taskers?.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td>
+                    </tr>
                 `).join('');
-            } catch (e) { console.error(e); }
-        };
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
-        function abrirRetiroModal() { document.getElementById('retiroModal').classList.remove('hidden'); document.getElementById('retiroModal').classList.add('flex'); }
-        function cerrarRetiroModal() { document.getElementById('retiroModal').classList.add('hidden'); document.getElementById('retiroModal').classList.remove('flex'); }
+        function abrirRetiroModal() {
+            document.getElementById('retiroModal').classList.remove('hidden');
+            document.getElementById('retiroModal').classList.add('flex');
+        }
+        
+        function cerrarRetiroModal() {
+            document.getElementById('retiroModal').classList.add('hidden');
+            document.getElementById('retiroModal').classList.remove('flex');
+        }
+        
         document.getElementById('retiroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const monto = parseFloat(document.getElementById('retiroMonto').value);
             const saldo = parseFloat(document.getElementById('saldoActual').textContent.replace('$', ''));
-            if (monto > saldo) { alert('Monto insuficiente'); return; }
-            alert('Solicitud de retiro enviada'); cerrarRetiroModal();
+            
+            if (monto > saldo) {
+                mostrarToast('Monto insuficiente', 'error');
+                return;
+            }
+            
+            mostrarToast('Solicitud de retiro enviada. Procesaremos en 24-48 hrs.', 'success');
+            cerrarRetiroModal();
         });
 
         // =============================================
         // CHAT
         // =============================================
         window.cargarConversaciones = async function() {
+            const supabase = initSupabase();
             const c = document.getElementById('conversacionesLista');
+            
             try {
-                const { data: chats } = await taskerSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', false);
-                if (!chats?.length) { c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>'; return; }
+                const { data: chats } = await supabase
+                    .from('chats')
+                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
+                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+                    .order('ultimo_mensaje_time', { ascending: false });
+                    
+                if (!chats?.length) {
+                    c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
+                    return;
+                }
+                
                 c.innerHTML = chats.map(ch => {
                     const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300"></div><div><p class="font-bold">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
+                    return `
+                        <div class="p-4 border-b hover:bg-slate-50 cursor-pointer" 
+                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-300" 
+                                     style="background-image: url('${otro.photo_url || ''}'); background-size: cover;">
+                                </div>
+                                <div>
+                                    <p class="font-bold">${otro.full_name || ''}</p>
+                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
+                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }).join('');
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
+            const supabase = initSupabase();
             chatActual = { id, oid, nombre, avatar, info };
+            
             document.getElementById('chatHeader').classList.remove('hidden');
             document.getElementById('chatClienteNombre').textContent = nombre;
             if (avatar) document.getElementById('chatClienteAvatar').style.backgroundImage = `url('${avatar}')`;
             document.getElementById('chatServicioInfo').textContent = info;
             document.getElementById('chatInput').classList.remove('hidden');
+            
             await cargarMensajes(id);
+            
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = taskerSupabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
+            suscripcionChat = supabase
+                .channel(`chat-${id}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new))
+                .subscribe();
         };
 
         async function cargarMensajes(id) {
+            const supabase = initSupabase();
             const c = document.getElementById('chatMessages');
+            
             try {
-                const { data: msgs } = await taskerSupabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
-                if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
-                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="chat-message ${m.remitente_id===usuarioActual.id?'chat-tasker':'chat-client'} rounded-2xl p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+                const { data: msgs } = await supabase
+                    .from('mensajes')
+                    .select('*')
+                    .eq('chat_id', id)
+                    .order('created_at');
+                    
+                if (!msgs?.length) {
+                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
+                    return;
+                }
+                
+                c.innerHTML = msgs.map(m => `
+                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                        <div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3">
+                            <p class="text-sm">${m.mensaje}</p>
+                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                        </div>
+                    </div>
+                `).join('');
                 c.scrollTop = c.scrollHeight;
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function agregarMensaje(m) {
             const c = document.getElementById('chatMessages');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="chat-message ${m.remitente_id===usuarioActual.id?'chat-tasker':'chat-client'} rounded-2xl p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+            c.innerHTML += `
+                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                    <div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3">
+                        <p class="text-sm">${m.mensaje}</p>
+                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+            `;
             c.scrollTop = c.scrollHeight;
         }
 
         document.getElementById('mensajeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!chatActual) { alert('Selecciona un chat'); return; }
+            if (!chatActual) {
+                mostrarToast('Selecciona un chat', 'warning');
+                return;
+            }
+            
             const txt = document.getElementById('mensajeTexto').value.trim();
             if (!txt) return;
+            
             try {
-                await taskerSupabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
-                await taskerSupabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
+                const supabase = initSupabase();
+                await supabase
+                    .from('mensajes')
+                    .insert([{
+                        chat_id: chatActual.id,
+                        remitente_id: usuarioActual.id,
+                        mensaje: txt,
+                        created_at: new Date()
+                    }]);
+                    
+                await supabase
+                    .from('chats')
+                    .update({
+                        ultimo_mensaje: txt,
+                        ultimo_mensaje_time: new Date(),
+                        ultimo_mensaje_leido: false
+                    })
+                    .eq('id', chatActual.id);
+                    
                 document.getElementById('mensajeTexto').value = '';
-            } catch (e) { console.error(e); alert('Error al enviar'); }
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al enviar', 'error');
+            }
         });
 
         window.abrirChat = async (sid, tid) => {
             try {
-                const { data: ex } = await taskerSupabase.from('chats').select('*').eq('servicio_id', sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
-                let cid = ex ? ex.id : (await taskerSupabase.from('chats').insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }]).select().single()).data.id;
-                const { data: t } = await taskerSupabase.from('profiles').select('full_name,photo_url').eq('id', tid).single();
-                window.mostrarSeccion('chat'); await cargarConversaciones(); await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) { console.error(e); alert('Error al abrir chat'); }
+                const supabase = initSupabase();
+                const { data: ex } = await supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('servicio_id', sid)
+                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
+                    .maybeSingle();
+                    
+                let cid = ex ? ex.id : (await supabase
+                    .from('chats')
+                    .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
+                    .select()
+                    .single()).data.id;
+                    
+                const { data: t } = await supabase
+                    .from('profiles')
+                    .select('full_name,photo_url')
+                    .eq('id', tid)
+                    .single();
+                    
+                window.mostrarSeccion('chat');
+                await cargarConversaciones();
+                await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al abrir chat', 'error');
+            }
         };
 
         // =============================================
@@ -1086,26 +1649,66 @@
         document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await taskerSupabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, descripcion: document.getElementById('perfilDescripcion').value, experiencia_anios: parseInt(document.getElementById('perfilExperiencia').value) || null, updated_at: new Date() }).eq('id', usuarioActual.id);
-                notificar('Perfil actualizado','success'); await cargarUsuario();
-            } catch (e) { alert('Error: ' + e.message); }
+                const supabase = initSupabase();
+                await supabase
+                    .from('profiles')
+                    .update({
+                        full_name: document.getElementById('perfilNombre').value,
+                        phone: document.getElementById('perfilTelefono').value,
+                        descripcion: document.getElementById('perfilDescripcion').value,
+                        experiencia_anios: parseInt(document.getElementById('perfilExperiencia').value) || null,
+                        updated_at: new Date()
+                    })
+                    .eq('id', usuarioActual.id);
+                    
+                mostrarToast('Perfil actualizado', 'success');
+                await cargarUsuario();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            }
         });
 
         window.subirFotoPerfil = async function() {
             const i = document.getElementById('fotoPerfil');
             if (!i.files?.[0]) return;
+            
             mostrarCarga();
             try {
-                const f = i.files[0]; if (f.size > 2*1024*1024) throw new Error('Máx 2MB');
+                const f = i.files[0];
+                if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
+                
+                const supabase = initSupabase();
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
-                await taskerSupabase.storage.from('profiles-photos').upload(n, f);
-                const { data: { publicUrl } } = taskerSupabase.storage.from('profiles-photos').getPublicUrl(n);
-                await taskerSupabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
+                await supabase.storage.from('profiles-photos').upload(n, f);
+                
+                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
+                await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
+                
                 document.getElementById('headerAvatar').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('profileAvatar').style.backgroundImage = `url('${publicUrl}')`;
-                notificar('Foto actualizada','success');
-            } catch (e) { alert('Error: ' + e.message); } finally { ocultarCarga(); }
+                mostrarToast('Foto actualizada', 'success');
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
+
+        // =============================================
+        // REALTIME
+        // =============================================
+        function configurarRealtime() {
+            const supabase = initSupabase();
+            supabase
+                .channel('mensajes-tasker')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                    if (p.new.remitente_id !== usuarioActual?.id) {
+                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                        else mostrarToast('Nuevo mensaje recibido', 'info');
+                    }
+                })
+                .subscribe();
+        }
 
         // =============================================
         // NAVEGACIÓN
@@ -1116,55 +1719,64 @@
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
             
-            const tit = { 
-                inicio:'Inicio', 
-                disponibles:'Servicios Disponibles', 
-                'mis-trabajos':'Mis Trabajos', 
-                chat:'Mensajes', 
-                finanzas:'Finanzas', 
-                perfil:'Mi Perfil'
+            const tit = {
+                inicio: 'Inicio',
+                disponibles: 'Servicios Disponibles',
+                'mis-trabajos': 'Mis Trabajos',
+                chat: 'Mensajes',
+                finanzas: 'Finanzas',
+                perfil: 'Mi Perfil'
             };
             
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
             document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
             
-            if (sec === 'disponibles') {
-                console.log('🔄 Cargando servicios disponibles...');
-                window.cargarDisponibles();
-            }
-            if (sec === 'mis-trabajos') {
-                console.log('🔄 Cargando mis trabajos...');
-                window.cargarMisTrabajos();
-            }
-            if (sec === 'chat') {
-                console.log('🔄 Cargando conversaciones...');
-                window.cargarConversaciones();
-            }
-            if (sec === 'finanzas') {
-                console.log('🔄 Cargando finanzas...');
-                cargarFinanzas();
+            if (sec === 'disponibles') window.cargarDisponibles();
+            if (sec === 'mis-trabajos') window.cargarMisTrabajos();
+            if (sec === 'chat') window.cargarConversaciones();
+            if (sec === 'finanzas') cargarFinanzas();
+            if (sec === 'inicio') {
+                cargarDashboard();
+                actualizarUbicacion();
             }
             
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
-        function configurarRealtime() {
-            taskerSupabase.channel('mensajes-tasker').on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes' }, p => {
-                if (p.new.remitente_id !== usuarioActual?.id) {
-                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                    else notificar('Nuevo mensaje recibido');
-                }
-            }).subscribe();
-        }
-
+        // =============================================
+        // CERRAR SESIÓN
+        // =============================================
         window.cerrarSesionTasker = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
-                await taskerSupabase.auth.signOut();
+                
+                // Limpiar ubicación activa
+                if (usuarioActual) {
+                    const supabase = initSupabase();
+                    await supabase
+                        .from('ubicaciones_activas')
+                        .update({ disponible: false })
+                        .eq('tasker_id', usuarioActual.id);
+                }
+                
+                if (intervaloUbicacion) clearInterval(intervaloUbicacion);
+                
+                const supabase = initSupabase();
+                await supabase.auth.signOut();
                 window.location.href = 'index.html';
             }
         };
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarUsuario();
+            await cargarCategoriasFiltro();
+            await cargarDashboard();
+            configurarRealtime();
+            iniciarMenuMovil();
+        });
     </script>
-    <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
 </body>
 </html>
