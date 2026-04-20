@@ -3,66 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Tasker's México | Servicios Profesionales</title>
+    <title>Tasker's México | Soluciones reales por manos expertas</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        .hero-gradient {
-            background: linear-gradient(135deg, #0A2540 0%, #1B4F72 50%, #2E86C1 100%);
+        .hero-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x bottom;
+            background-size: 1440px auto;
+            opacity: 0.3;
+            pointer-events: none;
         }
         
         .category-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(59, 130, 246, 0.1);
         }
         
         .category-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 25px -12px rgba(46, 134, 193, 0.3);
-            border-color: #2E86C1;
-        }
-        
-        .btn-primary {
-            background: #1B4F72;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background: #2E86C1;
-            transform: scale(1.02);
-        }
-        
-        .btn-outline {
-            border: 2px solid #1B4F72;
-            color: #1B4F72;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-outline:hover {
-            background: #1B4F72;
-            color: white;
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fadeInUp {
-            animation: fadeInUp 0.6s ease-out;
+            box-shadow: 0 20px 30px -12px rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
         }
         
         .subcat-panel {
@@ -70,233 +53,244 @@
             animation: fadeInUp 0.4s ease-out;
         }
         
-        html {
-            scroll-behavior: smooth;
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        @media (max-width: 768px) {
+        .subcat-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .subcat-btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        @media (max-width: 640px) {
+            .hero-bg h1 {
+                font-size: 2rem;
+            }
             .category-card {
                 padding: 1rem;
             }
-            .category-card h3 {
-                font-size: 0.875rem;
-            }
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
-<body class="bg-white text-slate-900">
+<body class="bg-slate-50">
 
     <!-- Navbar -->
-    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="container mx-auto px-4 md:px-6">
-            <div class="flex justify-between items-center h-16 md:h-20">
-                <div class="flex items-center gap-2 md:gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's México" class="h-8 md:h-10 w-auto">
-                    <div>
-                        <span class="text-xl md:text-2xl font-bold text-[#1B4F72]">Tasker's</span>
-                        <span class="text-xs text-[#2E86C1] ml-1 hidden sm:inline">México</span>
-                    </div>
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 sm:gap-3">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-white font-bold text-lg sm:text-xl">T</span>
                 </div>
-                
-                <div id="nav-buttons" class="flex items-center gap-1 sm:gap-2 md:gap-4 flex-wrap justify-end"></div>
-            </div>
+                <span class="font-bold text-lg sm:text-xl text-slate-800">Tasker's</span>
+                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full hidden sm:block">MÉXICO</span>
+            </a>
+            <div id="nav-buttons" class="flex items-center gap-2 sm:gap-4"></div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-gradient min-h-[85vh] flex items-center justify-center text-center px-4 pt-20 pb-12">
-        <div class="max-w-4xl mx-auto animate-fadeInUp">
-            <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 md:px-6 py-2 rounded-full text-white text-xs md:text-sm font-semibold uppercase tracking-wider mb-6 md:mb-8">
-                <i class="fas fa-star text-yellow-400"></i>
-                MÁS DE 10,000 SERVICIOS COMPLETADOS
-                <i class="fas fa-star text-yellow-400"></i>
+    <section class="hero-bg min-h-[85vh] flex items-center justify-center text-center px-4 pt-20 pb-12">
+        <div class="max-w-4xl mx-auto relative z-10">
+            <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 sm:px-6 py-2 rounded-full text-white text-xs sm:text-sm font-bold uppercase tracking-wider mb-6 sm:mb-8">
+                <i class="fas fa-crown text-yellow-400"></i>
+                TASKERS MÉXICO
+                <i class="fas fa-crown text-yellow-400"></i>
             </div>
-            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 md:mb-6 leading-tight px-2">
-                Soluciones reales por
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-100">manos expertas</span>
+            <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 sm:mb-6 leading-tight">
+                Soluciones reales por <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200">manos expertas</span>
             </h1>
-            <p class="text-base md:text-lg text-white/90 mb-8 md:mb-10 max-w-2xl mx-auto px-4">
-                La red más grande de profesionales capacitados para el hogar, la industria y servicios especializados en México.
+            <p class="text-base sm:text-lg md:text-xl text-slate-200 mb-8 sm:mb-10 max-w-2xl mx-auto">
+                La red más grande de profesionales capacitados para el hogar, la industria y servicios especializados.
             </p>
-            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <button onclick="document.getElementById('categorias').scrollIntoView({ behavior: 'smooth' })" 
-                        class="btn-primary text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold text-base md:text-lg transition-all shadow-xl flex items-center justify-center gap-2">
+                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all shadow-xl shadow-blue-900/30 flex items-center justify-center gap-2">
                     <i class="fas fa-search"></i> Explorar Servicios
                 </button>
-                <a href="registro-taskers.html" 
-                   class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2 border border-white/30">
-                    <i class="fas fa-briefcase"></i> Soy Profesional
-                </a>
             </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-12 md:mt-16 px-2">
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20">
-                    <div class="text-2xl md:text-3xl font-bold text-white">+5,000</div>
-                    <div class="text-xs md:text-sm text-blue-200">Profesionales</div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mt-12 sm:mt-16">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">+5,000</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Profesionales</div>
                 </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20">
-                    <div class="text-2xl md:text-3xl font-bold text-white">+10,000</div>
-                    <div class="text-xs md:text-sm text-blue-200">Servicios</div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">+10,000</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Servicios</div>
                 </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20">
-                    <div class="text-2xl md:text-3xl font-bold text-white">98%</div>
-                    <div class="text-xs md:text-sm text-blue-200">Satisfacción</div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">98%</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Satisfacción</div>
                 </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20">
-                    <div class="text-2xl md:text-3xl font-bold text-white">24/7</div>
-                    <div class="text-xs md:text-sm text-blue-200">Soporte</div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20">
+                    <div class="text-xl sm:text-3xl font-bold text-white">24/7</div>
+                    <div class="text-xs sm:text-sm text-blue-200">Soporte</div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Categorías -->
-    <section id="categorias" class="py-12 md:py-20 container mx-auto px-4 md:px-6">
-        <div class="text-center mb-10 md:mb-16">
-            <span class="text-[#1B4F72] font-semibold text-xs md:text-sm uppercase tracking-wider bg-[#1B4F72]/10 px-4 py-1 rounded-full inline-block mb-3">SERVICIOS</span>
-            <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800 mb-3 md:mb-4 px-2">
-                ¿En qué podemos ayudarte hoy?
-            </h2>
-            <p class="text-sm md:text-base text-slate-500 max-w-xl mx-auto px-4">
-                Selecciona una categoría para ver todos los servicios especializados disponibles
-            </p>
+    <section id="categorias" class="py-12 sm:py-20 container mx-auto px-4 sm:px-6">
+        <div class="text-center mb-10 sm:mb-16">
+            <span class="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-blue-50 px-4 py-1 rounded-full">NUESTROS SERVICIOS</span>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-4 mb-3">¿En qué podemos ayudarte hoy?</h2>
+            <p class="text-sm sm:text-base text-slate-500 max-w-xl mx-auto">Selecciona una categoría para ver todos los servicios especializados disponibles.</p>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6 mb-10 md:mb-16">
-            <div onclick="showSubcats('mantenimiento')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-[#1B4F72]/10 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <i class="fas fa-wrench text-xl md:text-2xl text-[#1B4F72]"></i>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5 mb-12 sm:mb-16">
+            <!-- Mantenimiento -->
+            <div onclick="showSubcats('mantenimiento')" class="category-card bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <i class="fas fa-wrench text-xl sm:text-2xl text-blue-600"></i>
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-slate-800">Mantenimiento</h3>
-                <p class="text-xs text-slate-400 mt-1 hidden sm:block">Hogar e Industria</p>
+                <h3 class="font-bold text-sm sm:text-base">Mantenimiento</h3>
+                <p class="text-xs text-slate-400 mt-1">Hogar e Industria</p>
             </div>
-            <div onclick="showSubcats('limpieza')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <i class="fas fa-sparkles text-xl md:text-2xl text-emerald-600"></i>
+            <!-- Limpieza -->
+            <div onclick="showSubcats('limpieza')" class="category-card bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <i class="fas fa-sparkles text-xl sm:text-2xl text-emerald-600"></i>
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-slate-800">Limpieza</h3>
-                <p class="text-xs text-slate-400 mt-1 hidden sm:block">Residencial y Comercial</p>
+                <h3 class="font-bold text-sm sm:text-base">Limpieza</h3>
+                <p class="text-xs text-slate-400 mt-1">Residencial y Comercial</p>
             </div>
-            <div onclick="showSubcats('cuidados')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-rose-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <i class="fas fa-heart text-xl md:text-2xl text-rose-600"></i>
+            <!-- Cuidados -->
+            <div onclick="showSubcats('cuidados')" class="category-card bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-rose-50 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <i class="fas fa-heart text-xl sm:text-2xl text-rose-600"></i>
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-slate-800">Cuidados</h3>
-                <p class="text-xs text-slate-400 mt-1 hidden sm:block">Personas y Mascotas</p>
+                <h3 class="font-bold text-sm sm:text-base">Cuidados</h3>
+                <p class="text-xs text-slate-400 mt-1">Personas y Mascotas</p>
             </div>
-            <div onclick="showSubcats('especializados')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-amber-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <i class="fas fa-microchip text-xl md:text-2xl text-amber-600"></i>
+            <!-- Especializados -->
+            <div onclick="showSubcats('especializados')" class="category-card bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <i class="fas fa-microchip text-xl sm:text-2xl text-amber-600"></i>
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-slate-800">Especializados</h3>
-                <p class="text-xs text-slate-400 mt-1 hidden sm:block">Técnicos Certificados</p>
+                <h3 class="font-bold text-sm sm:text-base">Especializados</h3>
+                <p class="text-xs text-slate-400 mt-1">Técnicos Certificados</p>
             </div>
-            <div onclick="showSubcats('belleza')" class="category-card bg-white p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-xl text-center cursor-pointer">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <i class="fas fa-scissors text-xl md:text-2xl text-purple-600"></i>
+            <!-- Belleza -->
+            <div onclick="showSubcats('belleza')" class="category-card bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-50 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <i class="fas fa-scissors text-xl sm:text-2xl text-purple-600"></i>
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-slate-800">Belleza</h3>
-                <p class="text-xs text-slate-400 mt-1 hidden sm:block">Cuidado Personal</p>
+                <h3 class="font-bold text-sm sm:text-base">Belleza</h3>
+                <p class="text-xs text-slate-400 mt-1">Cuidado Personal</p>
             </div>
         </div>
 
-        <div id="subcat-container" class="subcat-panel bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 border border-slate-200 shadow-xl">
-            <div class="flex justify-between items-center mb-4 md:mb-6">
-                <h4 id="subcat-title" class="text-lg md:text-2xl font-bold text-[#1B4F72]">Subcategorías</h4>
-                <button onclick="closeSubcats()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
-                    <i class="fas fa-times text-slate-600"></i>
+        <!-- Subcategorías Panel -->
+        <div id="subcat-container" class="subcat-panel bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-200">
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
+                <h4 id="subcat-title" class="text-lg sm:text-xl font-bold text-blue-600">Subcategorías</h4>
+                <button onclick="closeSubcats()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center">
+                    <i class="fas fa-times text-slate-500"></i>
                 </button>
             </div>
-            <div id="subcat-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3"></div>
+            <div id="subcat-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3"></div>
         </div>
     </section>
 
-    <!-- Sección de confianza -->
-    <section class="py-12 md:py-16 bg-slate-50 border-t border-slate-100">
-        <div class="container mx-auto px-4 md:px-6">
-            <div class="text-center mb-8 md:mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-800">¿Por qué elegir Tasker's?</h2>
-                <p class="text-slate-500 mt-2">Seguridad, confianza y calidad garantizada</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                <div class="text-center p-6 bg-white rounded-2xl shadow-sm">
-                    <div class="w-16 h-16 bg-[#1B4F72]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-shield-alt text-2xl text-[#1B4F72]"></i>
+    <!-- Confianza -->
+    <section class="py-12 sm:py-16 bg-white border-t border-slate-100">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center">
+                <div class="stat-card p-5 sm:p-6 rounded-2xl bg-slate-50 hover:shadow-md transition">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-shield-alt text-xl sm:text-2xl text-blue-600"></i>
                     </div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-800">Pago 100% Seguro</h3>
-                    <p class="text-sm text-slate-500">Tu dinero está protegido hasta que confirmes la finalización del servicio</p>
+                    <h3 class="font-bold text-base sm:text-lg mb-1">Pago 100% Seguro</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Tu dinero está protegido hasta que confirmes la finalización</p>
                 </div>
-                <div class="text-center p-6 bg-white rounded-2xl shadow-sm">
-                    <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check-circle text-2xl text-emerald-600"></i>
+                <div class="stat-card p-5 sm:p-6 rounded-2xl bg-slate-50 hover:shadow-md transition">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-check-circle text-xl sm:text-2xl text-green-600"></i>
                     </div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-800">Profesionales Verificados</h3>
-                    <p class="text-sm text-slate-500">Todos pasan por verificación de identidad y antecedentes</p>
+                    <h3 class="font-bold text-base sm:text-lg mb-1">Profesionales Verificados</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Todos pasan por verificación de identidad</p>
                 </div>
-                <div class="text-center p-6 bg-white rounded-2xl shadow-sm">
-                    <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-clock text-2xl text-amber-600"></i>
+                <div class="stat-card p-5 sm:p-6 rounded-2xl bg-slate-50 hover:shadow-md transition">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-clock text-xl sm:text-2xl text-purple-600"></i>
                     </div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-800">Garantía de 7 días</h3>
-                    <p class="text-sm text-slate-500">Soporte post-servicio garantizado en todos los trabajos</p>
+                    <h3 class="font-bold text-base sm:text-lg mb-1">Garantía de 7 días</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">Soporte post-servicio garantizado</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-12 md:py-16 px-4 md:px-6">
+    <footer class="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-400 py-12 sm:py-16 px-4 sm:px-6">
         <div class="container mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 border-b border-slate-800 pb-8 md:pb-12 mb-8 md:mb-12">
-                <div class="md:col-span-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 border-b border-slate-700 pb-8 mb-8">
+                <div class="col-span-1 sm:col-span-2 md:col-span-2">
                     <div class="flex items-center gap-3 mb-4">
-                        <img src="logo-taskers.png" alt="Tasker's México" class="h-10 w-auto">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold">T</span>
+                        </div>
                         <span class="text-white font-bold text-xl">Tasker's México</span>
                     </div>
-                    <p class="text-sm text-slate-400 max-w-md leading-relaxed">
-                        La plataforma líder en México para conectar profesionales capacitados con clientes que necesitan servicios de calidad.
-                    </p>
+                    <p class="max-w-sm text-sm text-slate-400 leading-relaxed">La plataforma líder en México para conectar profesionales capacitados con clientes que necesitan servicios de calidad.</p>
                 </div>
                 <div>
-                    <h5 class="text-white font-bold mb-4 text-sm">Enlaces rápidos</h5>
+                    <h5 class="text-white font-bold mb-4">Enlaces rápidos</h5>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-[#2E86C1] transition">Sobre nosotros</a></li>
-                        <li><a href="#" class="hover:text-[#2E86C1] transition">Cómo funciona</a></li>
-                        <li><a href="#" class="hover:text-[#2E86C1] transition">Preguntas frecuentes</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Sobre nosotros</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Cómo funciona</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Preguntas frecuentes</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h5 class="text-white font-bold mb-4 text-sm">Contacto</h5>
+                    <h5 class="text-white font-bold mb-4">Contacto</h5>
                     <ul class="space-y-2 text-sm">
-                        <li class="flex items-center gap-2"><i class="fas fa-envelope text-[#2E86C1]"></i> taskersmexico@gmail.com</li>
-                        <li class="flex items-center gap-2"><i class="fas fa-phone text-[#2E86C1]"></i> 2201756702</li>
-                        <li class="flex items-center gap-2"><i class="fas fa-map-marker-alt text-[#2E86C1]"></i> Cozumel, Puebla</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-envelope text-blue-400 w-5"></i>taskersmexico@gmail.com</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-phone text-blue-400 w-5"></i>2201756702</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-map-marker-alt text-blue-400 w-5"></i>Cozumel, Puebla</li>
                     </ul>
                 </div>
             </div>
-            <div class="flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-                <p>&copy; 2026 Tasker's México. Todos los derechos reservados.</p>
-                <div class="flex gap-6">
-                    <a href="#" class="hover:text-[#2E86C1] transition">Términos</a>
-                    <a href="#" class="hover:text-[#2E86C1] transition">Privacidad</a>
-                    <a href="#" class="hover:text-[#2E86C1] transition">Cookies</a>
+            <div class="flex flex-col sm:flex-row justify-between items-center text-xs">
+                <p>&copy; 2025 Tasker's México. Todos los derechos reservados.</p>
+                <div class="flex gap-6 mt-4 sm:mt-0">
+                    <a href="#" class="hover:text-blue-400 transition">Términos</a>
+                    <a href="#" class="hover:text-blue-400 transition">Privacidad</a>
+                    <a href="#" class="hover:text-blue-400 transition">Cookies</a>
                 </div>
             </div>
         </div>
     </footer>
 
+    <script src="config.js"></script>
     <script>
-        // =============================================
-        // CONFIGURACIÓN SUPABASE
-        // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         // =============================================
         // DATOS DE CATEGORÍAS
         // =============================================
-        const data = {
+        const categoriasData = {
             mantenimiento: { 
                 title: 'Mantenimiento del Hogar e Industria', 
                 items: ['Plomería', 'Carpintería', 'Albañilería', 'Pintura', 'Electricidad', 'Impermeabilización', 'Cerrajería', 'Herrería', 'Aluminio y Vidrio'] 
@@ -319,25 +313,19 @@
             }
         };
 
-        // =============================================
-        // FUNCIONES DE CATEGORÍAS
-        // =============================================
         window.showSubcats = function(catKey) {
             const container = document.getElementById('subcat-container');
             const title = document.getElementById('subcat-title');
             const list = document.getElementById('subcat-list');
             
-            if (!data[catKey]) {
-                console.error('Categoría no encontrada:', catKey);
-                return;
-            }
+            if (!categoriasData[catKey]) return;
             
-            title.innerText = data[catKey].title;
+            title.textContent = categoriasData[catKey].title;
             list.innerHTML = '';
             
-            data[catKey].items.forEach(item => {
+            categoriasData[catKey].items.forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = 'subcat-btn flex justify-between items-center p-3 md:p-4 bg-slate-50 rounded-xl hover:bg-[#1B4F72] hover:text-white transition-all group font-medium text-left text-sm md:text-base';
+                btn.className = 'subcat-btn flex justify-between items-center p-3 sm:p-4 bg-slate-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all group font-medium text-left text-sm';
                 btn.innerHTML = `${item} <i class="fas fa-chevron-right text-xs opacity-0 group-hover:opacity-100 transition"></i>`;
                 btn.onclick = () => window.location.href = `servicios.html?cat=${catKey.charAt(0).toUpperCase() + catKey.slice(1)}&sub=${encodeURIComponent(item)}`;
                 list.appendChild(btn);
@@ -352,54 +340,54 @@
         };
 
         // =============================================
-        // NAVBAR - VERIFICAR USUARIO
+        // NAVBAR - Usando config.js
         // =============================================
         async function checkUser() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                const supabase = initSupabase();
+                if (!supabase) return;
+                
+                const { data: { session } } = await supabase.auth.getSession();
                 const nav = document.getElementById('nav-buttons');
                 
                 if (session) {
-                    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .maybeSingle();
+                    
                     let dashboardLink = 'dashboard-cliente.html';
                     if (profile?.role === 'tasker') dashboardLink = 'dashboard-tasker.html';
                     if (profile?.role === 'admin') dashboardLink = 'admin.html';
                     
                     nav.innerHTML = `
-                        <a href="${dashboardLink}" class="text-xs sm:text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1 whitespace-nowrap">
-                            <i class="fas fa-tachometer-alt text-xs"></i> Mi Panel
+                        <a href="${dashboardLink}" class="text-sm font-semibold text-slate-700 hover:text-blue-600 transition flex items-center gap-2">
+                            <i class="fas fa-tachometer-alt"></i> Mi Panel
                         </a>
-                        <button onclick="logout()" class="text-xs sm:text-sm font-semibold text-red-600 hover:text-red-700 transition flex items-center gap-1 whitespace-nowrap">
-                            <i class="fas fa-sign-out-alt text-xs"></i> Salir
+                        <button onclick="cerrarSesion()" class="text-sm font-semibold text-red-600 hover:text-red-700 transition flex items-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i> Salir
                         </button>
                     `;
                 } else {
                     nav.innerHTML = `
-                        <a href="login.html" class="text-xs sm:text-sm font-semibold text-[#1B4F72] hover:text-[#2E86C1] transition flex items-center gap-1 whitespace-nowrap">
-                            <i class="fas fa-sign-in-alt text-xs"></i> Ingresar
+                        <a href="login.html" class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition flex items-center gap-2">
+                            <i class="fas fa-sign-in-alt"></i> Ingresar
                         </a>
-                        <a href="registro-clientes.html" class="btn-outline px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
-                            <i class="fas fa-user text-xs"></i> Cliente
+                        <a href="registro-clientes.html" class="hidden sm:flex text-sm font-semibold text-slate-600 border border-slate-300 px-4 py-2 rounded-xl hover:bg-slate-50 transition items-center gap-2">
+                            <i class="fas fa-user"></i> Soy Cliente
                         </a>
-                        <a href="registro-taskers.html" class="btn-primary text-white px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap shadow-md">
-                            <i class="fas fa-briefcase text-xs"></i> Tasker
+                        <a href="registro-taskers.html" class="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:shadow-lg transition flex items-center gap-2">
+                            <i class="fas fa-briefcase"></i> Soy Tasker
                         </a>
                     `;
                 }
             } catch (error) {
-                console.error('Error en checkUser:', error);
+                console.error('Error:', error);
             }
         }
 
-        window.logout = async function() {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        };
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            checkUser();
-        });
+        document.addEventListener('DOMContentLoaded', checkUser);
     </script>
 </body>
 </html>
