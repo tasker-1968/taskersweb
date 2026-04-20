@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Mi Panel | Tasker's Cliente</title>
     
-    <!-- Anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Tailwind CSS y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet CSS y JS para el mapa (gratuito, reemplazable por Google Maps después) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .sidebar-moderno {
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             transition: left 0.3s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
@@ -80,6 +81,7 @@
         }
         
         .badge-pendiente { background: #fef3c7; color: #92400e; }
+        .badge-publicado { background: #dbeafe; color: #1e40af; }
         .badge-asignado { background: #dbeafe; color: #1e40af; }
         .badge-progreso { background: #ede9fe; color: #5b21b6; }
         .badge-completado { background: #d1fae5; color: #065f46; }
@@ -100,9 +102,14 @@
             max-width: 70%;
         }
         
-        /* ========== MEJORAS RESPONSIVE ========== */
+        /* Mapa */
+        #mapaServicios {
+            height: 300px;
+            border-radius: 16px;
+            z-index: 1;
+        }
+        
         @media (max-width: 768px) {
-            /* Sidebar oculto por defecto */
             .sidebar-moderno {
                 position: fixed !important;
                 left: -280px !important;
@@ -115,12 +122,10 @@
                 box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
-            /* Sidebar visible */
             .sidebar-moderno.abierto {
                 left: 0 !important;
             }
             
-            /* Overlay */
             #overlayMenu {
                 position: fixed !important;
                 top: 0 !important;
@@ -139,7 +144,6 @@
                 opacity: 1 !important;
             }
             
-            /* Botón menú siempre visible */
             #btnMenuMovil {
                 display: flex !important;
                 z-index: 10000 !important;
@@ -156,17 +160,12 @@
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
-            /* Ajustes de contenido */
             .ml-12 {
                 margin-left: 3.5rem !important;
             }
             
             .p-6 {
                 padding: 1rem !important;
-            }
-            
-            .grid-cols-2 {
-                gap: 0.75rem !important;
             }
             
             .tarjeta-stats {
@@ -177,7 +176,6 @@
                 font-size: 1.5rem !important;
             }
             
-            /* Tablas horizontales */
             .table-container {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
@@ -190,30 +188,24 @@
                 min-width: 500px !important;
             }
             
-            /* Botones más grandes para touch */
-            button, 
-            .enlace-moderno,
-            [onclick] {
+            button, .enlace-moderno, [onclick] {
                 min-height: 44px !important;
                 min-width: 44px !important;
             }
             
-            /* Inputs sin zoom */
             input, select, textarea {
                 font-size: 16px !important;
             }
+            
+            #mapaServicios {
+                height: 250px !important;
+            }
         }
         
-        /* Ajustes para tablets */
         @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-cols-2 {
-                gap: 1rem;
-            }
-            
             .tarjeta-stats {
                 padding: 1.25rem;
             }
-            
             .tarjeta-stats p.text-3xl {
                 font-size: 2rem;
             }
@@ -228,13 +220,18 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Prevenir scroll cuando el menú está abierto */
         body.menu-open {
             overflow: hidden !important;
         }
         
-        /* Debug - eliminar después */
-        .debug { border: 2px solid red; }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -286,7 +283,9 @@
         <aside id="barraLateral" class="sidebar-moderno w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
             <div class="p-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
-                    <img src="logo-taskers.png" alt="Tasker's" class="h-10 w-auto">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">T</span>
+                    </div>
                     <div>
                         <div class="text-xl font-bold text-white">Tasker's</div>
                         <div class="text-xs text-blue-300">Cliente</div>
@@ -362,6 +361,23 @@
                             <p class="text-slate-500 text-sm">Total Pagado</p>
                             <p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-1">$0</p>
                         </div>
+                    </div>
+
+                    <!-- Mapa de seguimiento (estilo Uber) -->
+                    <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold text-lg text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-map-marked-alt text-blue-600"></i>
+                                Taskers cerca de ti
+                            </h3>
+                            <button onclick="actualizarUbicacion()" class="text-sm text-blue-600 hover:text-blue-700 transition">
+                                <i class="fas fa-location-dot mr-1"></i> Actualizar
+                            </button>
+                        </div>
+                        <div id="mapaServicios" class="w-full bg-slate-100 rounded-xl"></div>
+                        <p class="text-xs text-slate-400 mt-3 text-center">
+                            <i class="fas fa-info-circle"></i> Muestra la ubicación de taskers disponibles cerca de tu zona
+                        </p>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm p-6">
@@ -503,71 +519,243 @@
         </main>
     </div>
 
+    <script src="config.js"></script>
     <script>
         // =============================================
-        // CONFIGURACIÓN ÚNICA - VARIABLE RENOMBRADA
-        // =============================================
-        const SUPABASE_URL = 'https://ayhflwricnkptoinabhe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aGZsd3JpY25rcHRvaW5hYmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NTI0OTksImV4cCI6MjA4ODMyODQ5OX0.m5LaJmQVqoiBCbxYJ3ZGEV5x2c4oGjK9iHKtAfcc21M';
-        const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // =============================================
-        // GLOBALES
+        // VARIABLES GLOBALES
         // =============================================
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
+        let mapa = null;
+        let marcadorUbicacion = null;
+        let marcadoresTaskers = [];
 
         // =============================================
-        // FUNCIONES DE UTILIDAD
+        // INICIALIZAR MAPA
         // =============================================
-        function mostrarCarga() { document.getElementById('modalCarga').classList.remove('hidden'); document.getElementById('modalCarga').classList.add('flex'); }
-        function ocultarCarga() { document.getElementById('modalCarga').classList.add('hidden'); document.getElementById('modalCarga').classList.remove('flex'); }
-        function notificar(m, t = 'info') { const n = document.createElement('div'); n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 animate-slideIn ${t==='success'?'bg-green-500':t==='error'?'bg-red-500':'bg-blue-500'} text-white`; n.innerText = m; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
-
-        // =============================================
-        // AUTENTICACIÓN
-        // =============================================
-        async function verificarAuth(r = 'login.html') {
-            try { const { data: { session } } = await clienteSupabase.auth.getSession(); if (!session) { window.location.href = r; return null; } return session; }
-            catch { window.location.href = r; return null; }
+        function iniciarMapa(lat = 19.4326, lng = -99.1332) {
+            const contenedor = document.getElementById('mapaServicios');
+            if (!contenedor) return;
+            
+            if (mapa) {
+                mapa.remove();
+            }
+            
+            mapa = L.map('mapaServicios').setView([lat, lng], 13);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(mapa);
+            
+            // Marcador de ubicación del usuario
+            const iconoUsuario = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6;"></div>',
+                iconSize: [20, 20],
+                popupAnchor: [0, -10]
+            });
+            
+            marcadorUbicacion = L.marker([lat, lng], { icon: iconoUsuario }).addTo(mapa);
+            marcadorUbicacion.bindPopup('<b>Tu ubicación</b><br>Estás aquí').openPopup();
         }
 
         // =============================================
-        // MENÚ MÓVIL SIMPLIFICADO (FUNCIONAL 100%)
+        // ACTUALIZAR UBICACIÓN DEL USUARIO
+        // =============================================
+        function actualizarUbicacion() {
+            if (!navigator.geolocation) {
+                mostrarToast('Tu navegador no soporta geolocalización', 'warning');
+                return;
+            }
+            
+            mostrarCarga('Obteniendo tu ubicación...');
+            
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    iniciarMapa(lat, lng);
+                    
+                    // Guardar ubicación en localStorage para futuras sesiones
+                    localStorage.setItem('tasker_ubicacion', JSON.stringify({ lat, lng }));
+                    
+                    ocultarCarga();
+                    mostrarToast('Ubicación actualizada', 'success');
+                    
+                    // Cargar taskers cercanos
+                    await cargarTaskersCercanos(lat, lng);
+                },
+                (error) => {
+                    ocultarCarga();
+                    console.error('Error de geolocalización:', error);
+                    
+                    let mensaje = 'No se pudo obtener tu ubicación';
+                    if (error.code === 1) mensaje = 'Permite el acceso a tu ubicación';
+                    if (error.code === 2) mensaje = 'Ubicación no disponible';
+                    
+                    mostrarToast(mensaje, 'error');
+                    
+                    // Usar ubicación por defecto (CDMX)
+                    iniciarMapa();
+                }
+            );
+        }
+
+        // =============================================
+        // CARGAR TASKERS CERCANOS (para el mapa)
+        // =============================================
+        async function cargarTaskersCercanos(lat, lng) {
+            try {
+                const supabase = initSupabase();
+                if (!supabase) return;
+                
+                // Obtener taskers con ubicaciones activas
+                const { data: ubicaciones, error } = await supabase
+                    .from('ubicaciones_activas')
+                    .select('*, profiles(full_name, photo_url, calificacion_promedio)')
+                    .eq('disponible', true)
+                    .limit(20);
+                
+                if (error) {
+                    console.error('Error cargando ubicaciones:', error);
+                    return;
+                }
+                
+                // Limpiar marcadores anteriores
+                marcadoresTaskers.forEach(m => mapa.removeLayer(m));
+                marcadoresTaskers = [];
+                
+                if (!ubicaciones || ubicaciones.length === 0) {
+                    mostrarToast('No hay taskers disponibles cerca', 'info');
+                    return;
+                }
+                
+                // Icono para taskers
+                const iconoTasker = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #10b981;"></div>',
+                    iconSize: [16, 16]
+                });
+                
+                ubicaciones.forEach(ubic => {
+                    if (ubic.latitud && ubic.longitud) {
+                        const marker = L.marker([ubic.latitud, ubic.longitud], { icon: iconoTasker }).addTo(mapa);
+                        const nombre = ubic.profiles?.full_name || 'Tasker';
+                        const calif = ubic.profiles?.calificacion_promedio || 'Nuevo';
+                        
+                        marker.bindPopup(`
+                            <b>${nombre}</b><br>
+                            ⭐ ${typeof calif === 'number' ? calif.toFixed(1) : calif}<br>
+                            <span class="text-xs text-green-600">✓ Disponible</span>
+                        `);
+                        
+                        marcadoresTaskers.push(marker);
+                    }
+                });
+                
+                if (marcadoresTaskers.length > 0) {
+                    mostrarToast(`${marcadoresTaskers.length} tasker(s) disponible(s) cerca`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // =============================================
+        // VERIFICAR AUTENTICACIÓN
+        // =============================================
+        async function verificarAuth() {
+            const supabase = initSupabase();
+            if (!supabase) return null;
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return session;
+        }
+
+        // =============================================
+        // CARGAR USUARIO
+        // =============================================
+        async function cargarUsuario() {
+            mostrarCarga();
+            try {
+                const session = await verificarAuth();
+                if (!session) return;
+                
+                const supabase = initSupabase();
+                const { data: perfil } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+                    
+                if (!perfil) throw new Error('Perfil no encontrado');
+                
+                usuarioActual = perfil;
+                
+                document.getElementById('infoUsuario').innerHTML = `
+                    <p class="font-medium">${perfil.full_name || 'Usuario'}</p>
+                    <p class="text-xs opacity-75">Cliente</p>
+                `;
+                
+                if (perfil.photo_url) {
+                    document.getElementById('avatarHeader').style.backgroundImage = `url('${perfil.photo_url}')`;
+                    document.getElementById('avatarPerfil').style.backgroundImage = `url('${perfil.photo_url}')`;
+                }
+                
+                document.getElementById('perfilNombre').value = perfil.full_name || '';
+                document.getElementById('perfilEmail').value = perfil.email || '';
+                document.getElementById('perfilTelefono').value = perfil.phone || '';
+                
+                // Iniciar mapa con ubicación guardada o por defecto
+                const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
+                if (ubicacionGuardada) {
+                    const { lat, lng } = JSON.parse(ubicacionGuardada);
+                    iniciarMapa(lat, lng);
+                    await cargarTaskersCercanos(lat, lng);
+                } else {
+                    actualizarUbicacion();
+                }
+                
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al cargar usuario', 'error');
+            } finally {
+                ocultarCarga();
+            }
+        }
+
+        // =============================================
+        // MENÚ MÓVIL
         // =============================================
         function iniciarMenuMovil() {
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
             
-            if (!menuBtn || !sidebar || !overlay) {
-                console.error('❌ Elementos del menú no encontrados');
-                return;
-            }
-
-            console.log('✅ Menú móvil inicializado');
-
-            // Abrir menú
+            if (!menuBtn || !sidebar || !overlay) return;
+            
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('🔵 Abriendo menú');
-                
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
-
-            // Cerrar con overlay
+            
             overlay.addEventListener('click', function() {
-                console.log('⚫ Cerrando menú');
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
-
-            // Cerrar con enlaces
+            
             const links = document.querySelectorAll('.enlace-moderno');
             links.forEach(link => {
                 link.addEventListener('click', function() {
@@ -579,64 +767,38 @@
                 });
             });
         }
-
-        // Función para cerrar menú manualmente
+        
         function cerrarMenuMovil() {
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
-            
             if (sidebar && overlay) {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             }
         }
-
-        // Detectar cambios de tamaño
+        
         window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                cerrarMenuMovil();
-            }
+            if (window.innerWidth >= 768) cerrarMenuMovil();
         });
-
-        async function cargarUsuario() {
-            mostrarCarga();
-            try {
-                const sesion = await verificarAuth();
-                if (!sesion) return;
-                const { data: perfil } = await clienteSupabase.from('profiles').select('*').eq('id', sesion.user.id).maybeSingle();
-                if (!perfil) throw new Error('Perfil no encontrado');
-                usuarioActual = perfil;
-                document.getElementById('infoUsuario').innerHTML = `<p class="font-medium">${perfil.full_name||'Usuario'}</p><p class="text-xs opacity-75">Cliente</p>`;
-                if (perfil.photo_url) {
-                    document.getElementById('avatarHeader').style.backgroundImage = `url('${perfil.photo_url}')`;
-                    document.getElementById('avatarPerfil').style.backgroundImage = `url('${perfil.photo_url}')`;
-                }
-                document.getElementById('perfilNombre').value = perfil.full_name || '';
-                document.getElementById('perfilEmail').value = perfil.email || '';
-                document.getElementById('perfilTelefono').value = perfil.phone || '';
-            } catch (e) { console.error(e); notificar('Error al cargar usuario','error'); } finally { ocultarCarga(); }
-        }
 
         // =============================================
         // CATEGORÍAS
         // =============================================
         async function cargarCategorias() {
             try {
-                const { data: cats, error } = await clienteSupabase
+                const supabase = initSupabase();
+                const { data: cats, error } = await supabase
                     .from('categorias')
                     .select('id, nombre')
                     .eq('activo', true)
                     .order('orden');
-
-                if (error) {
-                    console.error('Error al cargar categorías:', error);
-                    return;
-                }
-
+                    
+                if (error) throw error;
+                
                 const selectCategoria = document.getElementById('categoria');
                 if (!selectCategoria) return;
-
+                
                 selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
                 
                 if (cats && cats.length > 0) {
@@ -646,8 +808,6 @@
                         option.textContent = cat.nombre;
                         selectCategoria.appendChild(option);
                     });
-                } else {
-                    console.warn('No hay categorías en Supabase');
                 }
             } catch (error) {
                 console.error('Error en cargarCategorias:', error);
@@ -656,8 +816,6 @@
 
         document.getElementById('categoria')?.addEventListener('change', async function() {
             const subSelect = document.getElementById('subcategoria');
-            if (!subSelect) return;
-
             const categoriaId = this.value;
             
             if (!categoriaId) {
@@ -665,19 +823,20 @@
                 subSelect.disabled = true;
                 return;
             }
-
+            
             subSelect.innerHTML = '<option value="">Cargando...</option>';
             subSelect.disabled = true;
-
+            
             try {
-                const { data: subs, error } = await clienteSupabase
+                const supabase = initSupabase();
+                const { data: subs, error } = await supabase
                     .from('subcategorias')
                     .select('id, nombre')
                     .eq('categoria_id', categoriaId)
                     .eq('activo', true);
-
+                    
                 if (error) throw error;
-
+                
                 subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
                 
                 if (subs && subs.length > 0) {
@@ -697,112 +856,221 @@
             }
         });
 
+        // =============================================
+        // DASHBOARD
+        // =============================================
         async function cargarDashboard() {
             try {
-                const { data: s } = await clienteSupabase.from('servicios').select('*').eq('cliente_id',usuarioActual.id).order('created_at',false);
+                const supabase = initSupabase();
+                const { data: s } = await supabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('created_at', { ascending: false });
+                    
                 if (!s) return;
+                
                 const stats = {
-                    activos: s.filter(x=>['pendiente_pago','publicado','asignado','en_progreso'].includes(x.status)).length,
-                    completados: s.filter(x=>x.status==='completado').length,
-                    progreso: s.filter(x=>x.status==='en_progreso').length,
-                    pagado: s.filter(x=>x.status==='completado').reduce((a,b)=>a+(b.monto_final||0),0)
+                    activos: s.filter(x => ['pendiente_pago', 'publicado', 'asignado', 'en_progreso'].includes(x.status)).length,
+                    completados: s.filter(x => x.status === 'completado').length,
+                    progreso: s.filter(x => x.status === 'en_progreso').length,
+                    pagado: s.filter(x => x.status === 'completado').reduce((a, b) => a + (b.monto_ofertado || 0), 0)
                 };
+                
                 document.getElementById('statsActivos').textContent = stats.activos;
                 document.getElementById('statsCompletados').textContent = stats.completados;
                 document.getElementById('statsProgreso').textContent = stats.progreso;
                 document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
-
-                const rec = s.slice(0,5);
+                
+                const rec = s.slice(0, 5);
                 const c = document.getElementById('listaRecientes');
-                if (!rec.length) { c.innerHTML = '<p class="text-center py-4 text-slate-400">No hay servicios</p>'; return; }
-                c.innerHTML = rec.map(x => `<div class="border rounded-xl p-4 hover:bg-slate-50 cursor-pointer" onclick="verServicio('${x.id}')"><div class="flex justify-between"><div><h4 class="font-medium">${x.subcategoria||''}</h4><p class="text-sm text-slate-600">${(x.descripcion||'').substring(0,60)}...</p></div><span class="badge-estado ${obtenerClase(x.status)}">${obtenerTexto(x.status)}</span></div><div class="flex justify-between mt-2 text-sm"><span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${x.ubicacion||''}</span><span class="font-bold text-blue-600">$${(x.monto_ofertado||0).toFixed(2)}</span></div></div>`).join('');
-            } catch (e) { console.error(e); }
+                if (!rec.length) {
+                    c.innerHTML = '<p class="text-center py-4 text-slate-400">No hay servicios</p>';
+                    return;
+                }
+                
+                c.innerHTML = rec.map(x => `
+                    <div class="border rounded-xl p-4 hover:bg-slate-50 cursor-pointer" onclick="verServicio('${x.id}')">
+                        <div class="flex justify-between">
+                            <div>
+                                <h4 class="font-medium">${x.subcategoria || ''}</h4>
+                                <p class="text-sm text-slate-600">${(x.descripcion || '').substring(0, 60)}...</p>
+                            </div>
+                            <span class="badge-estado ${obtenerClase(x.status)}">${obtenerTexto(x.status)}</span>
+                        </div>
+                        <div class="flex justify-between mt-2 text-sm">
+                            <span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${x.ubicacion || ''}</span>
+                            <span class="font-bold text-blue-600">$${(x.monto_ofertado || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
         }
 
+        // =============================================
+        // NUEVO SERVICIO
+        // =============================================
         document.getElementById('formNuevoServicio')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const supabase = initSupabase();
             const btn = document.getElementById('btnPublicar');
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
+            
             try {
+                const subcategoriaId = document.getElementById('subcategoria').value;
+                
+                // Obtener nombre de la subcategoría
+                const { data: subData } = await supabase
+                    .from('subcategorias')
+                    .select('nombre')
+                    .eq('id', subcategoriaId)
+                    .single();
+                
                 const data = {
                     cliente_id: usuarioActual.id,
                     categoria: document.getElementById('categoria').value,
-                    subcategoria: document.getElementById('subcategoria').value,
+                    subcategoria: subData?.nombre || 'Servicio',
                     descripcion: document.getElementById('descripcion').value,
-                    ubicacion: document.getElementById('colonia').value ? `${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}` : `CP ${document.getElementById('cp').value}`,
+                    ubicacion: document.getElementById('colonia').value ? 
+                        `${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}` : 
+                        `CP ${document.getElementById('cp').value}`,
                     cp: document.getElementById('cp').value,
                     monto_ofertado: parseFloat(document.getElementById('monto').value),
                     fecha_solicitada: document.getElementById('fecha').value || null,
-                    status: 'pendiente_pago', pago_status: 'pendiente', created_at: new Date()
+                    status: 'pendiente_pago',
+                    pago_status: 'pendiente',
+                    created_at: new Date()
                 };
-                const { data: serv } = await clienteSupabase.from('servicios').insert([data]).select().maybeSingle();
+                
+                const { data: serv, error } = await supabase
+                    .from('servicios')
+                    .insert([data])
+                    .select()
+                    .maybeSingle();
+                    
+                if (error) throw error;
+                
                 await mostrarModalPago(serv);
-            } catch (e) { alert('Error: '+e.message); btn.disabled = false; btn.innerHTML = 'Publicar Solicitud'; }
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Publicar Solicitud';
+            }
         });
 
         async function mostrarModalPago(serv) {
             const m = document.getElementById('modalPago');
             const c = document.getElementById('contenidoModalPago');
             const total = serv.monto_ofertado;
-            c.innerHTML = `<div class="text-center"><i class="fas fa-lock text-4xl text-green-600 mb-4"></i><h4 class="font-bold">Pago Seguro</h4><p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago</p></div><div class="bg-slate-50 p-4 rounded-xl"><div class="flex justify-between"><span>Total:</span><span class="font-bold">$${total.toFixed(2)}</span></div><div class="flex justify-between text-gray-500"><span>Comisión 15%:</span><span>$${(total*0.15).toFixed(2)}</span></div></div><div class="flex gap-3 mt-4"><button onclick="cerrarModalPago()" class="flex-1 border py-3 rounded-xl">Cancelar</button><button onclick="procesarPago('${serv.id}',${total})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">Pagar ahora</button></div>`;
-            m.classList.remove('hidden'); m.classList.add('flex');
+            
+            c.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-lock text-4xl text-green-600 mb-4"></i>
+                    <h4 class="font-bold">Pago Seguro</h4>
+                    <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <div class="flex justify-between"><span>Total:</span><span class="font-bold">$${total.toFixed(2)}</span></div>
+                    <div class="flex justify-between text-gray-500"><span>Comisión 15%:</span><span>$${(total * 0.15).toFixed(2)}</span></div>
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="cerrarModalPago()" class="flex-1 border py-3 rounded-xl">Cancelar</button>
+                    <button onclick="procesarPago('${serv.id}', ${total})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">Pagar ahora</button>
+                </div>
+            `;
+            m.classList.remove('hidden');
+            m.classList.add('flex');
         }
 
-        window.procesarPago = async (id, m) => {
+        window.procesarPago = async (id, monto) => {
             mostrarCarga();
             try {
-                await clienteSupabase.from('servicios').update({ status:'publicado', pago_status:'completado', updated_at:new Date() }).eq('id',id);
-                await clienteSupabase.from('pagos').insert([{ servicio_id:id, cliente_id:usuarioActual.id, monto_total:m, comision_taskers:m*0.15, monto_tasker:m*0.85, status:'completado', fecha_pago:new Date() }]);
-                alert('Pago exitoso'); cerrarModalPago(); window.cambiarSeccion('mis-servicios'); window.cargarMisServicios();
-            } catch (e) { alert('Error: '+e.message); } finally { ocultarCarga(); }
+                const supabase = initSupabase();
+                await supabase
+                    .from('servicios')
+                    .update({ status: 'publicado', pago_status: 'completado', updated_at: new Date() })
+                    .eq('id', id);
+                    
+                await supabase
+                    .from('pagos')
+                    .insert([{
+                        servicio_id: id,
+                        cliente_id: usuarioActual.id,
+                        monto_total: monto,
+                        comision_taskers: monto * 0.15,
+                        monto_tasker: monto * 0.85,
+                        status: 'completado',
+                        fecha_pago: new Date()
+                    }]);
+                    
+                mostrarToast('Pago exitoso', 'success');
+                cerrarModalPago();
+                window.cambiarSeccion('mis-servicios');
+                window.cargarMisServicios();
+                await cargarDashboard();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
-        function cerrarModalPago() { document.getElementById('modalPago').classList.add('hidden'); document.getElementById('modalPago').classList.remove('flex'); document.getElementById('btnPublicar').disabled = false; document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud'; }
+        
+        function cerrarModalPago() {
+            document.getElementById('modalPago').classList.add('hidden');
+            document.getElementById('modalPago').classList.remove('flex');
+            document.getElementById('btnPublicar').disabled = false;
+            document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud';
+        }
 
+        // =============================================
+        // MIS SERVICIOS
+        // =============================================
         window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const contenedor = document.getElementById('contenedorServicios');
             if (!contenedor) return;
-
+            
             try {
-                let query = clienteSupabase
+                const supabase = initSupabase();
+                let query = supabase
                     .from('servicios')
                     .select('*')
                     .eq('cliente_id', usuarioActual.id)
                     .order('created_at', { ascending: false });
-
+                    
                 if (filtro !== 'todos') {
                     query = query.eq('status', filtro);
                 }
-
+                
                 const { data: servicios, error: servError } = await query;
                 if (servError) throw servError;
-
+                
                 if (!servicios || servicios.length === 0) {
                     contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
                     return;
                 }
-
+                
                 const serviciosConTasker = await Promise.all(servicios.map(async (servicio) => {
                     if (servicio.tasker_id) {
-                        const { data: tasker, error: taskerError } = await clienteSupabase
+                        const supabase = initSupabase();
+                        const { data: tasker } = await supabase
                             .from('profiles')
                             .select('full_name, photo_url, calificacion_promedio')
                             .eq('id', servicio.tasker_id)
                             .maybeSingle();
-                        
-                        if (!taskerError && tasker) {
-                            servicio.tasker_info = tasker;
-                        }
+                        if (tasker) servicio.tasker_info = tasker;
                     }
                     return servicio;
                 }));
-
+                
                 contenedor.innerHTML = serviciosConTasker.map(s => {
                     const tasker = s.tasker_info;
                     const puedeConfirmar = s.status === 'en_progreso';
-                    const tieneTasker = s.tasker_id && tasker;
-                    const estaAsignado = s.status === 'asignado';
-
+                    
                     return `
                     <div class="bg-white rounded-xl shadow-sm p-5">
                         <div class="flex justify-between items-start">
@@ -817,8 +1085,7 @@
                             <div><p class="text-slate-500">${s.ubicacion || ''}</p></div>
                             <div><p class="text-slate-500">${new Date(s.created_at).toLocaleDateString()}</p></div>
                         </div>
-                        
-                        ${tieneTasker ? `
+                        ${tasker ? `
                         <div class="border-t pt-4 mt-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
@@ -832,16 +1099,15 @@
                                 </div>
                                 <button onclick="abrirChat('${s.id}','${s.tasker_id}')" 
                                         class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-                                    <i class="fas fa-comment mr-2"></i>Chat con tasker
+                                    <i class="fas fa-comment mr-2"></i>Chat
                                 </button>
                             </div>
                         </div>
                         ` : s.status === 'publicado' ? `
                         <div class="border-t pt-4 mt-4 text-center text-slate-500">
-                            <i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...
+                            <i class="fas fa-clock mr-2"></i>Esperando propuestas...
                         </div>
                         ` : ''}
-                        
                         ${puedeConfirmar ? `
                         <div class="border-t pt-4 mt-4">
                             <button onclick="confirmarFinalizacion('${s.id}')" 
@@ -850,43 +1116,86 @@
                             </button>
                         </div>
                         ` : ''}
-                        
-                        ${estaAsignado && !tieneTasker ? `
-                        <div class="border-t pt-4 mt-4 text-center text-blue-600">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>Asignando tasker...
-                        </div>
-                        ` : ''}
-                    </div>
-                    `;
+                    </div>`;
                 }).join('');
-
             } catch (error) {
-                console.error('Error en cargarMisServicios:', error);
+                console.error('Error:', error);
                 contenedor.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
             }
         };
 
         window.confirmarFinalizacion = async (id) => {
-            if (!confirm('¿Servicio completado?')) return;
+            if (!confirm('¿Confirmas que el servicio está completado?')) return;
             mostrarCarga();
             try {
-                await clienteSupabase.from('servicios').update({ status:'completado', fecha_completado:new Date() }).eq('id',id);
-                const { data: d } = await clienteSupabase.from('servicios').select('tasker_id').eq('id',id).single();
-                await clienteSupabase.from('notificaciones').insert([{ usuario_id:d.tasker_id, tipo:'pago', titulo:'Servicio completado', mensaje:'El cliente confirmó' }]);
-                alert('¡Gracias!'); window.cargarMisServicios();
-            } catch (e) { alert('Error'); } finally { ocultarCarga(); }
+                const supabase = initSupabase();
+                await supabase
+                    .from('servicios')
+                    .update({ status: 'completado', fecha_completado: new Date() })
+                    .eq('id', id);
+                    
+                const { data: d } = await supabase
+                    .from('servicios')
+                    .select('tasker_id')
+                    .eq('id', id)
+                    .single();
+                    
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: d.tasker_id,
+                        tipo: 'pago',
+                        titulo: 'Servicio completado',
+                        mensaje: 'El cliente confirmó la finalización del servicio'
+                    }]);
+                    
+                mostrarToast('¡Gracias por confirmar!', 'success');
+                window.cargarMisServicios();
+                await cargarDashboard();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
 
+        // =============================================
+        // CHAT
+        // =============================================
         window.cargarConversaciones = async function() {
+            const supabase = initSupabase();
             const c = document.getElementById('listaConversaciones');
             try {
-                const { data: chats } = await clienteSupabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time',false);
-                if (!chats?.length) { c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>'; return; }
+                const { data: chats } = await supabase
+                    .from('chats')
+                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
+                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+                    .order('ultimo_mensaje_time', { ascending: false });
+                    
+                if (!chats?.length) {
+                    c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>';
+                    return;
+                }
+                
                 c.innerHTML = chats.map(ch => {
                     const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria||''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300"></div><div><p class="font-medium">${otro.full_name||''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria||''}</p>${ch.ultimo_mensaje?`<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>`:''}</div></div></div>`;
+                    return `
+                        <div class="p-3 border-b hover:bg-slate-50 cursor-pointer" 
+                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-300"></div>
+                                <div>
+                                    <p class="font-medium">${otro.full_name || ''}</p>
+                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
+                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }).join('');
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
@@ -897,118 +1206,298 @@
             document.getElementById('infoServicio').textContent = info;
             document.getElementById('inputChat').classList.remove('hidden');
             await cargarMensajes(id);
+            
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = clienteSupabase.channel(`chat-${id}`).on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes', filter:`chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
+            const supabase = initSupabase();
+            suscripcionChat = supabase
+                .channel(`chat-${id}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new))
+                .subscribe();
         };
 
         async function cargarMensajes(id) {
+            const supabase = initSupabase();
             const c = document.getElementById('mensajesChat');
             try {
-                const { data: msgs } = await clienteSupabase.from('mensajes').select('*').eq('chat_id',id).order('created_at');
-                if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
-                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+                const { data: msgs } = await supabase
+                    .from('mensajes')
+                    .select('*')
+                    .eq('chat_id', id)
+                    .order('created_at');
+                    
+                if (!msgs?.length) {
+                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
+                    return;
+                }
+                
+                c.innerHTML = msgs.map(m => `
+                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                        <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
+                            <p class="text-sm">${m.mensaje}</p>
+                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                        </div>
+                    </div>
+                `).join('');
                 c.scrollTop = c.scrollHeight;
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function agregarMensaje(m) {
             const c = document.getElementById('mensajesChat');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `<div class="flex ${m.remitente_id===usuarioActual.id?'justify-end':'justify-start'}"><div class="${m.remitente_id===usuarioActual.id?'mensaje-cliente':'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+            c.innerHTML += `
+                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                    <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
+                        <p class="text-sm">${m.mensaje}</p>
+                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+            `;
             c.scrollTop = c.scrollHeight;
         }
 
         document.getElementById('formMensaje')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!chatActual) { alert('Selecciona un chat'); return; }
+            if (!chatActual) {
+                mostrarToast('Selecciona un chat', 'warning');
+                return;
+            }
+            
             const txt = document.getElementById('textoMensaje').value.trim();
             if (!txt) return;
+            
             try {
-                await clienteSupabase.from('mensajes').insert([{ chat_id:chatActual.id, remitente_id:usuarioActual.id, mensaje:txt, created_at:new Date() }]);
-                await clienteSupabase.from('chats').update({ ultimo_mensaje:txt, ultimo_mensaje_time:new Date(), ultimo_mensaje_leido:false }).eq('id',chatActual.id);
+                const supabase = initSupabase();
+                await supabase
+                    .from('mensajes')
+                    .insert([{
+                        chat_id: chatActual.id,
+                        remitente_id: usuarioActual.id,
+                        mensaje: txt,
+                        created_at: new Date()
+                    }]);
+                    
+                await supabase
+                    .from('chats')
+                    .update({
+                        ultimo_mensaje: txt,
+                        ultimo_mensaje_time: new Date(),
+                        ultimo_mensaje_leido: false
+                    })
+                    .eq('id', chatActual.id);
+                    
                 document.getElementById('textoMensaje').value = '';
-            } catch (e) { console.error(e); alert('Error al enviar'); }
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al enviar', 'error');
+            }
         });
 
         window.abrirChat = async (sid, tid) => {
             try {
-                const { data: ex } = await clienteSupabase.from('chats').select('*').eq('servicio_id',sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
+                const supabase = initSupabase();
+                const { data: ex } = await supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('servicio_id', sid)
+                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
+                    .maybeSingle();
+                    
                 let cid;
-                if (ex) { cid = ex.id; } else { const { data: n } = await clienteSupabase.from('chats').insert([{ servicio_id:sid, usuario1_id:usuarioActual.id, usuario2_id:tid }]).select().single(); cid = n.id; }
-                const { data: t } = await clienteSupabase.from('profiles').select('full_name,photo_url').eq('id',tid).single();
-                window.cambiarSeccion('chat'); await cargarConversaciones(); await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) { console.error(e); alert('Error al abrir chat'); }
+                if (ex) {
+                    cid = ex.id;
+                } else {
+                    const { data: n } = await supabase
+                        .from('chats')
+                        .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
+                        .select()
+                        .single();
+                    cid = n.id;
+                }
+                
+                const { data: t } = await supabase
+                    .from('profiles')
+                    .select('full_name,photo_url')
+                    .eq('id', tid)
+                    .single();
+                    
+                window.cambiarSeccion('chat');
+                await cargarConversaciones();
+                await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al abrir chat', 'error');
+            }
         };
 
+        // =============================================
+        // PAGOS
+        // =============================================
         window.cargarPagos = async function() {
+            const supabase = initSupabase();
             const t = document.getElementById('tablaPagos');
             try {
-                const { data: p } = await clienteSupabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id',usuarioActual.id).order('fecha_pago',false);
-                if (!p?.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>'; return; }
-                t.innerHTML = p.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria||''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado badge-completado">Completado</span></td></tr>`).join('');
-            } catch (e) { console.error(e); }
+                const { data: p } = await supabase
+                    .from('pagos')
+                    .select('*, servicio:servicio_id(subcategoria)')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('fecha_pago', { ascending: false });
+                    
+                if (!p?.length) {
+                    t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>';
+                    return;
+                }
+                
+                t.innerHTML = p.map(x => `
+                    <tr class="border-b">
+                        <td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td>
+                        <td class="p-4">${x.servicio?.subcategoria || ''}</td>
+                        <td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td>
+                        <td class="p-4">$${x.comision_taskers?.toFixed(2)}</td>
+                        <td class="p-4"><span class="badge-estado badge-completado">Completado</span></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
         };
 
+        // =============================================
+        // PERFIL
+        // =============================================
         document.getElementById('formPerfil')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await clienteSupabase.from('profiles').update({ full_name:document.getElementById('perfilNombre').value, phone:document.getElementById('perfilTelefono').value, updated_at:new Date() }).eq('id',usuarioActual.id);
-                notificar('Perfil actualizado','success'); await cargarUsuario();
-            } catch (e) { alert('Error: '+e.message); }
+                const supabase = initSupabase();
+                await supabase
+                    .from('profiles')
+                    .update({
+                        full_name: document.getElementById('perfilNombre').value,
+                        phone: document.getElementById('perfilTelefono').value,
+                        updated_at: new Date()
+                    })
+                    .eq('id', usuarioActual.id);
+                    
+                mostrarToast('Perfil actualizado', 'success');
+                await cargarUsuario();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            }
         });
 
         window.subirFotoPerfil = async function() {
             const i = document.getElementById('fotoPerfil');
             if (!i.files?.[0]) return;
+            
             mostrarCarga();
             try {
-                const f = i.files[0]; if (f.size>2*1024*1024) throw new Error('Máx 2MB');
+                const f = i.files[0];
+                if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
+                
+                const supabase = initSupabase();
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
-                await clienteSupabase.storage.from('profiles-photos').upload(n,f);
-                const { data: { publicUrl } } = clienteSupabase.storage.from('profiles-photos').getPublicUrl(n);
-                await clienteSupabase.from('profiles').update({ photo_url:publicUrl }).eq('id',usuarioActual.id);
+                await supabase.storage.from('profiles-photos').upload(n, f);
+                
+                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
+                await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
+                
                 document.getElementById('avatarHeader').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('avatarPerfil').style.backgroundImage = `url('${publicUrl}')`;
-                notificar('Foto actualizada','success');
-            } catch (e) { alert('Error: '+e.message); } finally { ocultarCarga(); }
+                mostrarToast('Foto actualizada', 'success');
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
 
+        // =============================================
+        // UTILIDADES
+        // =============================================
         function obtenerClase(s) {
-            return { pendiente_pago:'badge-pendiente', publicado:'badge-pendiente', asignado:'badge-asignado', en_progreso:'badge-progreso', completado:'badge-completado', cancelado:'badge-cancelado' }[s] || 'badge-pendiente';
+            const clases = {
+                pendiente_pago: 'badge-pendiente',
+                publicado: 'badge-publicado',
+                asignado: 'badge-asignado',
+                en_progreso: 'badge-progreso',
+                completado: 'badge-completado',
+                cancelado: 'badge-cancelado'
+            };
+            return clases[s] || 'badge-pendiente';
         }
+        
         function obtenerTexto(s) {
-            return { pendiente_pago:'Pendiente pago', publicado:'Buscando', asignado:'Asignado', en_progreso:'En progreso', completado:'Completado', cancelado:'Cancelado' }[s] || s;
+            const textos = {
+                pendiente_pago: 'Pendiente pago',
+                publicado: 'Buscando',
+                asignado: 'Asignado',
+                en_progreso: 'En progreso',
+                completado: 'Completado',
+                cancelado: 'Cancelado'
+            };
+            return textos[s] || s;
         }
 
+        // =============================================
+        // NAVEGACIÓN
+        // =============================================
         window.cambiarSeccion = function(sec) {
-            document.querySelectorAll('.seccion-contenido').forEach(s=>s.classList.remove('activo'));
-            document.querySelectorAll('.enlace-moderno').forEach(l=>l.classList.remove('activo'));
-            document.getElementById('seccion-'+sec).classList.add('activo');
-            document.getElementById('link-'+sec)?.classList.add('activo');
-            const tit = { inicio:'Inicio', 'nuevo-servicio':'Solicitar Servicio', 'mis-servicios':'Mis Servicios', chat:'Mensajes', pagos:'Mis Pagos', perfil:'Mi Perfil' };
+            document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.remove('activo'));
+            document.querySelectorAll('.enlace-moderno').forEach(l => l.classList.remove('activo'));
+            document.getElementById('seccion-' + sec).classList.add('activo');
+            document.getElementById('link-' + sec)?.classList.add('activo');
+            
+            const tit = {
+                inicio: 'Inicio',
+                'nuevo-servicio': 'Solicitar Servicio',
+                'mis-servicios': 'Mis Servicios',
+                chat: 'Mensajes',
+                pagos: 'Mis Pagos',
+                perfil: 'Mi Perfil'
+            };
+            
             document.getElementById('tituloSeccion').textContent = tit[sec];
             document.getElementById('subtituloSeccion').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            if (sec==='mis-servicios') window.cargarMisServicios();
-            if (sec==='chat') window.cargarConversaciones();
-            if (sec==='pagos') window.cargarPagos();
-            if (window.innerWidth<768) cerrarMenuMovil();
+            
+            if (sec === 'mis-servicios') window.cargarMisServicios();
+            if (sec === 'chat') window.cargarConversaciones();
+            if (sec === 'pagos') window.cargarPagos();
+            if (sec === 'inicio') {
+                cargarDashboard();
+                actualizarUbicacion();
+            }
+            
+            if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
         window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
 
+        // =============================================
+        // REALTIME
+        // =============================================
         function configurarRealtime() {
-            clienteSupabase.channel('mensajes').on('postgres_changes',{ event:'INSERT', schema:'public', table:'mensajes' }, p => {
-                if (p.new.remitente_id !== usuarioActual?.id) {
-                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                    else notificar('Nuevo mensaje');
-                }
-            }).subscribe();
+            const supabase = initSupabase();
+            supabase
+                .channel('mensajes-cliente')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                    if (p.new.remitente_id !== usuarioActual?.id) {
+                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                        else mostrarToast('Nuevo mensaje recibido', 'info');
+                    }
+                })
+                .subscribe();
         }
 
+        // =============================================
+        // CERRAR SESIÓN
+        // =============================================
         window.cerrarSesionCliente = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
-                await clienteSupabase.auth.signOut();
+                const supabase = initSupabase();
+                await supabase.auth.signOut();
                 window.location.href = 'index.html';
             }
         };
@@ -1021,9 +1510,8 @@
             await cargarCategorias();
             await cargarDashboard();
             configurarRealtime();
-            iniciarMenuMovil(); // Inicializar menú móvil
+            iniciarMenuMovil();
         });
     </script>
-    <style>.animate-slideIn{animation:slideIn 0.3s;}@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}</style>
 </body>
 </html>
