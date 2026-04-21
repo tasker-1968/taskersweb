@@ -126,7 +126,6 @@
             transform: scale(1.02);
         }
         
-        /* Scroll personalizado */
         .contenido-scroll {
             max-height: calc(100vh - 120px);
             overflow-y: auto;
@@ -735,6 +734,7 @@
                     document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                     document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                 }
+                // Ya no mostramos badge de pendiente porque ahora se registran como verified
                 if (perfil.status === 'pending') document.getElementById('verificationBadge').classList.remove('hidden');
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
@@ -1053,7 +1053,7 @@
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
                 const tbody = document.getElementById('pagosTableBody');
                 if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</tbody>'; return; }
-                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>`).join('');
+                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></td>`).join('');
             } catch (e) { console.error(e); }
         }
 
@@ -1172,41 +1172,29 @@
         // CANCELAR CUENTA
         // =============================================
         window.cancelarCuenta = async function() {
-    if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos y documentos.')) return;
-    mostrarCarga();
-    try {
-        const supabase = initSupabase();
-        
-        // 1. Eliminar ubicación activa
-        await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
-        
-        // 2. Eliminar propuestas enviadas
-        await supabase.from('propuestas').delete().eq('tasker_id', usuarioActual.id);
-        
-        // 3. Eliminar servicios asignados (poner tasker_id en null)
-        await supabase.from('servicios').update({ tasker_id: null }).eq('tasker_id', usuarioActual.id);
-        
-        // 4. Eliminar notificaciones
-        await supabase.from('notificaciones').delete().eq('usuario_id', usuarioActual.id);
-        
-        // 5. Eliminar el perfil (CASCADE eliminará auth.user automáticamente)
-        const { error } = await supabase.from('profiles').delete().eq('id', usuarioActual.id);
-        
-        if (error) throw error;
-        
-        // 6. Cerrar sesión
-        await supabase.auth.signOut();
-        
-        mostrarToast('Cuenta eliminada permanentemente', 'success');
-        setTimeout(() => window.location.href = 'index.html', 2000);
-        
-    } catch (e) { 
-        console.error('Error al eliminar cuenta:', e);
-        mostrarToast('Error: ' + e.message, 'error'); 
-    } finally { 
-        ocultarCarga(); 
-    }
-};
+            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos.')) return;
+            mostrarCarga();
+            try {
+                const supabase = initSupabase();
+                
+                await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
+                await supabase.from('propuestas').delete().eq('tasker_id', usuarioActual.id);
+                await supabase.from('servicios').update({ tasker_id: null }).eq('tasker_id', usuarioActual.id);
+                await supabase.from('notificaciones').delete().eq('usuario_id', usuarioActual.id);
+                
+                const { error } = await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+                if (error) throw error;
+                
+                await supabase.auth.signOut();
+                mostrarToast('Cuenta eliminada permanentemente', 'success');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (e) { 
+                console.error('Error al eliminar cuenta:', e);
+                mostrarToast('Error: ' + e.message, 'error'); 
+            } finally { 
+                ocultarCarga(); 
+            }
+        };
 
         // =============================================
         // REALTIME
