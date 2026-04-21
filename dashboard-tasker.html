@@ -1172,17 +1172,41 @@
         // CANCELAR CUENTA
         // =============================================
         window.cancelarCuenta = async function() {
-            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible.')) return;
-            mostrarCarga();
-            try {
-                const supabase = initSupabase();
-                await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
-                await supabase.from('profiles').delete().eq('id', usuarioActual.id);
-                await supabase.auth.signOut();
-                mostrarToast('Cuenta cancelada', 'success');
-                setTimeout(() => window.location.href = 'index.html', 2000);
-            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
-        };
+    if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos y documentos.')) return;
+    mostrarCarga();
+    try {
+        const supabase = initSupabase();
+        
+        // 1. Eliminar ubicación activa
+        await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
+        
+        // 2. Eliminar propuestas enviadas
+        await supabase.from('propuestas').delete().eq('tasker_id', usuarioActual.id);
+        
+        // 3. Eliminar servicios asignados (poner tasker_id en null)
+        await supabase.from('servicios').update({ tasker_id: null }).eq('tasker_id', usuarioActual.id);
+        
+        // 4. Eliminar notificaciones
+        await supabase.from('notificaciones').delete().eq('usuario_id', usuarioActual.id);
+        
+        // 5. Eliminar el perfil (CASCADE eliminará auth.user automáticamente)
+        const { error } = await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+        
+        if (error) throw error;
+        
+        // 6. Cerrar sesión
+        await supabase.auth.signOut();
+        
+        mostrarToast('Cuenta eliminada permanentemente', 'success');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        
+    } catch (e) { 
+        console.error('Error al eliminar cuenta:', e);
+        mostrarToast('Error: ' + e.message, 'error'); 
+    } finally { 
+        ocultarCarga(); 
+    }
+};
 
         // =============================================
         // REALTIME
