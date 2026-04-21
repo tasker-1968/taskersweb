@@ -17,14 +17,19 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        .bg-gradient-custom {
+        body {
             background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
+            min-height: 100vh;
         }
         
         .glass-card {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 32px;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
         }
         
         .input-moderno {
@@ -36,111 +41,96 @@
             box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.4);
         }
         
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-volver {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 50;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            padding: 10px 16px;
+            border-radius: 40px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s;
         }
         
-        .animate-slideUp {
-            animation: slideUp 0.5s ease-out;
+        .btn-volver:hover {
+            background: rgba(255,255,255,0.2);
         }
-        
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-        
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
         
         @media (max-width: 640px) {
             .glass-card {
-                margin: 1rem;
-                padding: 1.5rem;
+                margin: 16px;
+                padding: 24px;
+            }
+            .btn-volver {
+                top: 12px;
+                left: 12px;
+                padding: 8px 12px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
-<body class="bg-gradient-custom min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body class="flex items-center justify-center p-4">
 
-    <!-- Elementos decorativos flotantes -->
-    <div class="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-    <div class="absolute bottom-0 left-20 w-64 h-64 bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    <!-- Botón volver -->
+    <a href="index.html" class="btn-volver flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> Volver al inicio
+    </a>
 
-    <!-- Logo flotante desktop -->
-    <div class="fixed top-6 left-6 hidden lg:block z-20">
-        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20">
-            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span class="text-white font-bold text-lg">T</span>
-            </div>
-            <span class="text-white font-bold text-lg">Tasker's</span>
-            <span class="text-blue-200 text-xs bg-white/20 px-2 py-0.5 rounded-full">MÉXICO</span>
-        </div>
-    </div>
-
-    <!-- Tarjeta principal -->
-    <div class="glass-card rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 animate-slideUp relative z-10">
+    <div class="glass-card p-8">
         
-        <!-- Logo móvil -->
-        <div class="flex justify-center mb-6 lg:hidden">
-            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <span class="text-white font-bold text-2xl">T</span>
             </div>
         </div>
 
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">¡Bienvenido de vuelta!</h1>
-            <p class="text-sm sm:text-base text-slate-500">Accede a tu cuenta para gestionar tus servicios</p>
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800 mb-2">¡Bienvenido de vuelta!</h1>
+            <p class="text-sm text-slate-500">Accede a tu cuenta para gestionar tus servicios</p>
         </div>
 
         <!-- Formulario -->
         <form id="loginForm" class="space-y-5">
             <div>
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">
-                    <i class="fas fa-envelope mr-2"></i> Correo Electrónico
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wider">
+                    <i class="fas fa-envelope mr-1"></i> Correo Electrónico
                 </label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <i class="fas fa-envelope"></i>
-                    </span>
-                    <input type="email" id="email" required 
-                        class="input-moderno w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                        placeholder="tucorreo@ejemplo.com">
-                </div>
+                <input type="email" id="email" required 
+                    class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                    placeholder="tu@email.com">
             </div>
 
             <div>
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">
-                    <i class="fas fa-lock mr-2"></i> Contraseña
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1 tracking-wider">
+                    <i class="fas fa-lock mr-1"></i> Contraseña
                 </label>
                 <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <i class="fas fa-lock"></i>
-                    </span>
                     <input type="password" id="password" required 
-                        class="input-moderno w-full pl-12 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        class="input-moderno w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pr-12"
                         placeholder="••••••••">
+                    <button type="button" onclick="togglePassword()" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition">
+                        <i id="passwordIcon" class="fas fa-eye-slash text-lg"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
+            <div class="flex justify-between items-center text-sm">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="rememberMe" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4 text-blue-600 rounded">
                     <span class="text-slate-600">Recordar cuenta</span>
                 </label>
-                <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline transition">¿Olvidaste tu contraseña?</a>
+                <a href="#" class="text-blue-600 hover:text-blue-700 hover:underline">¿Olvidaste tu contraseña?</a>
             </div>
 
             <button type="submit" id="loginBtn" 
-                class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 sm:py-4 rounded-xl font-bold text-base transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 rounded-xl font-bold text-base transition-all shadow-lg flex items-center justify-center gap-2">
                 <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
             </button>
         </form>
@@ -150,22 +140,22 @@
             <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-slate-200"></div>
             </div>
-            <div class="relative flex justify-center text-xs sm:text-sm">
-                <span class="bg-white px-4 text-slate-400">O continúa con</span>
+            <div class="relative flex justify-center">
+                <span class="bg-white px-4 text-xs text-slate-400">O continúa con</span>
             </div>
         </div>
 
         <!-- Proveedores -->
         <div class="grid grid-cols-2 gap-3">
             <button onclick="loginWithProvider('google')" 
-                class="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                class="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                <span class="text-sm font-medium text-slate-600 group-hover:text-blue-600">Google</span>
+                <span class="text-sm font-medium">Google</span>
             </button>
             <button onclick="loginWithProvider('facebook')" 
-                class="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all hover:shadow-md group">
+                class="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
                 <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
-                <span class="text-sm font-medium text-slate-600 group-hover:text-blue-600">Facebook</span>
+                <span class="text-sm font-medium">Facebook</span>
             </button>
         </div>
 
@@ -173,26 +163,34 @@
         <div class="mt-6 text-center space-y-2">
             <p class="text-sm text-slate-500">
                 ¿No tienes cuenta? 
-                <a href="registro-clientes.html" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Regístrate como Cliente</a>
+                <a href="registro-clientes.html" class="text-blue-600 hover:underline font-medium">Regístrate como Cliente</a>
             </p>
             <p class="text-sm text-slate-500">
                 ¿Eres profesional? 
-                <a href="registro-taskers.html" class="text-blue-600 hover:text-blue-700 hover:underline font-medium">Regístrate como Tasker</a>
+                <a href="registro-taskers.html" class="text-blue-600 hover:underline font-medium">Regístrate como Tasker</a>
             </p>
         </div>
-
-        <!-- Términos -->
-        <p class="text-center text-xs text-slate-400 mt-6">
-            Al iniciar sesión, aceptas nuestros 
-            <a href="#" class="text-blue-600 hover:underline">Términos y Condiciones</a>
-        </p>
     </div>
 
     <script src="config.js"></script>
     <script>
-        // =============================================
-        // LOGIN CON EMAIL/PASSWORD
-        // =============================================
+        // Mostrar/ocultar contraseña
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('passwordIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+
+        // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -211,13 +209,7 @@
             try {
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
-                const rememberMe = document.getElementById('rememberMe').checked;
 
-                if (!email || !password) {
-                    throw new Error('Por favor completa todos los campos');
-                }
-
-                // Login
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email, password
                 });
@@ -225,92 +217,73 @@
                 if (error) throw error;
 
                 // Obtener perfil
-                const { data: profile, error: profileError } = await supabase
+                let { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', data.user.id)
                     .maybeSingle();
 
-                if (profileError) {
-                    console.error('Error perfil:', profileError);
+                // Si no hay perfil, crearlo
+                if (!profile && !profileError) {
+                    const nombre = email.split('@')[0];
+                    await supabase.from('profiles').insert([{
+                        id: data.user.id,
+                        email: email,
+                        full_name: nombre,
+                        role: 'client',
+                        status: 'active',
+                        created_at: new Date()
+                    }]);
+                    profile = { role: 'client' };
                 }
 
-                // Determinar redirección
                 let redirectUrl = 'dashboard-cliente.html';
                 if (profile?.role === 'tasker') redirectUrl = 'dashboard-tasker.html';
                 if (profile?.role === 'admin') redirectUrl = 'admin.html';
 
-                mostrarToast('¡Bienvenido! Redirigiendo...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = redirectUrl;
-                }, 1000);
+                mostrarToast('¡Bienvenido!', 'success');
+                setTimeout(() => window.location.href = redirectUrl, 1000);
 
             } catch (error) {
-                console.error('Error:', error);
-                
                 let mensaje = 'Error al iniciar sesión';
                 if (error.message.includes('Invalid login credentials')) {
                     mensaje = 'Correo o contraseña incorrectos';
-                } else if (error.message.includes('Email not confirmed')) {
-                    mensaje = 'Confirma tu email antes de iniciar sesión';
-                } else {
-                    mensaje = error.message;
                 }
-                
                 mostrarToast(mensaje, 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
         });
 
-        // =============================================
-        // LOGIN CON PROVEEDORES
-        // =============================================
-        async function loginWithProvider(provider) {
-            const supabase = initSupabase();
-            if (!supabase) {
-                mostrarToast('Error al conectar', 'error');
-                return;
-            }
-
-            mostrarCarga('Conectando con ' + provider + '...');
-            
-            try {
-                const { error } = await supabase.auth.signInWithOAuth({
-                    provider: provider,
-                    options: {
-                        redirectTo: window.location.origin + '/dashboard-redirect.html'
-                    }
-                });
-                
-                if (error) throw error;
-                ocultarCarga();
-                
-            } catch (error) {
-                ocultarCarga();
-                mostrarToast('Error al conectar con ' + provider + ': ' + error.message, 'error');
-            }
+        // Recordar email
+        const savedEmail = localStorage.getItem('taskers_email');
+        if (savedEmail) {
+            document.getElementById('email').value = savedEmail;
+            document.getElementById('rememberMe').checked = true;
         }
 
-        // Recordar email si existe en localStorage
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedEmail = localStorage.getItem('taskers_email');
-            if (savedEmail) {
-                document.getElementById('email').value = savedEmail;
-                document.getElementById('rememberMe').checked = true;
-            }
-        });
-
-        // Guardar email si seleccionan "Recordar"
         document.getElementById('rememberMe').addEventListener('change', (e) => {
-            if (e.target.checked) {
-                const email = document.getElementById('email').value;
-                if (email) localStorage.setItem('taskers_email', email);
+            const email = document.getElementById('email').value;
+            if (e.target.checked && email) {
+                localStorage.setItem('taskers_email', email);
             } else {
                 localStorage.removeItem('taskers_email');
             }
         });
+
+        // Login con proveedores
+        async function loginWithProvider(provider) {
+            const supabase = initSupabase();
+            if (!supabase) return;
+            
+            mostrarCarga('Conectando...');
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+                options: { redirectTo: window.location.origin + '/dashboard-redirect.html' }
+            });
+            ocultarCarga();
+            if (error) mostrarToast('Error: ' + error.message, 'error');
+        }
     </script>
 </body>
 </html>
