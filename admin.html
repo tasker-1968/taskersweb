@@ -478,7 +478,7 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Servicio</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Tasker</th><th class="p-3 text-left">Monto Total</th><th class="p-3 text-left">Comisión</th></tr>
                                 </thead>
-                                <tbody id="gananciasTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                                <tbody id="gananciasTable"><td><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
                             </table>
                         </div>
                     </div>
@@ -628,7 +628,7 @@
                 tbody.innerHTML = taskers.map(t => `<tr class="border-b"><td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td><td class="p-4">${t.email}</td><td class="p-4">${t.phone || 'N/A'}</td>
                 <td class="p-4"><div class="flex gap-2 flex-wrap">${t.photo_url ? `<button onclick="verDocumento('${t.photo_url}', 'Foto de perfil')" class="text-blue-600 text-sm"><i class="fas fa-camera"></i> Foto</button>` : ''}${t.document_ine_url ? `<button onclick="verDocumento('${t.document_ine_url}', 'INE')" class="text-blue-600 text-sm"><i class="fas fa-id-card"></i> INE</button>` : ''}${t.document_penal_url ? `<button onclick="verDocumento('${t.document_penal_url}', 'Antecedentes')" class="text-blue-600 text-sm"><i class="fas fa-gavel"></i> Antecedentes</button>` : ''}</div></td>
                 <td class="p-4"><div class="flex gap-2"><button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Aprobar</button><button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm">Rechazar</button></div></td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="5" class="text-center p-8 text-red-400">Error</tbody>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error</tbody>'; }
         }
 
         window.aprobarTasker = async (id) => {
@@ -655,7 +655,7 @@
         };
 
         // =============================================
-        // USUARIOS (CORREGIDO)
+        // USUARIOS
         // =============================================
         window.cargarUsuarios = async function() {
             const filtro = document.getElementById('filtroUsuarios')?.value || 'todos';
@@ -665,7 +665,7 @@
                 let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
                 if (filtro !== 'todos') query = query.eq('role', filtro);
                 const { data: usuarios } = await query;
-                if (!usuarios?.length) { tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</tbody>'; return; }
+                if (!usuarios?.length) { tbody.innerHTML = '</table><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</tbody>'; return; }
                 tbody.innerHTML = usuarios.map(u => `<tr class="border-b"><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-slate-300 bg-cover" style="background-image: url('${u.photo_url || ''}')"></div><span class="font-medium">${u.full_name || 'Sin nombre'}</span></div></td>
                 <td class="p-4">${u.email}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'tasker' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${u.role === 'admin' ? 'Admin' : u.role === 'tasker' ? 'Tasker' : 'Cliente'}</span></td>
                 <td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.status === 'active' || u.status === 'verified' ? 'bg-green-100 text-green-700' : u.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${u.status === 'active' ? 'Activo' : u.status === 'verified' ? 'Verificado' : u.status === 'pending' ? 'Pendiente' : 'Rechazado'}</span></td>
@@ -711,7 +711,7 @@
                 const { data: servicios } = await query;
                 if (!servicios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay servicios</tbody>'; return; }
                 tbody.innerHTML = servicios.map(s => `<tr class="border-b"><td class="p-4">${s.cliente?.full_name || 'Cliente'}</td><td class="p-4">${s.subcategoria}</td><td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td><td class="p-4 font-bold">$${s.monto_ofertado?.toFixed(2)}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${obtenerClaseEstado(s.status)}">${obtenerTextoEstado(s.status)}</span></td><td class="p-4 text-sm">${new Date(s.created_at).toLocaleDateString()}</td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '</table><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
         };
 
         // =============================================
@@ -724,7 +724,7 @@
                 const { data: pagos } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)').eq('status', 'completado').order('fecha_pago', { ascending: false }).limit(50);
                 if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</tbody>'; return; }
                 tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-4">${p.servicio?.subcategoria || ''}</td><td class="p-4">${p.cliente?.full_name || ''}</td><td class="p-4">${p.tasker?.full_name || ''}</td><td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td><td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
         }
 
         async function cargarGanancias() {
