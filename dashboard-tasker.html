@@ -126,6 +126,27 @@
             transform: scale(1.02);
         }
         
+        /* Scroll personalizado */
+        .contenido-scroll {
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+        
         @media (max-width: 768px) {
             .sidebar-tasker {
                 position: fixed !important;
@@ -206,6 +227,10 @@
             
             .chat-message {
                 max-width: 85% !important;
+            }
+            
+            .contenido-scroll {
+                max-height: calc(100vh - 100px);
             }
         }
         
@@ -335,7 +360,7 @@
                 </div>
             </div>
             
-            <nav class="flex-1 mt-6 space-y-1 px-3">
+            <nav class="flex-1 mt-6 space-y-1 px-3 overflow-y-auto">
                 <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio">
                     <i class="fas fa-home w-6"></i><span>Inicio</span>
                 </a>
@@ -386,7 +411,7 @@
                 </div>
             </header>
 
-            <div class="p-6">
+            <div class="contenido-scroll p-6">
                 <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido active">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -802,34 +827,99 @@
         }
 
         // =============================================
-        // SERVICIOS DISPONIBLES (TOMA DIRECTA)
+        // SERVICIOS DISPONIBLES (CORREGIDO)
         // =============================================
         window.cargarDisponibles = async function() {
             const container = document.getElementById('disponiblesContainer');
             const categoriaFiltro = document.getElementById('filtroCategoria').value;
+            
+            container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i><p class="text-slate-400 mt-2">Cargando servicios disponibles...</p></div>';
+            
             try {
                 const supabase = initSupabase();
-                let query = supabase.from('servicios').select('*, cliente:cliente_id(full_name, calificacion_promedio)').eq('status', 'publicado').order('created_at', { ascending: false });
-                if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
-                const { data: servicios } = await query;
-                if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
+                
+                let query = supabase
+                    .from('servicios')
+                    .select('*, cliente:cliente_id(full_name, calificacion_promedio, photo_url)')
+                    .eq('status', 'publicado')
+                    .order('created_at', { ascending: false });
+                
+                if (categoriaFiltro) {
+                    query = query.eq('categoria', categoriaFiltro);
+                }
+                
+                const { data: servicios, error } = await query;
+                
+                if (error) {
+                    console.error('❌ Error cargando servicios:', error);
+                    container.innerHTML = `<p class="text-red-400 text-center py-8">Error al cargar servicios: ${error.message}</p>`;
+                    return;
+                }
+                
+                console.log(`📋 Servicios disponibles encontrados: ${servicios?.length || 0}`);
+                
+                if (!servicios || servicios.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                            <i class="fas fa-inbox text-4xl text-slate-300 mb-3"></i>
+                            <p class="text-slate-400">No hay servicios disponibles en este momento</p>
+                            <p class="text-xs text-slate-400 mt-2">Los servicios aparecerán aquí cuando los clientes los publiquen</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 container.innerHTML = servicios.map(s => `
-                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
+                    <div class="bg-white rounded-xl shadow-sm p-6 service-card hover:shadow-md transition-all">
                         <div class="flex justify-between items-start mb-4">
-                            <div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion}</p></div>
-                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-800">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600 mt-1">${s.descripcion?.substring(0, 100) || ''}${s.descripcion?.length > 100 ? '...' : ''}</p>
+                            </div>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center gap-1">
+                                <i class="fas fa-check-circle text-xs"></i> Disponible
+                            </span>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
-                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-green-600">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div>
-                            <div><p class="text-slate-500">Cliente</p><p>${s.cliente?.full_name || 'Cliente'}</p><p class="text-xs">⭐ ${s.cliente?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+                            <div>
+                                <p class="text-slate-500 text-xs">Presupuesto</p>
+                                <p class="font-bold text-blue-600 text-lg">$${s.monto_ofertado?.toFixed(2)}</p>
+                                <p class="text-xs text-green-600">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 text-xs">Ubicación</p>
+                                <p class="font-medium">${s.ubicacion || 'No especificada'}</p>
+                                <p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 text-xs">Cliente</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="w-6 h-6 rounded-full bg-slate-300 bg-cover" style="background-image: url('${s.cliente?.photo_url || ''}')"></div>
+                                    <span class="font-medium">${s.cliente?.full_name || 'Cliente'}</span>
+                                </div>
+                                <p class="text-xs text-yellow-500">⭐ ${s.cliente?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 text-xs">Publicado</p>
+                                <p class="font-medium">${new Date(s.created_at).toLocaleDateString()}</p>
+                                <p class="text-xs text-slate-400">${new Date(s.created_at).toLocaleTimeString()}</p>
+                            </div>
                         </div>
+                        
                         <div class="border-t pt-4 flex justify-end">
-                            <button onclick="abrirModalTomarServicio('${s.id}')" class="btn-tomar-servicio bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">📋 Tomar servicio</button>
+                            <button onclick="abrirModalTomarServicio('${s.id}')" 
+                                    class="btn-tomar-servicio bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 shadow-md">
+                                <i class="fas fa-hand-paper"></i> Tomar servicio
+                            </button>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
+                
+            } catch (error) {
+                console.error('❌ Error inesperado:', error);
+                container.innerHTML = `<p class="text-red-400 text-center py-8">Error al cargar servicios: ${error.message}</p>`;
+            }
         };
 
         function abrirModalTomarServicio(servicioId) {
@@ -849,25 +939,27 @@
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                // Actualizar servicio con tasker asignado
+                
                 const { error: servicioError } = await supabase
                     .from('servicios')
                     .update({ tasker_id: usuarioActual.id, status: 'asignado', updated_at: new Date() })
                     .eq('id', servicioSeleccionadoId);
                 if (servicioError) throw servicioError;
-                // Obtener cliente para notificar
+                
                 const { data: servicio } = await supabase.from('servicios').select('cliente_id, subcategoria').eq('id', servicioSeleccionadoId).single();
-                // Crear chat automáticamente
+                
                 const { data: chatExistente } = await supabase
                     .from('chats')
                     .select('id')
                     .eq('servicio_id', servicioSeleccionadoId)
                     .maybeSingle();
+                    
                 if (!chatExistente) {
                     await supabase.from('chats').insert([{ servicio_id: servicioSeleccionadoId, usuario1_id: usuarioActual.id, usuario2_id: servicio.cliente_id, created_at: new Date() }]);
                 }
-                // Notificar al cliente
+                
                 await supabase.from('notificaciones').insert([{ usuario_id: servicio.cliente_id, tipo: 'servicio', titulo: '¡Tasker asignado!', mensaje: `Un profesional ha tomado tu servicio de ${servicio.subcategoria}` }]);
+                
                 mostrarToast('✅ Servicio tomado exitosamente', 'success');
                 cerrarTomarServicioModal();
                 window.cargarMisTrabajos();
@@ -960,7 +1052,7 @@
                 document.getElementById('comisionesTotales').textContent = `$${comisiones.toFixed(2)}`;
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
                 const tbody = document.getElementById('pagosTableBody');
-                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</tbody>'; return; }
                 tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>`).join('');
             } catch (e) { console.error(e); }
         }
@@ -1084,13 +1176,10 @@
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                // Eliminar ubicación activa
                 await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
-                // Eliminar perfil
                 await supabase.from('profiles').delete().eq('id', usuarioActual.id);
-                // Cerrar sesión
                 await supabase.auth.signOut();
-                mostrarToast('Cuenta cancelada. Adiós.', 'success');
+                mostrarToast('Cuenta cancelada', 'success');
                 setTimeout(() => window.location.href = 'index.html', 2000);
             } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
