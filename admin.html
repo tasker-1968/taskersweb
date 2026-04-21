@@ -75,7 +75,6 @@
         .badge-active { background: #d1fae5; color: #065f46; }
         .badge-inactive { background: #fee2e2; color: #991b1b; }
         
-        /* Scroll personalizado */
         .contenido-scroll {
             max-height: calc(100vh - 120px);
             overflow-y: auto;
@@ -111,9 +110,7 @@
                 bottom: 0 !important;
                 z-index: 9999 !important;
                 width: 280px !important;
-                display: flex !important;
                 transition: left 0.3s ease !important;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
             .admin-sidebar.abierto {
@@ -137,7 +134,6 @@
             
             #btnMenuMovil {
                 display: flex !important;
-                z-index: 10000 !important;
                 position: fixed !important;
                 top: 1rem !important;
                 left: 1rem !important;
@@ -146,8 +142,7 @@
                 width: 48px !important;
                 height: 48px !important;
                 border-radius: 12px !important;
-                align-items: center !important;
-                justify-content: center !important;
+                z-index: 10000 !important;
             }
             
             .ml-12 {
@@ -225,7 +220,7 @@
         <i class="fas fa-bars text-xl"></i>
     </button>
 
-    <!-- Overlay para móvil -->
+    <!-- Overlay -->
     <div id="overlayMenu" class="hidden md:hidden"></div>
 
     <!-- Modal de carga -->
@@ -385,8 +380,8 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Nombre</th><th class="p-4 text-left">Email</th><th class="p-4 text-left">Teléfono</th><th class="p-4 text-left">Documentos</th><th class="p-4 text-left">Acciones</th></tr>
                                 </thead>
-                                <tbody id="taskersTable"><tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
-                            }</table>
+                                <tbody id="taskersTable"><tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -408,8 +403,8 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Usuario</th><th class="p-4 text-left">Email</th><th class="p-4 text-left">Rol</th><th class="p-4 text-left">Estado</th><th class="p-4 text-left">Documentos</th><th class="p-4 text-left">Acciones</th></tr>
                                 </thead>
-                                <tbody id="usuariosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
-                            }</table>
+                                <tbody id="usuariosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -433,8 +428,8 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Cliente</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Tasker</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Estado</th><th class="p-4 text-left">Fecha</th></tr>
                                 </thead>
-                                <tbody id="serviciosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
-                            }</table>
+                                <tbody id="serviciosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -450,8 +445,8 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Cliente</th><th class="p-4 text-left">Tasker</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th></tr>
                                 </thead>
-                                <tbody id="pagosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
-                            }</table>
+                                <tbody id="pagosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -459,7 +454,7 @@
                 <!-- GANANCIAS -->
                 <section id="seccion-ganancias" class="seccion-contenido">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
                             <h3 class="font-bold text-lg mb-4"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Resumen de Ganancias</h3>
                             <div class="space-y-4">
                                 <div class="flex justify-between p-3 bg-blue-50 rounded-lg"><span>Ganancias Totales (15%)</span><span id="gananciasTotales" class="font-bold text-blue-600">$0.00</span></div>
@@ -467,11 +462,11 @@
                                 <div class="flex justify-between p-3 bg-purple-50 rounded-lg"><span>Hoy</span><span id="gananciasHoy" class="font-bold text-purple-600">$0.00</span></div>
                             </div>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
                             <h3 class="font-bold text-lg mb-4">Proyección Mensual</h3>
                             <canvas id="gananciasChart" height="200"></canvas>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
                             <h3 class="font-bold text-lg mb-4">Top Taskers</h3>
                             <div id="topTaskers" class="space-y-2 max-h-64 overflow-y-auto"><p class="text-slate-400 text-center py-4">Cargando...</p></div>
                         </div>
@@ -483,8 +478,8 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Servicio</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Tasker</th><th class="p-3 text-left">Monto Total</th><th class="p-3 text-left">Comisión</th></tr>
                                 </thead>
-                                <tbody id="gananciasTable"><td><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr></tbody>
-                            }</table>
+                                <tbody id="gananciasTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -629,11 +624,11 @@
             try {
                 const supabase = initSupabase();
                 const { data: taskers } = await supabase.from('profiles').select('*').eq('role', 'tasker').eq('status', 'pending').order('created_at', { ascending: false });
-                if (!taskers?.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>'; return; }
+                if (!taskers?.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</tbody>'; return; }
                 tbody.innerHTML = taskers.map(t => `<tr class="border-b"><td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td><td class="p-4">${t.email}</td><td class="p-4">${t.phone || 'N/A'}</td>
                 <td class="p-4"><div class="flex gap-2 flex-wrap">${t.photo_url ? `<button onclick="verDocumento('${t.photo_url}', 'Foto de perfil')" class="text-blue-600 text-sm"><i class="fas fa-camera"></i> Foto</button>` : ''}${t.document_ine_url ? `<button onclick="verDocumento('${t.document_ine_url}', 'INE')" class="text-blue-600 text-sm"><i class="fas fa-id-card"></i> INE</button>` : ''}${t.document_penal_url ? `<button onclick="verDocumento('${t.document_penal_url}', 'Antecedentes')" class="text-blue-600 text-sm"><i class="fas fa-gavel"></i> Antecedentes</button>` : ''}</div></td>
                 <td class="p-4"><div class="flex gap-2"><button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Aprobar</button><button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm">Rechazar</button></div></td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="5" class="text-center p-8 text-red-400">Error</td></tr>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="5" class="text-center p-8 text-red-400">Error</tbody>'; }
         }
 
         window.aprobarTasker = async (id) => {
@@ -660,7 +655,7 @@
         };
 
         // =============================================
-        // USUARIOS
+        // USUARIOS (CORREGIDO)
         // =============================================
         window.cargarUsuarios = async function() {
             const filtro = document.getElementById('filtroUsuarios')?.value || 'todos';
@@ -670,13 +665,13 @@
                 let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
                 if (filtro !== 'todos') query = query.eq('role', filtro);
                 const { data: usuarios } = await query;
-                if (!usuarios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</td></tr>'; return; }
+                if (!usuarios?.length) { tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</tbody>'; return; }
                 tbody.innerHTML = usuarios.map(u => `<tr class="border-b"><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-slate-300 bg-cover" style="background-image: url('${u.photo_url || ''}')"></div><span class="font-medium">${u.full_name || 'Sin nombre'}</span></div></td>
                 <td class="p-4">${u.email}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'tasker' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${u.role === 'admin' ? 'Admin' : u.role === 'tasker' ? 'Tasker' : 'Cliente'}</span></td>
                 <td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.status === 'active' || u.status === 'verified' ? 'bg-green-100 text-green-700' : u.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${u.status === 'active' ? 'Activo' : u.status === 'verified' ? 'Verificado' : u.status === 'pending' ? 'Pendiente' : 'Rechazado'}</span></td>
                 <td class="p-4"><div class="flex gap-2">${u.photo_url ? `<button onclick="verDocumento('${u.photo_url}', 'Foto')" class="text-blue-600 text-sm"><i class="fas fa-image"></i></button>` : ''}${u.document_ine_url ? `<button onclick="verDocumento('${u.document_ine_url}', 'INE')" class="text-blue-600 text-sm"><i class="fas fa-id-card"></i></button>` : ''}${u.document_penal_url ? `<button onclick="verDocumento('${u.document_penal_url}', 'Antecedentes')" class="text-blue-600 text-sm"><i class="fas fa-gavel"></i></button>` : ''}</div></td>
                 <td class="p-4"><div class="flex gap-2"><button onclick="cambiarEstadoUsuario('${u.id}', '${u.status}')" class="text-blue-600 text-sm"><i class="fas fa-edit"></i> Estado</button><button onclick="eliminarUsuario('${u.id}')" class="text-red-600 text-sm"><i class="fas fa-trash"></i> Eliminar</button></div></td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
         };
 
         window.cambiarEstadoUsuario = async (id, estadoActual) => {
@@ -714,9 +709,9 @@
                 let query = supabase.from('servicios').select('*, cliente:cliente_id(full_name), tasker:tasker_id(full_name)').order('created_at', { ascending: false }).limit(50);
                 if (filtro !== 'todos') query = query.eq('status', filtro);
                 const { data: servicios } = await query;
-                if (!servicios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay servicios</td></tr>'; return; }
+                if (!servicios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay servicios</tbody>'; return; }
                 tbody.innerHTML = servicios.map(s => `<tr class="border-b"><td class="p-4">${s.cliente?.full_name || 'Cliente'}</td><td class="p-4">${s.subcategoria}</td><td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td><td class="p-4 font-bold">$${s.monto_ofertado?.toFixed(2)}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${obtenerClaseEstado(s.status)}">${obtenerTextoEstado(s.status)}</span></td><td class="p-4 text-sm">${new Date(s.created_at).toLocaleDateString()}</td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
         };
 
         // =============================================
@@ -727,9 +722,9 @@
             try {
                 const supabase = initSupabase();
                 const { data: pagos } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)').eq('status', 'completado').order('fecha_pago', { ascending: false }).limit(50);
-                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</tbody>'; return; }
                 tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-4">${p.servicio?.subcategoria || ''}</td><td class="p-4">${p.cliente?.full_name || ''}</td><td class="p-4">${p.tasker?.full_name || ''}</td><td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td><td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td></tr>`).join('');
-            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
+            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</tbody>'; }
         }
 
         async function cargarGanancias() {
@@ -756,7 +751,7 @@
                     topContainer.innerHTML = topTaskers.map(([id, total]) => `<div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>${nombres[id] || 'Tasker'}</span><span class="font-bold text-green-600">$${total.toFixed(2)}</span></div>`).join('');
                 }
                 const tbody = document.getElementById('gananciasTable');
-                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones</td></tr>'; return; }
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones</tbody>'; return; }
                 tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">${p.cliente?.full_name || ''}</td><td class="p-3">${p.tasker?.full_name || ''}</td><td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td><td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td></tr>`).join('');
                 actualizarGraficaGanancias(pagos);
             } catch (e) { console.error(e); }
