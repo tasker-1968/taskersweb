@@ -358,6 +358,7 @@
                 });
 
                 if (authError) throw new Error(authError.message);
+                if (!authData || !authData.user) throw new Error('No se pudo crear el usuario');
 
                 const userId = authData.user.id;
                 const fileUrls = {};
@@ -370,26 +371,48 @@
 
                 for (const f of files) {
                     const fileName = `${userId}/${f.id}_${Date.now()}.${f.file.name.split('.').pop()}`;
-                    await supabase.storage.from('taskers-documents').upload(fileName, f.file);
-                    const { data: { publicUrl } } = supabase.storage.from('taskers-documents').getPublicUrl(fileName);
+                    const { error: uploadError } = await supabase.storage
+                        .from('taskers-documents')
+                        .upload(fileName, f.file);
+                    
+                    if (uploadError) throw new Error(`Error al subir ${f.id}: ${uploadError.message}`);
+                    
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('taskers-documents')
+                        .getPublicUrl(fileName);
+                    
                     fileUrls[f.key] = publicUrl;
                 }
 
-                await supabase.from('profiles').insert([{
-                    id: userId, email, full_name: fullName, phone,
-                    role: 'tasker', status: 'pending',
-                    photo_url: fileUrls.photo_url,
-                    document_ine_url: fileUrls.document_ine_url,
-                    document_penal_url: fileUrls.document_penal_url,
-                    created_at: new Date(), updated_at: new Date()
-                }]);
+                // IMPORTANTE: status = 'verified' para que el tasker pueda ver servicios inmediatamente
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: userId,
+                        email: email,
+                        full_name: fullName,
+                        phone: phone,
+                        role: 'tasker',
+                        status: 'verified',  // <--- CAMBIADO DE 'pending' A 'verified'
+                        photo_url: fileUrls.photo_url,
+                        document_ine_url: fileUrls.document_ine_url,
+                        document_penal_url: fileUrls.document_penal_url,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    }]);
+
+                if (profileError) {
+                    await supabase.auth.admin.deleteUser(userId);
+                    throw new Error('Error al crear el perfil');
+                }
 
                 ocultarCarga();
-                mostrarToast('✅ Registro exitoso', 'success');
-                setTimeout(() => window.location.href = 'login.html', 1500);
+                mostrarToast('✅ ¡Registro exitoso! Ya puedes ofrecer tus servicios', 'success');
+                setTimeout(() => window.location.href = 'dashboard-tasker.html', 1500);
 
             } catch (error) {
                 ocultarCarga();
+                console.error('Error:', error);
                 mostrarToast(error.message, 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
