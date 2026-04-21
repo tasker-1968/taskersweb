@@ -14,7 +14,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Leaflet CSS y JS para el mapa -->
+    <!-- Leaflet para mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -104,18 +104,26 @@
         
         .service-card {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .service-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2);
         }
         
-        /* Mapa */
         #mapaServicios {
             height: 300px;
             border-radius: 16px;
             z-index: 1;
+        }
+        
+        .btn-tomar-servicio {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-tomar-servicio:hover {
+            transform: scale(1.02);
         }
         
         @media (max-width: 768px) {
@@ -126,9 +134,7 @@
                 bottom: 0 !important;
                 z-index: 9999 !important;
                 width: 280px !important;
-                display: flex !important;
                 transition: left 0.3s ease !important;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
             }
             
             .sidebar-tasker.abierto {
@@ -144,18 +150,14 @@
                 background: rgba(0, 0, 0, 0.5) !important;
                 z-index: 9998 !important;
                 display: none;
-                opacity: 0;
-                transition: opacity 0.3s ease;
             }
             
             #overlayMenu.visible {
                 display: block !important;
-                opacity: 1 !important;
             }
             
             #btnMenuMovil {
                 display: flex !important;
-                z-index: 10000 !important;
                 position: fixed !important;
                 top: 1rem !important;
                 left: 1rem !important;
@@ -164,9 +166,7 @@
                 width: 48px !important;
                 height: 48px !important;
                 border-radius: 12px !important;
-                align-items: center !important;
-                justify-content: center !important;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+                z-index: 10000 !important;
             }
             
             .ml-12 {
@@ -187,7 +187,6 @@
             
             .table-container {
                 overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
                 margin: 0 -1rem !important;
                 padding: 0 1rem !important;
                 width: calc(100% + 2rem) !important;
@@ -199,28 +198,14 @@
             
             button, .sidebar-link, [onclick] {
                 min-height: 44px !important;
-                min-width: 44px !important;
-            }
-            
-            input, select, textarea {
-                font-size: 16px !important;
-            }
-            
-            .chat-message {
-                max-width: 85% !important;
             }
             
             #mapaServicios {
                 height: 250px !important;
             }
-        }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .stat-card {
-                padding: 1.25rem;
-            }
-            .stat-card p.text-3xl {
-                font-size: 2rem;
+            
+            .chat-message {
+                max-width: 85% !important;
             }
         }
         
@@ -261,36 +246,17 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
     </style>
 </head>
 <body class="bg-slate-50">
 
     <!-- Botón menú móvil -->
-    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg items-center justify-center hover:bg-blue-700 transition">
         <i class="fas fa-bars text-xl"></i>
     </button>
 
-    <!-- Overlay para móvil -->
-    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
+    <!-- Overlay -->
+    <div id="overlayMenu" class="hidden md:hidden"></div>
 
     <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
@@ -300,46 +266,23 @@
         </div>
     </div>
 
-    <!-- Modal de propuesta -->
-    <div id="propuestaModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <!-- Modal de confirmación para tomar servicio -->
+    <div id="tomarServicioModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-800">Enviar Propuesta</h3>
-                <button onclick="cerrarPropuestaModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <h3 class="text-xl font-bold text-slate-800">Tomar Servicio</h3>
+                <button onclick="cerrarTomarServicioModal()" class="text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <form id="propuestaForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Tu presupuesto ($MXN)</label>
-                    <input type="number" id="propuestaMonto" required min="100" step="100"
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                    <p class="text-xs text-slate-500 mt-2">
-                        <i class="fas fa-info-circle text-blue-600"></i>
-                        Recibirás el 85% (comisión Tasker's: 15%)
-                    </p>
+            <div id="tomarServicioContenido" class="space-y-4">
+                <p class="text-slate-600">¿Confirmas que quieres tomar este servicio?</p>
+                <p class="text-sm text-slate-500">Al aceptar, el cliente será notificado y podrán comunicarse por chat.</p>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="cerrarTomarServicioModal()" class="flex-1 border py-2 rounded-xl">Cancelar</button>
+                    <button id="confirmarTomarServicioBtn" class="flex-1 bg-green-600 text-white py-2 rounded-xl hover:bg-green-700">Confirmar</button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Mensaje para el cliente</label>
-                    <textarea id="propuestaMensaje" rows="3" 
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                        placeholder="Describe por qué eres la mejor opción..."></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Tiempo estimado</label>
-                    <select id="propuestaTiempo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                        <option value="60">1 hora</option>
-                        <option value="120">2 horas</option>
-                        <option value="180">3 horas</option>
-                        <option value="240">4 horas</option>
-                        <option value="300">5 horas</option>
-                        <option value="360">6+ horas</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                    Enviar Propuesta
-                </button>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -348,32 +291,28 @@
         <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-slate-800">Solicitar Retiro</h3>
-                <button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <button onclick="cerrarRetiroModal()" class="text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <form id="retiroForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Monto a retirar</label>
-                    <input type="number" id="retiroMonto" required min="100" step="100"
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <input type="number" id="retiroMonto" required min="100" step="100" class="w-full p-3 border rounded-xl">
                     <p id="saldoDisponible" class="text-xs text-slate-500 mt-2">Saldo disponible: $0.00</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Método de pago</label>
-                    <select id="retiroMetodo" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <select id="retiroMetodo" class="w-full p-3 border rounded-xl">
                         <option value="transferencia">Transferencia bancaria</option>
                         <option value="paypal">PayPal</option>
                     </select>
                 </div>
                 <div id="datosBancarios">
                     <label class="block text-sm font-medium text-slate-700 mb-2">CLABE (18 dígitos)</label>
-                    <input type="text" id="retiroClabe" maxlength="18" 
-                        class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <input type="text" id="retiroClabe" maxlength="18" class="w-full p-3 border rounded-xl">
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">
-                    Solicitar Retiro
-                </button>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">Solicitar Retiro</button>
             </form>
         </div>
     </div>
@@ -392,42 +331,38 @@
                     </div>
                 </div>
                 <div id="userInfo" class="mt-4 text-sm text-blue-100 bg-white/10 p-3 rounded-lg">
-                    <!-- Se llena dinámicamente -->
+                    <p class="font-bold">Cargando...</p>
                 </div>
             </div>
             
             <nav class="flex-1 mt-6 space-y-1 px-3">
                 <a href="#" onclick="window.mostrarSeccion('inicio'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-inicio">
-                    <i class="fas fa-home w-6"></i>
-                    <span>Inicio</span>
+                    <i class="fas fa-home w-6"></i><span>Inicio</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('disponibles'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-disponibles">
-                    <i class="fas fa-search w-6"></i>
-                    <span>Servicios Disponibles</span>
+                    <i class="fas fa-search w-6"></i><span>Servicios Disponibles</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('mis-trabajos'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-mis-trabajos">
-                    <i class="fas fa-briefcase w-6"></i>
-                    <span>Mis Trabajos</span>
+                    <i class="fas fa-briefcase w-6"></i><span>Mis Trabajos</span>
                 </a>
-                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all relative" id="link-chat">
-                    <i class="fas fa-comments w-6"></i>
-                    <span>Mensajes</span>
+                <a href="#" onclick="window.mostrarSeccion('chat'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-chat">
+                    <i class="fas fa-comments w-6"></i><span>Mensajes</span>
                     <span id="chatCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('finanzas'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-finanzas">
-                    <i class="fas fa-wallet w-6"></i>
-                    <span>Finanzas</span>
+                    <i class="fas fa-wallet w-6"></i><span>Finanzas</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil">
-                    <i class="fas fa-user w-6"></i>
-                    <span>Mi Perfil</span>
+                    <i class="fas fa-user w-6"></i><span>Mi Perfil</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('cancelar-cuenta'); return false;" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-cancelar-cuenta">
+                    <i class="fas fa-trash-alt w-6"></i><span>Cancelar Cuenta</span>
                 </a>
             </nav>
             
             <div class="p-4 border-t border-white/20">
                 <button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Cerrar Sesión
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
             </div>
         </aside>
@@ -473,36 +408,36 @@
                         </div>
                     </div>
 
-                    <!-- Mapa de servicios cercanos -->
+                    <!-- Mapa -->
                     <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
                                 <i class="fas fa-map-marked-alt text-blue-600"></i>
                                 Servicios cerca de ti
                             </h3>
-                            <button onclick="actualizarUbicacion()" class="text-sm text-blue-600 hover:text-blue-700 transition">
+                            <button onclick="actualizarUbicacion()" class="text-sm text-blue-600 hover:text-blue-700">
                                 <i class="fas fa-location-dot mr-1"></i> Actualizar
                             </button>
                         </div>
                         <div id="mapaServicios" class="w-full bg-slate-100 rounded-xl"></div>
                         <p class="text-xs text-slate-400 mt-3 text-center">
-                            <i class="fas fa-info-circle"></i> Muestra servicios disponibles cerca de tu ubicación actual
+                            <i class="fas fa-info-circle"></i> Haz clic en un marcador para ver detalles del servicio
                         </p>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4">Próximos trabajos</h3>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">Trabajos en curso</h3>
                         <div id="proximosTrabajos" class="space-y-3">
-                            <p class="text-slate-400 text-center py-4">Cargando...</p>
+                            <p class="text-slate-400 text-center py-4">No hay trabajos en curso</p>
                         </div>
                     </div>
                 </section>
 
                 <!-- SERVICIOS DISPONIBLES -->
                 <section id="seccion-disponibles" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Servicios Disponibles</h3>
-                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        <select id="filtroCategoria" onchange="window.cargarDisponibles()" class="p-2 border rounded-lg text-sm">
                             <option value="">Todas las categorías</option>
                         </select>
                     </div>
@@ -511,9 +446,9 @@
 
                 <!-- MIS TRABAJOS -->
                 <section id="seccion-mis-trabajos" class="seccion-contenido">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Mis Trabajos</h3>
-                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        <select id="filtroMisTrabajos" onchange="window.cargarMisTrabajos()" class="p-2 border rounded-lg text-sm">
                             <option value="todos">Todos</option>
                             <option value="asignado">Asignados</option>
                             <option value="en_progreso">En progreso</option>
@@ -526,15 +461,14 @@
                 <!-- CHAT -->
                 <section id="seccion-chat" class="seccion-contenido">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                            <div class="p-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
                                 <h3 class="font-bold">Conversaciones</h3>
                             </div>
-                            <div id="conversacionesLista" class="overflow-y-auto h-full">
+                            <div id="conversacionesLista" class="flex-1 overflow-y-auto p-2">
                                 <p class="text-slate-400 text-center p-4">Cargando...</p>
                             </div>
                         </div>
-
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm flex flex-col">
                             <div id="chatHeader" class="p-4 border-b bg-slate-50 hidden">
                                 <div class="flex items-center gap-3">
@@ -545,24 +479,16 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
                                 <p class="text-slate-400 text-center py-8">Selecciona una conversación</p>
                             </div>
-
                             <div id="chatInput" class="p-4 border-t bg-slate-50 hidden">
                                 <form id="mensajeForm" class="flex gap-2">
-                                    <input type="text" id="mensajeTexto" 
-                                        class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                                        placeholder="Escribe tu mensaje...">
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                                    <input type="text" id="mensajeTexto" class="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Escribe tu mensaje...">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </form>
-                                <p class="text-xs text-slate-400 mt-2 text-center">
-                                    <i class="fas fa-shield-alt mr-1 text-blue-600"></i>
-                                    Todos los mensajes son monitoreados. No compartas datos de contacto.
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -570,11 +496,11 @@
 
                 <!-- FINANZAS -->
                 <section id="seccion-finanzas" class="seccion-contenido">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div class="bg-white p-6 rounded-xl shadow-sm">
                             <p class="text-slate-500 text-sm">Saldo disponible</p>
                             <p id="saldoActual" class="text-3xl font-bold text-green-600 mt-2">$0.00</p>
-                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                            <button onclick="abrirRetiroModal()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
                                 <i class="fas fa-money-bill-wave mr-2"></i>Retirar
                             </button>
                         </div>
@@ -587,24 +513,14 @@
                             <p id="comisionesTotales" class="text-3xl font-bold text-slate-800 mt-2">$0.00</p>
                         </div>
                     </div>
-
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="font-bold text-lg text-slate-800 mb-4">Historial de pagos</h3>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Monto</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Comisión</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Neto</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Estado</th>
-                                    </tr>
+                                    <tr><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Servicio</th><th class="p-3 text-left">Monto</th><th class="p-3 text-left">Comisión</th><th class="p-3 text-left">Neto</th><th class="p-3 text-left">Estado</th></tr>
                                 </thead>
-                                <tbody id="pagosTableBody">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
+                                <tbody id="pagosTableBody"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -614,45 +530,48 @@
                 <section id="seccion-perfil" class="seccion-contenido">
                     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
                         <h3 class="text-2xl font-bold text-slate-800 mb-6">Mi Perfil Profesional</h3>
-                        
                         <div class="flex flex-col items-center mb-8">
                             <div class="relative">
                                 <div id="profileAvatar" class="w-32 h-32 rounded-full bg-slate-300 border-4 border-blue-100"></div>
-                                <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg">
+                                <button onclick="document.getElementById('fotoPerfil').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
                             <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
-                            <p class="text-sm text-slate-500 mt-2">Haz clic en el icono para cambiar tu foto</p>
                         </div>
-
                         <form id="perfilForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label>
-                                <input type="text" id="perfilNombre" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Correo electrónico</label>
-                                <input type="email" id="perfilEmail" readonly class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Teléfono</label>
-                                <input type="tel" id="perfilTelefono" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                                <p class="text-xs text-slate-400 mt-1">No compartimos tu teléfono con los clientes</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Descripción profesional</label>
-                                <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                                    placeholder="Cuéntales a los clientes sobre tu experiencia..."></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Años de experiencia</label>
-                                <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-                                Guardar Cambios
-                            </button>
+                            <input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl" placeholder="Nombre completo">
+                            <input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50">
+                            <input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl" placeholder="Teléfono">
+                            <textarea id="perfilDescripcion" rows="3" class="w-full p-3 border rounded-xl" placeholder="Descripción profesional..."></textarea>
+                            <input type="number" id="perfilExperiencia" min="0" class="w-full p-3 border rounded-xl" placeholder="Años de experiencia">
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Guardar Cambios</button>
                         </form>
+                    </div>
+                </section>
+
+                <!-- CANCELAR CUENTA -->
+                <section id="seccion-cancelar-cuenta" class="seccion-contenido">
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-exclamation-triangle text-3xl text-red-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2">Cancelar Cuenta</h3>
+                            <p class="text-slate-500">Esta acción es irreversible. Todos tus datos serán eliminados.</p>
+                        </div>
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                            <p class="text-sm text-red-700"><i class="fas fa-info-circle mr-2"></i>Al cancelar tu cuenta:</p>
+                            <ul class="text-sm text-red-600 mt-2 space-y-1 list-disc list-inside">
+                                <li>Perderás acceso a todos tus servicios activos</li>
+                                <li>Tus ganancias pendientes serán canceladas</li>
+                                <li>No podrás recuperar tu información</li>
+                            </ul>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="window.mostrarSeccion('inicio')" class="flex-1 border border-slate-300 py-3 rounded-xl font-medium hover:bg-slate-50">Cancelar</button>
+                            <button onclick="cancelarCuenta()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700">Sí, cancelar mi cuenta</button>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -667,7 +586,7 @@
         let usuarioActual = null;
         let chatActual = null;
         let suscripcionChat = null;
-        let servicioSeleccionado = null;
+        let servicioSeleccionadoId = null;
         let mapa = null;
         let marcadorUbicacion = null;
         let marcadoresServicios = [];
@@ -679,230 +598,144 @@
         function iniciarMapa(lat = 19.4326, lng = -99.1332) {
             const contenedor = document.getElementById('mapaServicios');
             if (!contenedor) return;
-            
-            if (mapa) {
-                mapa.remove();
-            }
+            if (mapa) mapa.remove();
             
             mapa = L.map('mapaServicios').setView([lat, lng], 13);
-            
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(mapa);
             
-            // Marcador de ubicación del tasker
-            const iconoTaskerUbicacion = L.divIcon({
-                className: 'custom-div-icon',
+            const iconoUsuario = L.divIcon({
                 html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6;"></div>',
-                iconSize: [20, 20],
-                popupAnchor: [0, -10]
+                iconSize: [20, 20]
             });
-            
-            marcadorUbicacion = L.marker([lat, lng], { icon: iconoTaskerUbicacion }).addTo(mapa);
-            marcadorUbicacion.bindPopup('<b>Tu ubicación</b><br>Estás aquí').openPopup();
+            marcadorUbicacion = L.marker([lat, lng], { icon: iconoUsuario }).addTo(mapa);
+            marcadorUbicacion.bindPopup('<b>Tu ubicación</b>').openPopup();
         }
 
         // =============================================
-        // ACTUALIZAR UBICACIÓN DEL TASKER
+        // ACTUALIZAR UBICACIÓN
         // =============================================
-        async function actualizarUbicacion() {
+        function actualizarUbicacion() {
             if (!navigator.geolocation) {
                 mostrarToast('Tu navegador no soporta geolocalización', 'warning');
                 return;
             }
-            
             mostrarCarga('Obteniendo tu ubicación...');
-            
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    
                     iniciarMapa(lat, lng);
-                    
-                    // Guardar ubicación en localStorage
                     localStorage.setItem('tasker_ubicacion', JSON.stringify({ lat, lng }));
-                    
-                    // Guardar ubicación en Supabase (para que los clientes vean al tasker)
                     await guardarUbicacionEnSupabase(lat, lng);
-                    
                     ocultarCarga();
                     mostrarToast('Ubicación actualizada', 'success');
-                    
-                    // Cargar servicios cercanos
-                    await cargarServiciosCercanos(lat, lng);
+                    await cargarServiciosEnMapa(lat, lng);
                 },
                 (error) => {
                     ocultarCarga();
-                    console.error('Error de geolocalización:', error);
-                    
-                    let mensaje = 'No se pudo obtener tu ubicación';
-                    if (error.code === 1) mensaje = 'Permite el acceso a tu ubicación';
-                    if (error.code === 2) mensaje = 'Ubicación no disponible';
-                    
-                    mostrarToast(mensaje, 'error');
+                    mostrarToast('Permite el acceso a tu ubicación', 'error');
                     iniciarMapa();
                 }
             );
         }
 
-        // =============================================
-        // GUARDAR UBICACIÓN EN SUPABASE
-        // =============================================
         async function guardarUbicacionEnSupabase(lat, lng) {
             if (!usuarioActual) return;
-            
-            try {
-                const supabase = initSupabase();
-                
-                // Verificar si ya existe una ubicación activa
-                const { data: existente } = await supabase
-                    .from('ubicaciones_activas')
-                    .select('id')
-                    .eq('tasker_id', usuarioActual.id)
-                    .maybeSingle();
-                
-                if (existente) {
-                    // Actualizar ubicación existente
-                    await supabase
-                        .from('ubicaciones_activas')
-                        .update({
-                            latitud: lat,
-                            longitud: lng,
-                            disponible: true,
-                            ultima_actualizacion: new Date()
-                        })
-                        .eq('tasker_id', usuarioActual.id);
-                } else {
-                    // Crear nueva ubicación
-                    await supabase
-                        .from('ubicaciones_activas')
-                        .insert([{
-                            tasker_id: usuarioActual.id,
-                            latitud: lat,
-                            longitud: lng,
-                            disponible: true,
-                            ultima_actualizacion: new Date()
-                        }]);
-                }
-                
-                console.log('✅ Ubicación guardada en Supabase');
-            } catch (error) {
-                console.error('Error guardando ubicación:', error);
+            const supabase = initSupabase();
+            const { data: existente } = await supabase.from('ubicaciones_activas').select('id').eq('tasker_id', usuarioActual.id).maybeSingle();
+            if (existente) {
+                await supabase.from('ubicaciones_activas').update({ latitud: lat, longitud: lng, disponible: true, ultima_actualizacion: new Date() }).eq('tasker_id', usuarioActual.id);
+            } else {
+                await supabase.from('ubicaciones_activas').insert([{ tasker_id: usuarioActual.id, latitud: lat, longitud: lng, disponible: true, ultima_actualizacion: new Date() }]);
             }
         }
 
-        // =============================================
-        // INICIAR ACTUALIZACIÓN PERIÓDICA DE UBICACIÓN
-        // =============================================
-        function iniciarActualizacionPeriodica() {
-            if (intervaloUbicacion) clearInterval(intervaloUbicacion);
-            
-            // Actualizar ubicación cada 30 segundos
-            intervaloUbicacion = setInterval(() => {
-                if (navigator.geolocation && usuarioActual) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            guardarUbicacionEnSupabase(position.coords.latitude, position.coords.longitude);
-                        },
-                        (error) => {
-                            console.error('Error actualizando ubicación periódica:', error);
-                        }
-                    );
-                }
-            }, 30000);
-        }
-
-        // =============================================
-        // CARGAR SERVICIOS CERCANOS EN EL MAPA
-        // =============================================
-        async function cargarServiciosCercanos(lat, lng) {
+        async function cargarServiciosEnMapa(lat, lng) {
             try {
                 const supabase = initSupabase();
-                
-                // Obtener servicios publicados
-                const { data: servicios, error } = await supabase
-                    .from('servicios')
-                    .select('*, profiles:cliente_id(full_name)')
-                    .eq('status', 'publicado')
-                    .limit(30);
-                
-                if (error) {
-                    console.error('Error cargando servicios:', error);
-                    return;
-                }
-                
-                // Limpiar marcadores anteriores
+                const { data: servicios } = await supabase.from('servicios').select('*, cliente:cliente_id(full_name)').eq('status', 'publicado').limit(30);
                 marcadoresServicios.forEach(m => mapa.removeLayer(m));
                 marcadoresServicios = [];
+                if (!servicios?.length) return;
                 
-                if (!servicios || servicios.length === 0) {
-                    mostrarToast('No hay servicios disponibles cerca', 'info');
-                    return;
-                }
-                
-                // Icono para servicios
                 const iconoServicio = L.divIcon({
-                    className: 'custom-div-icon',
                     html: '<div style="background-color: #f59e0b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #f59e0b;"></div>',
                     iconSize: [16, 16]
                 });
                 
-                // Mostrar servicios (por ahora con ubicación simulada, en Fase 2 se usará geolocalización real)
                 servicios.forEach(serv => {
-                    // Por ahora usamos una ubicación aleatoria cerca del usuario
-                    // En la Fase 2, los servicios tendrán lat/lng reales
-                    const offsetLat = (Math.random() - 0.5) * 0.05;
-                    const offsetLng = (Math.random() - 0.5) * 0.05;
-                    const servLat = lat + offsetLat;
-                    const servLng = lng + offsetLng;
-                    
-                    const marker = L.marker([servLat, servLng], { icon: iconoServicio }).addTo(mapa);
-                    const clienteNombre = serv.profiles?.full_name || 'Cliente';
-                    
+                    const offsetLat = lat + (Math.random() - 0.5) * 0.05;
+                    const offsetLng = lng + (Math.random() - 0.5) * 0.05;
+                    const marker = L.marker([offsetLat, offsetLng], { icon: iconoServicio }).addTo(mapa);
                     marker.bindPopup(`
                         <b>${serv.subcategoria || 'Servicio'}</b><br>
-                        <span class="text-xs">Cliente: ${clienteNombre}</span><br>
                         <span class="text-xs">$${serv.monto_ofertado?.toFixed(2)}</span><br>
-                        <button onclick="window.verServicioDetalle('${serv.id}')" 
-                                class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700">
-                            Ver detalles
-                        </button>
+                        <button onclick="verDetalleServicio('${serv.id}')" class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Ver detalles</button>
                     `);
-                    
                     marcadoresServicios.push(marker);
                 });
-                
-                if (marcadoresServicios.length > 0) {
-                    mostrarToast(`${marcadoresServicios.length} servicio(s) disponible(s) cerca`, 'success');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            } catch (error) { console.error(error); }
         }
 
-        window.verServicioDetalle = (servicioId) => {
-            // Navegar a la sección de disponibles y mostrar detalles
+        window.verDetalleServicio = (id) => {
             window.mostrarSeccion('disponibles');
             document.getElementById('disponiblesContainer').scrollIntoView({ behavior: 'smooth' });
         };
 
         // =============================================
-        // VERIFICAR AUTENTICACIÓN
+        // AUTENTICACIÓN Y USUARIO
         // =============================================
-        async function verificarAuth(redirectUrl = 'login.html') {
+        async function verificarAuth() {
             const supabase = initSupabase();
-            if (!supabase) return null;
-            
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = redirectUrl;
-                return null;
-            }
+            if (!session) window.location.href = 'login.html';
             return session;
+        }
+
+        async function cargarUsuario() {
+            mostrarCarga();
+            try {
+                const session = await verificarAuth();
+                if (!session) return;
+                const supabase = initSupabase();
+                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+                if (!perfil) throw new Error('Perfil no encontrado');
+                usuarioActual = perfil;
+                document.getElementById('userInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Tasker'}</p><p class="text-xs">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>`;
+                if (perfil.photo_url) {
+                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                    document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                }
+                if (perfil.status === 'pending') document.getElementById('verificationBadge').classList.remove('hidden');
+                document.getElementById('perfilNombre').value = perfil.full_name || '';
+                document.getElementById('perfilEmail').value = perfil.email || '';
+                document.getElementById('perfilTelefono').value = perfil.phone || '';
+                document.getElementById('perfilDescripcion').value = perfil.descripcion || '';
+                document.getElementById('perfilExperiencia').value = perfil.experiencia_anios || '';
+                const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
+                if (ubicacionGuardada) {
+                    const { lat, lng } = JSON.parse(ubicacionGuardada);
+                    iniciarMapa(lat, lng);
+                    await cargarServiciosEnMapa(lat, lng);
+                    await guardarUbicacionEnSupabase(lat, lng);
+                } else { actualizarUbicacion(); }
+                iniciarActualizacionPeriodica();
+            } catch (e) { console.error(e); mostrarToast('Error al cargar usuario', 'error'); } finally { ocultarCarga(); }
+        }
+
+        function iniciarActualizacionPeriodica() {
+            if (intervaloUbicacion) clearInterval(intervaloUbicacion);
+            intervaloUbicacion = setInterval(() => {
+                if (navigator.geolocation && usuarioActual) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        guardarUbicacionEnSupabase(position.coords.latitude, position.coords.longitude);
+                    }, () => {});
+                }
+            }, 30000);
         }
 
         // =============================================
@@ -912,25 +745,20 @@
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
-            
-            if (!menuBtn || !sidebar || !overlay) return;
-            
-            menuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+            if (!menuBtn) return;
+            menuBtn.style.display = 'flex';
+            menuBtn.addEventListener('click', () => {
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
-            
-            overlay.addEventListener('click', function() {
+            overlay.addEventListener('click', () => {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
-            
-            const links = document.querySelectorAll('.sidebar-link');
-            links.forEach(link => {
-                link.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', () => {
                     if (window.innerWidth < 768) {
                         sidebar.classList.remove('abierto');
                         overlay.classList.remove('visible');
@@ -939,301 +767,113 @@
                 });
             });
         }
-        
-        function cerrarMenuMovil() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlayMenu');
-            if (sidebar && overlay) {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            }
-        }
-        
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) cerrarMenuMovil();
-        });
 
         // =============================================
-        // CARGAR USUARIO
-        // =============================================
-        async function cargarUsuario() {
-            mostrarCarga();
-            try {
-                const session = await verificarAuth('login.html');
-                if (!session) return;
-                
-                const supabase = initSupabase();
-                const { data: perfil } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-                    
-                if (!perfil) throw new Error('Perfil no encontrado');
-                
-                usuarioActual = perfil;
-                
-                document.getElementById('userInfo').innerHTML = `
-                    <p class="font-bold">${perfil.full_name || 'Tasker'}</p>
-                    <p class="text-xs opacity-75">⭐ ${perfil.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
-                `;
-                
-                if (perfil.photo_url) {
-                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                    document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                }
-                
-                if (perfil.status === 'pending') {
-                    document.getElementById('verificationBadge').classList.remove('hidden');
-                }
-                
-                document.getElementById('perfilNombre').value = perfil.full_name || '';
-                document.getElementById('perfilEmail').value = perfil.email || '';
-                document.getElementById('perfilTelefono').value = perfil.phone || '';
-                document.getElementById('perfilDescripcion').value = perfil.descripcion || '';
-                document.getElementById('perfilExperiencia').value = perfil.experiencia_anios || '';
-                
-                // Iniciar mapa con ubicación guardada
-                const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
-                if (ubicacionGuardada) {
-                    const { lat, lng } = JSON.parse(ubicacionGuardada);
-                    iniciarMapa(lat, lng);
-                    await cargarServiciosCercanos(lat, lng);
-                    await guardarUbicacionEnSupabase(lat, lng);
-                } else {
-                    actualizarUbicacion();
-                }
-                
-                // Iniciar actualización periódica de ubicación
-                iniciarActualizacionPeriodica();
-                
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al cargar usuario', 'error');
-            } finally {
-                ocultarCarga();
-            }
-        }
-
-        // =============================================
-        // DASHBOARD INICIO
+        // DASHBOARD
         // =============================================
         async function cargarDashboard() {
             try {
                 const supabase = initSupabase();
-                const { data: trabajos } = await supabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('tasker_id', usuarioActual.id)
-                    .order('created_at', { ascending: false });
-                    
+                const { data: trabajos } = await supabase.from('servicios').select('*').eq('tasker_id', usuarioActual.id);
                 const ahora = new Date();
-                const mesActual = ahora.getMonth();
-                const anioActual = ahora.getFullYear();
-                
-                let ganancias = 0;
-                (trabajos || []).forEach(t => {
-                    if (t.status === 'completado') {
-                        const fecha = new Date(t.fecha_completado || t.created_at);
-                        if (fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual) {
-                            ganancias += (t.monto_ofertado || 0) * 0.85;
-                        }
-                    }
-                });
-                
+                const ganancias = (trabajos || []).filter(t => t.status === 'completado' && new Date(t.fecha_completado || t.created_at).getMonth() === ahora.getMonth()).reduce((s, t) => s + (t.monto_ofertado * 0.85), 0);
                 document.getElementById('statsGanancias').textContent = `$${ganancias.toFixed(2)}`;
                 document.getElementById('statsCompletados').textContent = (trabajos || []).filter(t => t.status === 'completado').length;
                 document.getElementById('statsProgreso').textContent = (trabajos || []).filter(t => t.status === 'en_progreso').length;
                 document.getElementById('statsCalificacion').textContent = usuarioActual.calificacion_promedio?.toFixed(1) || '0.0';
-                
                 const proximos = (trabajos || []).filter(t => ['asignado', 'en_progreso'].includes(t.status)).slice(0, 5);
                 const container = document.getElementById('proximosTrabajos');
-                
-                if (proximos.length === 0) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No tienes trabajos próximos</p>';
-                } else {
-                    container.innerHTML = proximos.map(t => `
-                        <div class="border rounded-lg p-4">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-bold">${t.subcategoria || 'Servicio'}</h4>
-                                    <p class="text-sm text-slate-600">${t.ubicacion || ''}</p>
-                                </div>
-                                <span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">
-                                    ${t.status === 'asignado' ? 'Asignado' : 'En progreso'}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error(e);
-            }
+                if (!proximos.length) container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay trabajos en curso</p>';
+                else container.innerHTML = proximos.map(t => `<div class="border rounded-lg p-4"><div class="flex justify-between"><div><h4 class="font-bold">${t.subcategoria}</h4><p class="text-sm">${t.ubicacion || ''}</p></div><span class="status-badge ${t.status === 'asignado' ? 'status-asignado' : 'status-progreso'}">${t.status === 'asignado' ? 'Asignado' : 'En progreso'}</span></div></div>`).join('');
+            } catch (e) { console.error(e); }
         }
 
         // =============================================
-        // CATEGORÍAS PARA FILTRO
+        // CATEGORÍAS
         // =============================================
         async function cargarCategoriasFiltro() {
             try {
                 const supabase = initSupabase();
-                const { data: cats } = await supabase
-                    .from('categorias')
-                    .select('*')
-                    .eq('activo', true);
-                    
+                const { data: cats } = await supabase.from('categorias').select('*').eq('activo', true);
                 const select = document.getElementById('filtroCategoria');
                 select.innerHTML = '<option value="">Todas las categorías</option>';
-                (cats || []).forEach(c => {
-                    select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-                });
-            } catch (e) {
-                console.error(e);
-            }
+                (cats || []).forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+            } catch (e) { console.error(e); }
         }
 
         // =============================================
-        // SERVICIOS DISPONIBLES
+        // SERVICIOS DISPONIBLES (TOMA DIRECTA)
         // =============================================
         window.cargarDisponibles = async function() {
             const container = document.getElementById('disponiblesContainer');
             const categoriaFiltro = document.getElementById('filtroCategoria').value;
-            
             try {
                 const supabase = initSupabase();
-                let query = supabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('status', 'publicado')
-                    .order('created_at', { ascending: false });
-                    
+                let query = supabase.from('servicios').select('*, cliente:cliente_id(full_name, calificacion_promedio)').eq('status', 'publicado').order('created_at', { ascending: false });
                 if (categoriaFiltro) query = query.eq('categoria', categoriaFiltro);
-                
                 const { data: servicios } = await query;
-                
-                if (!servicios?.length) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>';
-                    return;
-                }
-                
+                if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios disponibles</p>'; return; }
                 container.innerHTML = servicios.map(s => `
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 service-card">
                         <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-slate-600">${s.descripcion}</p>
-                            </div>
+                            <div><h4 class="font-bold text-lg">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion}</p></div>
                             <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Disponible</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-                            <div>
-                                <p class="text-slate-500">Presupuesto</p>
-                                <p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p>
-                                <p class="text-xs text-slate-400">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Ubicación</p>
-                                <p>${s.ubicacion || ''}</p>
-                                <p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Publicado</p>
-                                <p>${new Date(s.created_at).toLocaleDateString()}</p>
-                            </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</p><p class="text-xs text-green-600">Recibirías: $${(s.monto_ofertado * 0.85).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p><p class="text-xs text-slate-400">CP: ${s.cp || 'N/A'}</p></div>
+                            <div><p class="text-slate-500">Cliente</p><p>${s.cliente?.full_name || 'Cliente'}</p><p class="text-xs">⭐ ${s.cliente?.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div>
                         </div>
                         <div class="border-t pt-4 flex justify-end">
-                            <button onclick="abrirPropuestaModal('${s.id}', ${s.monto_ofertado})" 
-                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Enviar propuesta
-                            </button>
+                            <button onclick="abrirModalTomarServicio('${s.id}')" class="btn-tomar-servicio bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">📋 Tomar servicio</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
-            }
+            } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
         };
 
-        // =============================================
-        // PROPUESTAS
-        // =============================================
-        window.abrirPropuestaModal = function(servicioId, presupuestoMaximo) {
-            servicioSeleccionado = { id: servicioId, maximo: presupuestoMaximo };
-            document.getElementById('propuestaMonto').value = presupuestoMaximo * 0.85;
-            document.getElementById('propuestaModal').classList.remove('hidden');
-            document.getElementById('propuestaModal').classList.add('flex');
-        };
-        
-        function cerrarPropuestaModal() {
-            document.getElementById('propuestaModal').classList.add('hidden');
-            document.getElementById('propuestaModal').classList.remove('flex');
-            servicioSeleccionado = null;
+        function abrirModalTomarServicio(servicioId) {
+            servicioSeleccionadoId = servicioId;
+            document.getElementById('tomarServicioModal').classList.remove('hidden');
+            document.getElementById('tomarServicioModal').classList.add('flex');
         }
         
-        document.getElementById('propuestaForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!servicioSeleccionado) return;
-            
-            const monto = parseFloat(document.getElementById('propuestaMonto').value);
-            if (monto > servicioSeleccionado.maximo) {
-                mostrarToast('Tu propuesta no puede superar el presupuesto del cliente', 'error');
-                return;
-            }
-            
+        function cerrarTomarServicioModal() {
+            document.getElementById('tomarServicioModal').classList.add('hidden');
+            document.getElementById('tomarServicioModal').classList.remove('flex');
+            servicioSeleccionadoId = null;
+        }
+        
+        document.getElementById('confirmarTomarServicioBtn').addEventListener('click', async () => {
+            if (!servicioSeleccionadoId) return;
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                
-                const { data: existente } = await supabase
-                    .from('propuestas')
-                    .select('id')
-                    .eq('servicio_id', servicioSeleccionado.id)
-                    .eq('tasker_id', usuarioActual.id)
-                    .maybeSingle();
-                    
-                if (existente) {
-                    mostrarToast('Ya enviaste una propuesta para este servicio', 'warning');
-                    cerrarPropuestaModal();
-                    return;
-                }
-                
-                await supabase
-                    .from('propuestas')
-                    .insert([{
-                        servicio_id: servicioSeleccionado.id,
-                        tasker_id: usuarioActual.id,
-                        monto_propuesto: monto,
-                        mensaje: document.getElementById('propuestaMensaje').value,
-                        tiempo_estimado: parseInt(document.getElementById('propuestaTiempo').value),
-                        status: 'pendiente',
-                        created_at: new Date()
-                    }]);
-                    
-                const { data: servicio } = await supabase
+                // Actualizar servicio con tasker asignado
+                const { error: servicioError } = await supabase
                     .from('servicios')
-                    .select('cliente_id')
-                    .eq('id', servicioSeleccionado.id)
-                    .single();
-                    
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: servicio.cliente_id,
-                        tipo: 'propuesta',
-                        titulo: '¡Nueva propuesta recibida!',
-                        mensaje: 'Un tasker ha enviado una propuesta para tu servicio'
-                    }]);
-                    
-                mostrarToast('¡Propuesta enviada exitosamente!', 'success');
-                cerrarPropuestaModal();
-                
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+                    .update({ tasker_id: usuarioActual.id, status: 'asignado', updated_at: new Date() })
+                    .eq('id', servicioSeleccionadoId);
+                if (servicioError) throw servicioError;
+                // Obtener cliente para notificar
+                const { data: servicio } = await supabase.from('servicios').select('cliente_id, subcategoria').eq('id', servicioSeleccionadoId).single();
+                // Crear chat automáticamente
+                const { data: chatExistente } = await supabase
+                    .from('chats')
+                    .select('id')
+                    .eq('servicio_id', servicioSeleccionadoId)
+                    .maybeSingle();
+                if (!chatExistente) {
+                    await supabase.from('chats').insert([{ servicio_id: servicioSeleccionadoId, usuario1_id: usuarioActual.id, usuario2_id: servicio.cliente_id, created_at: new Date() }]);
+                }
+                // Notificar al cliente
+                await supabase.from('notificaciones').insert([{ usuario_id: servicio.cliente_id, tipo: 'servicio', titulo: '¡Tasker asignado!', mensaje: `Un profesional ha tomado tu servicio de ${servicio.subcategoria}` }]);
+                mostrarToast('✅ Servicio tomado exitosamente', 'success');
+                cerrarTomarServicioModal();
+                window.cargarMisTrabajos();
+                window.cargarDisponibles();
+                await cargarDashboard();
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         });
 
         // =============================================
@@ -1242,160 +882,61 @@
         window.cargarMisTrabajos = async function() {
             const filtro = document.getElementById('filtroMisTrabajos').value;
             const container = document.getElementById('misTrabajosContainer');
-            
             try {
                 const supabase = initSupabase();
-                let query = supabase
-                    .from('servicios')
-                    .select('*, profiles:cliente_id(full_name, photo_url)')
-                    .eq('tasker_id', usuarioActual.id)
-                    .order('created_at', { ascending: false });
-                    
+                let query = supabase.from('servicios').select('*, cliente:cliente_id(full_name, photo_url)').eq('tasker_id', usuarioActual.id).order('created_at', { ascending: false });
                 if (filtro !== 'todos') query = query.eq('status', filtro);
-                
                 const { data: trabajos } = await query;
-                
-                if (!trabajos?.length) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>';
-                    return;
-                }
-                
+                if (!trabajos?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay trabajos</p>'; return; }
                 container.innerHTML = trabajos.map(t => {
                     const esAsignado = t.status === 'asignado';
                     const esProgreso = t.status === 'en_progreso';
-                    const esCompletado = t.status === 'completado';
-                    const cliente = t.profiles;
-                    
                     return `
-                    <div class="bg-white rounded-xl shadow-sm p-6 ${!esCompletado ? 'service-card' : ''}">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
                         <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-bold text-lg">${t.subcategoria || ''}</h4>
-                                <p class="text-sm text-slate-600">${t.descripcion}</p>
-                            </div>
-                            <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">
-                                ${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}
-                            </span>
+                            <div><h4 class="font-bold text-lg">${t.subcategoria || ''}</h4><p class="text-sm text-slate-600">${t.descripcion}</p></div>
+                            <span class="status-badge ${esAsignado ? 'status-asignado' : esProgreso ? 'status-progreso' : 'status-completado'}">${t.status === 'asignado' ? 'Asignado' : t.status === 'en_progreso' ? 'En progreso' : 'Completado'}</span>
                         </div>
-                        
                         <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-                            <div>
-                                <p class="text-slate-500">Presupuesto</p>
-                                <p class="font-bold text-blue-600">$${(t.monto_ofertado).toFixed(2)}</p>
-                                <p class="text-xs text-slate-400">Recibirás: $${(t.monto_ofertado * 0.85).toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Ubicación</p>
-                                <p>${t.ubicacion || ''}</p>
-                                <p class="text-xs text-slate-400">CP: ${t.cp || 'N/A'}</p>
-                            </div>
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">$${(t.monto_ofertado).toFixed(2)}</p><p class="text-xs text-green-600">Recibirás: $${(t.monto_ofertado * 0.85).toFixed(2)}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${t.ubicacion || ''}</p></div>
                         </div>
-                        
-                        ${cliente ? `
                         <div class="border-t pt-4 mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-300" 
-                                     style="background-image: url('${cliente.photo_url || ''}'); background-size: cover;">
-                                </div>
-                                <div>
-                                    <p class="font-medium text-slate-800">${cliente.full_name || 'Cliente'}</p>
-                                    <p class="text-xs text-slate-500">Cliente</p>
-                                </div>
+                                <div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${t.cliente?.photo_url || ''}')"></div>
+                                <div><p class="font-medium">${t.cliente?.full_name || 'Cliente'}</p><p class="text-xs text-slate-500">Cliente</p></div>
+                                <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="ml-auto bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-comment mr-1"></i>Chat</button>
                             </div>
                         </div>
-                        ` : ''}
-                        
-                        ${esAsignado ? `
-                        <div class="border-t pt-4 flex gap-3">
-                            <button onclick="iniciarTrabajo('${t.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
-                                <i class="fas fa-play mr-2"></i>Iniciar trabajo
-                            </button>
-                            <button onclick="abrirChat('${t.id}','${t.cliente_id}')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                                <i class="fas fa-comment mr-2"></i>Contactar cliente
-                            </button>
-                        </div>
-                        ` : esProgreso ? `
-                        <div class="border-t pt-4">
-                            <p class="text-sm text-slate-600 mb-3">
-                                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
-                                Esperando confirmación del cliente
-                            </p>
-                            <button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700">
-                                <i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización
-                            </button>
-                        </div>
-                        ` : ''}
-                    </div>
-                `}).join('');
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>';
-            }
+                        ${esAsignado ? `<div class="border-t pt-4"><button onclick="iniciarTrabajo('${t.id}')" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"><i class="fas fa-play mr-2"></i>Iniciar trabajo</button></div>` : esProgreso ? `<div class="border-t pt-4"><p class="text-sm text-slate-600 mb-3"><i class="fas fa-info-circle text-blue-600 mr-2"></i>Esperando confirmación del cliente</p><button onclick="solicitarFinalizacion('${t.id}')" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700"><i class="fas fa-flag-checkered mr-2"></i>Solicitar finalización</button></div>` : ''}
+                    </div>`;
+                }).join('');
+            } catch (e) { console.error(e); container.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar</p>'; }
         };
 
         window.iniciarTrabajo = async (id) => {
             if (!confirm('¿Confirmas que vas a iniciar este trabajo?')) return;
-            
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('servicios')
-                    .update({ status: 'en_progreso', fecha_inicio: new Date() })
-                    .eq('id', id);
-                    
-                const { data: s } = await supabase
-                    .from('servicios')
-                    .select('cliente_id')
-                    .eq('id', id)
-                    .single();
-                    
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: s.cliente_id,
-                        tipo: 'servicio',
-                        titulo: '¡Trabajo iniciado!',
-                        mensaje: 'El tasker ha comenzado a trabajar en tu servicio'
-                    }]);
-                    
-                mostrarToast('Trabajo iniciado correctamente', 'success');
+                await supabase.from('servicios').update({ status: 'en_progreso', fecha_inicio: new Date() }).eq('id', id);
+                const { data: s } = await supabase.from('servicios').select('cliente_id').eq('id', id).single();
+                await supabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo iniciado!', mensaje: 'El tasker ha comenzado a trabajar' }]);
+                mostrarToast('Trabajo iniciado', 'success');
                 window.cargarMisTrabajos();
                 await cargarDashboard();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         window.solicitarFinalizacion = async (id) => {
             if (!confirm('¿Solicitar al cliente que confirme la finalización?')) return;
-            
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                const { data: s } = await supabase
-                    .from('servicios')
-                    .select('cliente_id')
-                    .eq('id', id)
-                    .single();
-                    
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: s.cliente_id,
-                        tipo: 'servicio',
-                        titulo: '¡Trabajo finalizado!',
-                        mensaje: 'El tasker ha completado el trabajo. Por favor confirma la finalización.'
-                    }]);
-                    
+                const { data: s } = await supabase.from('servicios').select('cliente_id').eq('id', id).single();
+                await supabase.from('notificaciones').insert([{ usuario_id: s.cliente_id, tipo: 'servicio', titulo: '¡Trabajo finalizado!', mensaje: 'El tasker ha completado el trabajo. Por favor confirma.' }]);
                 mostrarToast('Solicitud enviada al cliente', 'success');
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
@@ -1404,12 +945,7 @@
         async function cargarFinanzas() {
             try {
                 const supabase = initSupabase();
-                const { data: pagos } = await supabase
-                    .from('pagos')
-                    .select('*, servicio:servicio_id(subcategoria)')
-                    .eq('tasker_id', usuarioActual.id)
-                    .order('fecha_pago', { ascending: false });
-                    
+                const { data: pagos } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('tasker_id', usuarioActual.id).order('fecha_pago', { ascending: false });
                 let saldo = 0, total = 0, comisiones = 0;
                 (pagos || []).forEach(p => {
                     if (p.status === 'completado') {
@@ -1419,54 +955,24 @@
                         if (dias >= 7) saldo += p.monto_tasker || 0;
                     }
                 });
-                
                 document.getElementById('saldoActual').textContent = `$${saldo.toFixed(2)}`;
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('comisionesTotales').textContent = `$${comisiones.toFixed(2)}`;
                 document.getElementById('saldoDisponible').textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
-                
                 const tbody = document.getElementById('pagosTableBody');
-                if (!pagos?.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b">
-                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-3">${p.servicio?.subcategoria || ''}</td>
-                        <td class="p-3">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-3">$${p.comision_taskers?.toFixed(2)}</td>
-                        <td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td>
-                        <td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                console.error(e);
-            }
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">$${p.monto_total?.toFixed(2)}</td><td class="p-3">$${p.comision_taskers?.toFixed(2)}</td><td class="p-3 font-bold text-green-600">$${p.monto_tasker?.toFixed(2)}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${p.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${p.status}</span></td></tr>`).join('');
+            } catch (e) { console.error(e); }
         }
 
-        function abrirRetiroModal() {
-            document.getElementById('retiroModal').classList.remove('hidden');
-            document.getElementById('retiroModal').classList.add('flex');
-        }
-        
-        function cerrarRetiroModal() {
-            document.getElementById('retiroModal').classList.add('hidden');
-            document.getElementById('retiroModal').classList.remove('flex');
-        }
-        
+        function abrirRetiroModal() { document.getElementById('retiroModal').classList.remove('hidden'); document.getElementById('retiroModal').classList.add('flex'); }
+        function cerrarRetiroModal() { document.getElementById('retiroModal').classList.add('hidden'); document.getElementById('retiroModal').classList.remove('flex'); }
         document.getElementById('retiroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const monto = parseFloat(document.getElementById('retiroMonto').value);
             const saldo = parseFloat(document.getElementById('saldoActual').textContent.replace('$', ''));
-            
-            if (monto > saldo) {
-                mostrarToast('Monto insuficiente', 'error');
-                return;
-            }
-            
-            mostrarToast('Solicitud de retiro enviada. Procesaremos en 24-48 hrs.', 'success');
+            if (monto > saldo) { mostrarToast('Monto insuficiente', 'error'); return; }
+            mostrarToast('Solicitud de retiro enviada', 'success');
             cerrarRetiroModal();
         });
 
@@ -1476,171 +982,67 @@
         window.cargarConversaciones = async function() {
             const supabase = initSupabase();
             const c = document.getElementById('conversacionesLista');
-            
             try {
-                const { data: chats } = await supabase
-                    .from('chats')
-                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
-                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
-                    .order('ultimo_mensaje_time', { ascending: false });
-                    
-                if (!chats?.length) {
-                    c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>';
-                    return;
-                }
-                
-                c.innerHTML = chats.map(ch => {
-                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `
-                        <div class="p-4 border-b hover:bg-slate-50 cursor-pointer" 
-                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-300" 
-                                     style="background-image: url('${otro.photo_url || ''}'); background-size: cover;">
-                                </div>
-                                <div>
-                                    <p class="font-bold">${otro.full_name || ''}</p>
-                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
-                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) {
-                console.error(e);
-            }
+                const { data: chats } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', { ascending: false });
+                if (!chats?.length) { c.innerHTML = '<p class="text-slate-400 text-center p-4">No hay conversaciones</p>'; return; }
+                c.innerHTML = chats.map(ch => { const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1; return `<div class="p-4 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url || ''}')"></div><div><p class="font-bold">${otro.full_name || ''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}</div></div></div>`; }).join('');
+            } catch (e) { console.error(e); }
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
             const supabase = initSupabase();
             chatActual = { id, oid, nombre, avatar, info };
-            
             document.getElementById('chatHeader').classList.remove('hidden');
             document.getElementById('chatClienteNombre').textContent = nombre;
             if (avatar) document.getElementById('chatClienteAvatar').style.backgroundImage = `url('${avatar}')`;
             document.getElementById('chatServicioInfo').textContent = info;
             document.getElementById('chatInput').classList.remove('hidden');
-            
             await cargarMensajes(id);
-            
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = supabase
-                .channel(`chat-${id}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new))
-                .subscribe();
+            suscripcionChat = supabase.channel(`chat-${id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
         };
 
         async function cargarMensajes(id) {
             const supabase = initSupabase();
             const c = document.getElementById('chatMessages');
-            
             try {
-                const { data: msgs } = await supabase
-                    .from('mensajes')
-                    .select('*')
-                    .eq('chat_id', id)
-                    .order('created_at');
-                    
-                if (!msgs?.length) {
-                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
-                    return;
-                }
-                
-                c.innerHTML = msgs.map(m => `
-                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                        <div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3">
-                            <p class="text-sm">${m.mensaje}</p>
-                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
-                        </div>
-                    </div>
-                `).join('');
+                const { data: msgs } = await supabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
+                if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
+                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
                 c.scrollTop = c.scrollHeight;
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function agregarMensaje(m) {
             const c = document.getElementById('chatMessages');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `
-                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                    <div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3">
-                        <p class="text-sm">${m.mensaje}</p>
-                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
-                    </div>
-                </div>
-            `;
+            c.innerHTML += `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="chat-message ${m.remitente_id === usuarioActual.id ? 'chat-tasker' : 'chat-client'} rounded-2xl p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
             c.scrollTop = c.scrollHeight;
         }
 
         document.getElementById('mensajeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!chatActual) {
-                mostrarToast('Selecciona un chat', 'warning');
-                return;
-            }
-            
+            if (!chatActual) { mostrarToast('Selecciona un chat', 'warning'); return; }
             const txt = document.getElementById('mensajeTexto').value.trim();
             if (!txt) return;
-            
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('mensajes')
-                    .insert([{
-                        chat_id: chatActual.id,
-                        remitente_id: usuarioActual.id,
-                        mensaje: txt,
-                        created_at: new Date()
-                    }]);
-                    
-                await supabase
-                    .from('chats')
-                    .update({
-                        ultimo_mensaje: txt,
-                        ultimo_mensaje_time: new Date(),
-                        ultimo_mensaje_leido: false
-                    })
-                    .eq('id', chatActual.id);
-                    
+                await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
+                await supabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
                 document.getElementById('mensajeTexto').value = '';
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al enviar', 'error');
-            }
+            } catch (e) { mostrarToast('Error al enviar', 'error'); }
         });
 
         window.abrirChat = async (sid, tid) => {
             try {
                 const supabase = initSupabase();
-                const { data: ex } = await supabase
-                    .from('chats')
-                    .select('*')
-                    .eq('servicio_id', sid)
-                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
-                    .maybeSingle();
-                    
-                let cid = ex ? ex.id : (await supabase
-                    .from('chats')
-                    .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
-                    .select()
-                    .single()).data.id;
-                    
-                const { data: t } = await supabase
-                    .from('profiles')
-                    .select('full_name,photo_url')
-                    .eq('id', tid)
-                    .single();
-                    
+                const { data: ex } = await supabase.from('chats').select('*').eq('servicio_id', sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
+                let cid = ex ? ex.id : (await supabase.from('chats').insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }]).select().single()).data.id;
+                const { data: t } = await supabase.from('profiles').select('full_name,photo_url').eq('id', tid).single();
                 window.mostrarSeccion('chat');
                 await cargarConversaciones();
                 await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al abrir chat', 'error');
-            }
+            } catch (e) { mostrarToast('Error al abrir chat', 'error'); }
         };
 
         // =============================================
@@ -1650,48 +1052,47 @@
             e.preventDefault();
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('profiles')
-                    .update({
-                        full_name: document.getElementById('perfilNombre').value,
-                        phone: document.getElementById('perfilTelefono').value,
-                        descripcion: document.getElementById('perfilDescripcion').value,
-                        experiencia_anios: parseInt(document.getElementById('perfilExperiencia').value) || null,
-                        updated_at: new Date()
-                    })
-                    .eq('id', usuarioActual.id);
-                    
+                await supabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, descripcion: document.getElementById('perfilDescripcion').value, experiencia_anios: parseInt(document.getElementById('perfilExperiencia').value) || null, updated_at: new Date() }).eq('id', usuarioActual.id);
                 mostrarToast('Perfil actualizado', 'success');
                 await cargarUsuario();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
         });
 
         window.subirFotoPerfil = async function() {
             const i = document.getElementById('fotoPerfil');
             if (!i.files?.[0]) return;
-            
             mostrarCarga();
             try {
                 const f = i.files[0];
                 if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
-                
                 const supabase = initSupabase();
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
                 await supabase.storage.from('profiles-photos').upload(n, f);
-                
                 const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
                 await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
-                
                 document.getElementById('headerAvatar').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('profileAvatar').style.backgroundImage = `url('${publicUrl}')`;
                 mostrarToast('Foto actualizada', 'success');
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+        };
+
+        // =============================================
+        // CANCELAR CUENTA
+        // =============================================
+        window.cancelarCuenta = async function() {
+            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible.')) return;
+            mostrarCarga();
+            try {
+                const supabase = initSupabase();
+                // Eliminar ubicación activa
+                await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
+                // Eliminar perfil
+                await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+                // Cerrar sesión
+                await supabase.auth.signOut();
+                mostrarToast('Cuenta cancelada. Adiós.', 'success');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
@@ -1699,15 +1100,12 @@
         // =============================================
         function configurarRealtime() {
             const supabase = initSupabase();
-            supabase
-                .channel('mensajes-tasker')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
-                    if (p.new.remitente_id !== usuarioActual?.id) {
-                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                        else mostrarToast('Nuevo mensaje recibido', 'info');
-                    }
-                })
-                .subscribe();
+            supabase.channel('mensajes-tasker').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                if (p.new.remitente_id !== usuarioActual?.id) {
+                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                    else mostrarToast('Nuevo mensaje recibido', 'info');
+                }
+            }).subscribe();
         }
 
         // =============================================
@@ -1718,28 +1116,13 @@
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            
-            const tit = {
-                inicio: 'Inicio',
-                disponibles: 'Servicios Disponibles',
-                'mis-trabajos': 'Mis Trabajos',
-                chat: 'Mensajes',
-                finanzas: 'Finanzas',
-                perfil: 'Mi Perfil'
-            };
-            
+            const tit = { inicio: 'Inicio', disponibles: 'Servicios Disponibles', 'mis-trabajos': 'Mis Trabajos', chat: 'Mensajes', finanzas: 'Finanzas', perfil: 'Mi Perfil', 'cancelar-cuenta': 'Cancelar Cuenta' };
             document.getElementById('section-title').textContent = tit[sec] || 'Tasker\'s';
-            document.getElementById('section-subtitle').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            
             if (sec === 'disponibles') window.cargarDisponibles();
             if (sec === 'mis-trabajos') window.cargarMisTrabajos();
             if (sec === 'chat') window.cargarConversaciones();
             if (sec === 'finanzas') cargarFinanzas();
-            if (sec === 'inicio') {
-                cargarDashboard();
-                actualizarUbicacion();
-            }
-            
+            if (sec === 'inicio') { cargarDashboard(); actualizarUbicacion(); }
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
@@ -1749,18 +1132,11 @@
         window.cerrarSesionTasker = async function() {
             if (confirm('¿Cerrar sesión?')) {
                 mostrarCarga();
-                
-                // Limpiar ubicación activa
+                if (intervaloUbicacion) clearInterval(intervaloUbicacion);
                 if (usuarioActual) {
                     const supabase = initSupabase();
-                    await supabase
-                        .from('ubicaciones_activas')
-                        .update({ disponible: false })
-                        .eq('tasker_id', usuarioActual.id);
+                    await supabase.from('ubicaciones_activas').update({ disponible: false }).eq('tasker_id', usuarioActual.id);
                 }
-                
-                if (intervaloUbicacion) clearInterval(intervaloUbicacion);
-                
                 const supabase = initSupabase();
                 await supabase.auth.signOut();
                 window.location.href = 'index.html';
