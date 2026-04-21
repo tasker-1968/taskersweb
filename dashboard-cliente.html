@@ -14,7 +14,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Leaflet CSS y JS para el mapa -->
+    <!-- Leaflet para mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -106,6 +106,31 @@
             height: 300px;
             border-radius: 16px;
             z-index: 1;
+        }
+        
+        /* Navegación entre páginas */
+        .nav-paginacion {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-paginacion button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-paginacion button:hover:not(:disabled) {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .nav-paginacion button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         @media (max-width: 768px) {
@@ -241,7 +266,7 @@
     </button>
 
     <!-- Overlay para móvil -->
-    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
+    <div id="overlayMenu" class="hidden md:hidden"></div>
 
     <!-- Modal de carga -->
     <div id="modalCarga" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
@@ -264,16 +289,29 @@
         </div>
     </div>
 
-    <!-- Modal de servicio -->
-    <div id="modalServicio" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
-                <h3 class="text-xl font-bold text-slate-800">Detalles del Servicio</h3>
-                <button onclick="cerrarModalServicio()" class="text-slate-400 hover:text-slate-600 transition">
+    <!-- Modal de opciones de pago -->
+    <div id="modalMetodosPago" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Selecciona método de pago</h3>
+                <button onclick="cerrarModalMetodosPago()" class="text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <div id="contenidoModalServicio" class="space-y-4"></div>
+            <div class="space-y-3">
+                <button onclick="procesarPagoConMetodo('tarjeta')" class="w-full flex items-center gap-3 p-4 border rounded-xl hover:bg-slate-50 transition">
+                    <i class="fas fa-credit-card text-2xl text-blue-600"></i>
+                    <div class="text-left"><p class="font-bold">Tarjeta de Crédito/Débito</p><p class="text-xs text-slate-500">Visa, Mastercard, American Express</p></div>
+                </button>
+                <button onclick="procesarPagoConMetodo('oxxo')" class="w-full flex items-center gap-3 p-4 border rounded-xl hover:bg-slate-50 transition">
+                    <i class="fas fa-receipt text-2xl text-green-600"></i>
+                    <div class="text-left"><p class="font-bold">Pago en OXXO</p><p class="text-xs text-slate-500">Genera tu referencia de pago</p></div>
+                </button>
+                <button onclick="procesarPagoConMetodo('transferencia')" class="w-full flex items-center gap-3 p-4 border rounded-xl hover:bg-slate-50 transition">
+                    <i class="fas fa-university text-2xl text-purple-600"></i>
+                    <div class="text-left"><p class="font-bold">Transferencia bancaria</p><p class="text-xs text-slate-500">Depósito directo a nuestra cuenta</p></div>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -315,6 +353,9 @@
                 <a href="#" onclick="window.cambiarSeccion('perfil'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white transition-all" id="link-perfil">
                     <i class="fas fa-user w-5"></i><span>Mi Perfil</span>
                 </a>
+                <a href="#" onclick="window.cambiarSeccion('cancelar-cuenta'); return false;" class="enlace-moderno flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white transition-all" id="link-cancelar-cuenta">
+                    <i class="fas fa-trash-alt w-5"></i><span>Cancelar Cuenta</span>
+                </a>
             </nav>
 
             <div class="p-4 border-t border-white/10">
@@ -344,19 +385,19 @@
                 <!-- INICIO -->
                 <section id="seccion-inicio" class="seccion-contenido activo">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-                        <div class="tarjeta-stats border-l-blue-500">
+                        <div class="tarjeta-stats border-l-blue-500 cursor-pointer" onclick="window.cambiarSeccion('mis-servicios')">
                             <p class="text-slate-500 text-sm">Servicios Activos</p>
                             <p id="statsActivos" class="text-3xl font-bold text-slate-800 mt-1">0</p>
                         </div>
-                        <div class="tarjeta-stats border-l-green-500">
+                        <div class="tarjeta-stats border-l-green-500 cursor-pointer" onclick="window.cambiarSeccion('mis-servicios')">
                             <p class="text-slate-500 text-sm">Completados</p>
                             <p id="statsCompletados" class="text-3xl font-bold text-slate-800 mt-1">0</p>
                         </div>
-                        <div class="tarjeta-stats border-l-purple-500">
+                        <div class="tarjeta-stats border-l-purple-500 cursor-pointer" onclick="window.cambiarSeccion('mis-servicios')">
                             <p class="text-slate-500 text-sm">En Progreso</p>
                             <p id="statsProgreso" class="text-3xl font-bold text-slate-800 mt-1">0</p>
                         </div>
-                        <div class="tarjeta-stats border-l-yellow-500">
+                        <div class="tarjeta-stats border-l-yellow-500 cursor-pointer" onclick="window.cambiarSeccion('pagos')">
                             <p class="text-slate-500 text-sm">Total Pagado</p>
                             <p id="statsPagado" class="text-3xl font-bold text-slate-800 mt-1">$0</p>
                         </div>
@@ -387,16 +428,25 @@
                         <div id="listaRecientes" class="space-y-3">
                             <p class="text-slate-400 text-center py-8">Cargando...</p>
                         </div>
+                        <div class="nav-paginacion">
+                            <button onclick="paginaRecientes(-1)" id="btnPrevRecientes" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                            <span id="paginaInfoRecientes" class="text-sm text-slate-500">Página 1</span>
+                            <button onclick="paginaRecientes(1)" id="btnNextRecientes">Siguiente <i class="fas fa-chevron-right"></i></button>
+                        </div>
                     </div>
                 </section>
 
-                <!-- NUEVO SERVICIO - VERSIÓN CORREGIDA -->
+                <!-- NUEVO SERVICIO -->
                 <section id="seccion-nuevo-servicio" class="seccion-contenido">
                     <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-6 sm:p-8">
-                        <h3 class="text-2xl font-bold text-slate-800 mb-2">Solicitar Nuevo Servicio</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold text-slate-800">Solicitar Nuevo Servicio</h3>
+                            <button onclick="window.cambiarSeccion('inicio')" class="text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
                         <p class="text-slate-500 text-sm mb-6">Completa el formulario y recibe propuestas de profesionales verificados</p>
                         
-                        <!-- Indicador de carga para categorías -->
                         <div id="categoriasLoading" class="bg-blue-50 p-4 rounded-xl mb-4 text-center">
                             <i class="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
                             Cargando categorías...
@@ -454,9 +504,12 @@
                                 <label class="text-sm text-slate-600">Acepto los <a href="#" class="text-blue-600 hover:underline">términos y condiciones</a></label>
                             </div>
                             
-                            <button type="submit" id="btnPublicar" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-2">
-                                <i class="fas fa-search"></i> Publicar y buscar profesionales
-                            </button>
+                            <div class="flex gap-3">
+                                <button type="button" onclick="window.cambiarSeccion('inicio')" class="flex-1 border border-slate-300 py-3 rounded-xl font-medium hover:bg-slate-50">Cancelar</button>
+                                <button type="submit" id="btnPublicar" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-search"></i> Publicar servicio
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </section>
@@ -475,16 +528,23 @@
                         </select>
                     </div>
                     <div id="contenedorServicios" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+                    <div class="nav-paginacion">
+                        <button onclick="paginaServicios(-1)" id="btnPrevServicios" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                        <span id="paginaInfoServicios" class="text-sm text-slate-500">Página 1</span>
+                        <button onclick="paginaServicios(1)" id="btnNextServicios">Siguiente <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </section>
 
                 <!-- CHAT -->
                 <section id="seccion-chat" class="seccion-contenido">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
                             <div class="p-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
                                 <h3 class="font-semibold"><i class="fas fa-comments mr-2"></i>Conversaciones</h3>
                             </div>
-                            <div id="listaConversaciones" class="overflow-y-auto h-full p-2"></div>
+                            <div id="listaConversaciones" class="flex-1 overflow-y-auto p-2">
+                                <p class="text-slate-400 text-center p-4">Cargando...</p>
+                            </div>
                         </div>
                         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm flex flex-col">
                             <div id="cabeceraChat" class="p-4 border-b hidden">
@@ -517,12 +577,22 @@
                             </table>
                         </div>
                     </div>
+                    <div class="nav-paginacion">
+                        <button onclick="paginaPagos(-1)" id="btnPrevPagos" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                        <span id="paginaInfoPagos" class="text-sm text-slate-500">Página 1</span>
+                        <button onclick="paginaPagos(1)" id="btnNextPagos">Siguiente <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </section>
 
                 <!-- PERFIL -->
                 <section id="seccion-perfil" class="seccion-contenido">
                     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-                        <h3 class="text-2xl font-bold text-slate-800 mb-6">Mi Perfil</h3>
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-slate-800">Mi Perfil</h3>
+                            <button onclick="window.cambiarSeccion('inicio')" class="text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
                         <div class="flex flex-col items-center mb-8">
                             <div class="relative">
                                 <div id="avatarPerfil" class="w-32 h-32 rounded-full bg-slate-300 border-4 border-blue-100"></div>
@@ -533,11 +603,41 @@
                             <input type="file" id="fotoPerfil" accept="image/*" class="hidden" onchange="subirFotoPerfil()">
                         </div>
                         <form id="formPerfil" class="space-y-4">
-                            <div><input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl" placeholder="Nombre completo"></div>
-                            <div><input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50"></div>
-                            <div><input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl" placeholder="Teléfono"></div>
+                            <input type="text" id="perfilNombre" required class="w-full p-3 border rounded-xl" placeholder="Nombre completo">
+                            <input type="email" id="perfilEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50">
+                            <input type="tel" id="perfilTelefono" required class="w-full p-3 border rounded-xl" placeholder="Teléfono">
                             <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Guardar Cambios</button>
                         </form>
+                    </div>
+                </section>
+
+                <!-- CANCELAR CUENTA -->
+                <section id="seccion-cancelar-cuenta" class="seccion-contenido">
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-slate-800">Cancelar Cuenta</h3>
+                            <button onclick="window.cambiarSeccion('inicio')" class="text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-exclamation-triangle text-3xl text-red-600"></i>
+                            </div>
+                            <p class="text-slate-600">Esta acción es irreversible. Todos tus datos serán eliminados.</p>
+                        </div>
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                            <p class="text-sm text-red-700"><i class="fas fa-info-circle mr-2"></i>Al cancelar tu cuenta:</p>
+                            <ul class="text-sm text-red-600 mt-2 space-y-1 list-disc list-inside">
+                                <li>Perderás acceso a todos tus servicios activos</li>
+                                <li>No podrás recuperar tu historial</li>
+                                <li>Tus datos serán eliminados permanentemente</li>
+                            </ul>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="window.cambiarSeccion('inicio')" class="flex-1 border border-slate-300 py-3 rounded-xl font-medium hover:bg-slate-50">Cancelar</button>
+                            <button onclick="cancelarCuenta()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700">Sí, cancelar mi cuenta</button>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -555,6 +655,13 @@
         let mapa = null;
         let marcadorUbicacion = null;
         let marcadoresTaskers = [];
+        
+        // Paginación
+        let paginaActualRecientes = 1;
+        let paginaActualServicios = 1;
+        let paginaActualPagos = 1;
+        let serviciosTotales = [];
+        let pagosTotales = [];
 
         // =============================================
         // INICIALIZAR MAPA
@@ -562,39 +669,32 @@
         function iniciarMapa(lat = 19.4326, lng = -99.1332) {
             const contenedor = document.getElementById('mapaServicios');
             if (!contenedor) return;
-            
             if (mapa) mapa.remove();
             
             mapa = L.map('mapaServicios').setView([lat, lng], 13);
-            
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(mapa);
             
             const iconoUsuario = L.divIcon({
-                className: 'custom-div-icon',
                 html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6;"></div>',
-                iconSize: [20, 20],
-                popupAnchor: [0, -10]
+                iconSize: [20, 20]
             });
-            
             marcadorUbicacion = L.marker([lat, lng], { icon: iconoUsuario }).addTo(mapa);
-            marcadorUbicacion.bindPopup('<b>Tu ubicación</b><br>Estás aquí').openPopup();
+            marcadorUbicacion.bindPopup('<b>Tu ubicación</b>').openPopup();
         }
 
         // =============================================
-        // ACTUALIZAR UBICACIÓN DEL USUARIO
+        // ACTUALIZAR UBICACIÓN
         // =============================================
         function actualizarUbicacion() {
             if (!navigator.geolocation) {
                 mostrarToast('Tu navegador no soporta geolocalización', 'warning');
                 return;
             }
-            
             mostrarCarga('Obteniendo tu ubicación...');
-            
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const lat = position.coords.latitude;
@@ -605,33 +705,25 @@
                     mostrarToast('Ubicación actualizada', 'success');
                     await cargarTaskersCercanos(lat, lng);
                 },
-                (error) => {
+                () => {
                     ocultarCarga();
-                    let mensaje = 'No se pudo obtener tu ubicación';
-                    if (error.code === 1) mensaje = 'Permite el acceso a tu ubicación';
-                    mostrarToast(mensaje, 'error');
+                    mostrarToast('Permite el acceso a tu ubicación', 'error');
                     iniciarMapa();
                 }
             );
         }
 
-        // =============================================
-        // CARGAR TASKERS CERCANOS
-        // =============================================
         async function cargarTaskersCercanos(lat, lng) {
             try {
                 const supabase = initSupabase();
-                const { data: ubicaciones, error } = await supabase
+                const { data: ubicaciones } = await supabase
                     .from('ubicaciones_activas')
                     .select('*, profiles(full_name, photo_url, calificacion_promedio)')
                     .eq('disponible', true)
                     .limit(20);
                 
-                if (error) throw error;
-                
                 marcadoresTaskers.forEach(m => mapa.removeLayer(m));
                 marcadoresTaskers = [];
-                
                 if (!ubicaciones?.length) return;
                 
                 const iconoTasker = L.divIcon({
@@ -646,9 +738,7 @@
                         marcadoresTaskers.push(marker);
                     }
                 });
-            } catch (error) {
-                console.error('Error cargando taskers:', error);
-            }
+            } catch (error) { console.error(error); }
         }
 
         // =============================================
@@ -656,7 +746,6 @@
         // =============================================
         async function verificarAuth() {
             const supabase = initSupabase();
-            if (!supabase) return null;
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) window.location.href = 'login.html';
             return session;
@@ -670,47 +759,25 @@
             try {
                 const session = await verificarAuth();
                 if (!session) return;
-                
                 const supabase = initSupabase();
-                const { data: perfil } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-                    
+                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
                 if (!perfil) throw new Error('Perfil no encontrado');
-                
                 usuarioActual = perfil;
-                
-                document.getElementById('infoUsuario').innerHTML = `
-                    <p class="font-medium">${perfil.full_name || 'Usuario'}</p>
-                    <p class="text-xs opacity-75">Cliente</p>
-                `;
-                
+                document.getElementById('infoUsuario').innerHTML = `<p class="font-medium">${perfil.full_name || 'Usuario'}</p><p class="text-xs opacity-75">Cliente</p>`;
                 if (perfil.photo_url) {
                     document.getElementById('avatarHeader').style.backgroundImage = `url('${perfil.photo_url}')`;
                     document.getElementById('avatarPerfil').style.backgroundImage = `url('${perfil.photo_url}')`;
                 }
-                
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
                 document.getElementById('perfilTelefono').value = perfil.phone || '';
-                
                 const ubicacionGuardada = localStorage.getItem('tasker_ubicacion');
                 if (ubicacionGuardada) {
                     const { lat, lng } = JSON.parse(ubicacionGuardada);
                     iniciarMapa(lat, lng);
                     await cargarTaskersCercanos(lat, lng);
-                } else {
-                    actualizarUbicacion();
-                }
-                
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al cargar usuario', 'error');
-            } finally {
-                ocultarCarga();
-            }
+                } else { actualizarUbicacion(); }
+            } catch (e) { console.error(e); mostrarToast('Error al cargar usuario', 'error'); } finally { ocultarCarga(); }
         }
 
         // =============================================
@@ -720,22 +787,18 @@
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('barraLateral');
             const overlay = document.getElementById('overlayMenu');
-            
-            if (!menuBtn || !sidebar || !overlay) return;
-            
-            menuBtn.addEventListener('click', (e) => {
-                e.preventDefault();
+            if (!menuBtn) return;
+            menuBtn.style.display = 'flex';
+            menuBtn.addEventListener('click', () => {
                 sidebar.classList.add('abierto');
                 overlay.classList.add('visible');
                 document.body.classList.add('menu-open');
             });
-            
             overlay.addEventListener('click', () => {
                 sidebar.classList.remove('abierto');
                 overlay.classList.remove('visible');
                 document.body.classList.remove('menu-open');
             });
-            
             document.querySelectorAll('.enlace-moderno').forEach(link => {
                 link.addEventListener('click', () => {
                     if (window.innerWidth < 768) {
@@ -746,132 +809,46 @@
                 });
             });
         }
-        
-        function cerrarMenuMovil() {
-            const sidebar = document.getElementById('barraLateral');
-            const overlay = document.getElementById('overlayMenu');
-            if (sidebar && overlay) {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            }
-        }
-        
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768) cerrarMenuMovil();
-        });
 
         // =============================================
-        // CARGAR CATEGORÍAS (CORREGIDO)
+        // CARGAR CATEGORÍAS
         // =============================================
         async function cargarCategorias() {
             const loadingDiv = document.getElementById('categoriasLoading');
             const form = document.getElementById('formNuevoServicio');
             const selectCategoria = document.getElementById('categoria');
-            
             try {
                 const supabase = initSupabase();
-                console.log('🔄 Cargando categorías desde Supabase...');
-                
-                const { data: cats, error } = await supabase
-                    .from('categorias')
-                    .select('id, nombre')
-                    .eq('activo', true)
-                    .order('orden', { ascending: true });
-
-                if (error) throw error;
-
-                if (!cats || cats.length === 0) {
-                    loadingDiv.innerHTML = `
-                        <div class="bg-yellow-50 p-4 rounded-xl text-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                            No hay categorías disponibles. Contacta al administrador.
-                        </div>
-                    `;
-                    return;
-                }
-
-                console.log(`✅ ${cats.length} categorías cargadas`);
-                
+                const { data: cats } = await supabase.from('categorias').select('id, nombre').eq('activo', true).order('orden');
+                if (!cats?.length) { loadingDiv.innerHTML = '<div class="bg-yellow-50 p-4 rounded-xl text-center">No hay categorías disponibles</div>'; return; }
                 selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
-                cats.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.id;
-                    option.textContent = cat.nombre;
-                    selectCategoria.appendChild(option);
-                });
-                
+                cats.forEach(cat => { const opt = document.createElement('option'); opt.value = cat.id; opt.textContent = cat.nombre; selectCategoria.appendChild(opt); });
                 loadingDiv.style.display = 'none';
                 form.style.display = 'block';
-                
             } catch (error) {
-                console.error('❌ Error:', error);
-                loadingDiv.innerHTML = `
-                    <div class="bg-red-50 p-4 rounded-xl text-center">
-                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
-                        Error al cargar categorías: ${error.message}
-                        <button onclick="cargarCategorias()" class="ml-3 text-blue-600 hover:underline">Reintentar</button>
-                    </div>
-                `;
+                loadingDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-xl text-center">Error: ${error.message}<button onclick="cargarCategorias()" class="ml-3 text-blue-600">Reintentar</button></div>`;
             }
         }
 
-        // =============================================
-        // CARGAR SUBCATEGORÍAS
-        // =============================================
         document.getElementById('categoria')?.addEventListener('change', async function() {
             const subSelect = document.getElementById('subcategoria');
             const categoriaId = this.value;
-            
-            if (!categoriaId) {
-                subSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
-                subSelect.disabled = true;
-                return;
-            }
-            
-            subSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+            if (!categoriaId) { subSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>'; subSelect.disabled = true; return; }
+            subSelect.innerHTML = '<option value="">Cargando...</option>';
             subSelect.disabled = true;
-            
             try {
                 const supabase = initSupabase();
-                const { data: subs, error } = await supabase
-                    .from('subcategorias')
-                    .select('id, nombre')
-                    .eq('categoria_id', categoriaId)
-                    .eq('activo', true)
-                    .order('nombre', { ascending: true });
-                    
-                if (error) throw error;
-                
+                const { data: subs } = await supabase.from('subcategorias').select('id, nombre').eq('categoria_id', categoriaId).eq('activo', true);
                 subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-                
-                if (subs && subs.length > 0) {
-                    subs.forEach(sub => {
-                        const option = document.createElement('option');
-                        option.value = sub.id;
-                        option.textContent = sub.nombre;
-                        subSelect.appendChild(option);
-                    });
-                    subSelect.disabled = false;
-                } else {
-                    subSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
-                }
-                
-            } catch (error) {
-                console.error('❌ Error:', error);
-                subSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-            }
+                if (subs?.length) { subs.forEach(sub => { const opt = document.createElement('option'); opt.value = sub.id; opt.textContent = sub.nombre; subSelect.appendChild(opt); }); subSelect.disabled = false; }
+                else subSelect.innerHTML = '<option value="">No hay subcategorías</option>';
+            } catch (error) { subSelect.innerHTML = '<option value="">Error al cargar</option>'; }
         });
 
-        // =============================================
-        // ACTUALIZAR COMISIÓN AL CAMBIAR MONTO
-        // =============================================
         document.getElementById('monto')?.addEventListener('input', function() {
             const monto = parseFloat(this.value) || 0;
-            const comision = monto * 0.15;
-            const taskerRecibe = monto * 0.85;
-            document.getElementById('comisionEstimada').textContent = `$${comision.toFixed(2)}`;
-            document.getElementById('taskerRecibe').textContent = `$${taskerRecibe.toFixed(2)}`;
+            document.getElementById('comisionEstimada').textContent = `$${(monto * 0.15).toFixed(2)}`;
+            document.getElementById('taskerRecibe').textContent = `$${(monto * 0.85).toFixed(2)}`;
         });
 
         // =============================================
@@ -880,81 +857,71 @@
         async function cargarDashboard() {
             try {
                 const supabase = initSupabase();
-                const { data: s } = await supabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('created_at', { ascending: false });
-                    
+                const { data: s } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', { ascending: false });
                 if (!s) return;
-                
                 const stats = {
                     activos: s.filter(x => ['pendiente_pago', 'publicado', 'asignado', 'en_progreso'].includes(x.status)).length,
                     completados: s.filter(x => x.status === 'completado').length,
                     progreso: s.filter(x => x.status === 'en_progreso').length,
                     pagado: s.filter(x => x.status === 'completado').reduce((a, b) => a + (b.monto_ofertado || 0), 0)
                 };
-                
                 document.getElementById('statsActivos').textContent = stats.activos;
                 document.getElementById('statsCompletados').textContent = stats.completados;
                 document.getElementById('statsProgreso').textContent = stats.progreso;
                 document.getElementById('statsPagado').textContent = `$${stats.pagado.toFixed(2)}`;
-                
-                const rec = s.slice(0, 5);
-                const c = document.getElementById('listaRecientes');
-                if (!rec.length) {
-                    c.innerHTML = '<p class="text-center py-4 text-slate-400">No hay servicios</p>';
-                    return;
-                }
-                
+                await actualizarRecientes(s);
+            } catch (e) { console.error(e); }
+        }
+
+        async function actualizarRecientes(servicios) {
+            const start = (paginaActualRecientes - 1) * 5;
+            const rec = servicios?.slice(start, start + 5) || [];
+            const c = document.getElementById('listaRecientes');
+            if (!rec.length) { c.innerHTML = '<p class="text-center py-4 text-slate-400">No hay servicios recientes</p>'; }
+            else {
                 c.innerHTML = rec.map(x => `
                     <div class="border rounded-xl p-4 hover:bg-slate-50 cursor-pointer" onclick="verServicio('${x.id}')">
-                        <div class="flex justify-between">
-                            <div>
-                                <h4 class="font-medium">${x.subcategoria || ''}</h4>
-                                <p class="text-sm text-slate-600">${(x.descripcion || '').substring(0, 60)}...</p>
-                            </div>
-                            <span class="badge-estado ${obtenerClase(x.status)}">${obtenerTexto(x.status)}</span>
-                        </div>
-                        <div class="flex justify-between mt-2 text-sm">
-                            <span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${x.ubicacion || ''}</span>
-                            <span class="font-bold text-blue-600">$${(x.monto_ofertado || 0).toFixed(2)}</span>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (e) {
-                console.error(e);
+                        <div class="flex justify-between"><div><h4 class="font-medium">${x.subcategoria || ''}</h4><p class="text-sm text-slate-600">${(x.descripcion || '').substring(0, 60)}...</p></div>
+                        <span class="badge-estado ${obtenerClase(x.status)}">${obtenerTexto(x.status)}</span></div>
+                        <div class="flex justify-between mt-2 text-sm"><span class="text-slate-500"><i class="fas fa-map-marker-alt mr-1"></i>${x.ubicacion || ''}</span>
+                        <span class="font-bold text-blue-600">$${(x.monto_ofertado || 0).toFixed(2)}</span></div>
+                    </div>`).join('');
             }
+            const totalPages = Math.ceil((servicios?.length || 0) / 5);
+            document.getElementById('paginaInfoRecientes').textContent = `Página ${paginaActualRecientes} de ${totalPages || 1}`;
+            document.getElementById('btnPrevRecientes').disabled = paginaActualRecientes <= 1;
+            document.getElementById('btnNextRecientes').disabled = paginaActualRecientes >= totalPages;
         }
+
+        window.paginaRecientes = async (dir) => {
+            const supabase = initSupabase();
+            const { data: s } = await supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', { ascending: false });
+            const totalPages = Math.ceil((s?.length || 0) / 5);
+            const nuevaPagina = paginaActualRecientes + dir;
+            if (nuevaPagina >= 1 && nuevaPagina <= totalPages) {
+                paginaActualRecientes = nuevaPagina;
+                await actualizarRecientes(s);
+            }
+        };
 
         // =============================================
         // NUEVO SERVICIO
         // =============================================
         document.getElementById('formNuevoServicio')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const supabase = initSupabase();
             const btn = document.getElementById('btnPublicar');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publicando...';
-            
             try {
                 const subcategoriaId = document.getElementById('subcategoria').value;
-                
-                const { data: subData } = await supabase
-                    .from('subcategorias')
-                    .select('nombre')
-                    .eq('id', subcategoriaId)
-                    .single();
-                
+                const { data: subData } = await supabase.from('subcategorias').select('nombre').eq('id', subcategoriaId).single();
                 const data = {
                     cliente_id: usuarioActual.id,
                     categoria: document.getElementById('categoria').value,
                     subcategoria: subData?.nombre || 'Servicio',
                     descripcion: document.getElementById('descripcion').value,
-                    ubicacion: document.getElementById('colonia').value ? 
-                        `${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}` : 
-                        `CP ${document.getElementById('cp').value}`,
+                    ubicacion: document.getElementById('colonia').value ? `${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}` : `CP ${document.getElementById('cp').value}`,
                     cp: document.getElementById('cp').value,
                     monto_ofertado: parseFloat(document.getElementById('monto').value),
                     fecha_solicitada: document.getElementById('fecha').value || null,
@@ -962,86 +929,49 @@
                     pago_status: 'pendiente',
                     created_at: new Date()
                 };
-                
-                const { data: serv, error } = await supabase
-                    .from('servicios')
-                    .insert([data])
-                    .select()
-                    .maybeSingle();
-                    
+                const { data: serv, error } = await supabase.from('servicios').insert([data]).select().maybeSingle();
                 if (error) throw error;
-                
-                await mostrarModalPago(serv);
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-                btn.disabled = false;
-                btn.innerHTML = 'Publicar Solicitud';
-            }
+                await mostrarModalMetodosPago(serv);
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); btn.disabled = false; btn.innerHTML = 'Publicar servicio'; }
         });
 
-        async function mostrarModalPago(serv) {
-            const m = document.getElementById('modalPago');
-            const c = document.getElementById('contenidoModalPago');
-            const total = serv.monto_ofertado;
-            
-            c.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-lock text-4xl text-green-600 mb-4"></i>
-                    <h4 class="font-bold">Pago Seguro</h4>
-                    <p class="text-sm text-gray-600 mb-4">Tasker's retiene el pago</p>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-xl">
-                    <div class="flex justify-between"><span>Total:</span><span class="font-bold">$${total.toFixed(2)}</span></div>
-                    <div class="flex justify-between text-gray-500"><span>Comisión 15%:</span><span>$${(total * 0.15).toFixed(2)}</span></div>
-                </div>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="cerrarModalPago()" class="flex-1 border py-3 rounded-xl">Cancelar</button>
-                    <button onclick="procesarPago('${serv.id}', ${total})" class="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700">Pagar ahora</button>
-                </div>
-            `;
-            m.classList.remove('hidden');
-            m.classList.add('flex');
+        let servicioPendientePago = null;
+        function mostrarModalMetodosPago(serv) {
+            servicioPendientePago = serv;
+            document.getElementById('modalMetodosPago').classList.remove('hidden');
+            document.getElementById('modalMetodosPago').classList.add('flex');
         }
-
-        window.procesarPago = async (id, monto) => {
+        function cerrarModalMetodosPago() {
+            document.getElementById('modalMetodosPago').classList.add('hidden');
+            document.getElementById('modalMetodosPago').classList.remove('flex');
+            document.getElementById('btnPublicar').disabled = false;
+            document.getElementById('btnPublicar').innerHTML = 'Publicar servicio';
+            servicioPendientePago = null;
+        }
+        window.procesarPagoConMetodo = async (metodo) => {
+            if (!servicioPendientePago) return;
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('servicios')
-                    .update({ status: 'publicado', pago_status: 'completado', updated_at: new Date() })
-                    .eq('id', id);
-                    
-                await supabase
-                    .from('pagos')
-                    .insert([{
-                        servicio_id: id,
-                        cliente_id: usuarioActual.id,
-                        monto_total: monto,
-                        comision_taskers: monto * 0.15,
-                        monto_tasker: monto * 0.85,
-                        status: 'completado',
-                        fecha_pago: new Date()
-                    }]);
-                    
-                mostrarToast('Pago exitoso', 'success');
-                cerrarModalPago();
+                await supabase.from('servicios').update({ status: 'publicado', pago_status: 'completado', updated_at: new Date() }).eq('id', servicioPendientePago.id);
+                await supabase.from('pagos').insert([{
+                    servicio_id: servicioPendientePago.id,
+                    cliente_id: usuarioActual.id,
+                    monto_total: servicioPendientePago.monto_ofertado,
+                    comision_taskers: servicioPendientePago.monto_ofertado * 0.15,
+                    monto_tasker: servicioPendientePago.monto_ofertado * 0.85,
+                    metodo_pago: metodo,
+                    status: 'completado',
+                    fecha_pago: new Date()
+                }]);
+                mostrarToast(`Pago con ${metodo.toUpperCase()} procesado exitosamente`, 'success');
+                cerrarModalMetodosPago();
                 window.cambiarSeccion('mis-servicios');
                 window.cargarMisServicios();
                 await cargarDashboard();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
-        
-        function cerrarModalPago() {
-            document.getElementById('modalPago').classList.add('hidden');
-            document.getElementById('modalPago').classList.remove('flex');
-            document.getElementById('btnPublicar').disabled = false;
-            document.getElementById('btnPublicar').innerHTML = 'Publicar Solicitud';
-        }
+        function cerrarModalPago() { cerrarModalMetodosPago(); }
 
         // =============================================
         // MIS SERVICIOS
@@ -1049,92 +979,58 @@
         window.cargarMisServicios = async function() {
             const filtro = document.getElementById('filtroStatus')?.value || 'todos';
             const contenedor = document.getElementById('contenedorServicios');
-            if (!contenedor) return;
-            
             try {
                 const supabase = initSupabase();
-                let query = supabase
-                    .from('servicios')
-                    .select('*')
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('created_at', { ascending: false });
-                    
+                let query = supabase.from('servicios').select('*').eq('cliente_id', usuarioActual.id).order('created_at', { ascending: false });
                 if (filtro !== 'todos') query = query.eq('status', filtro);
-                
                 const { data: servicios } = await query;
-                
-                if (!servicios?.length) {
-                    contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>';
-                    return;
-                }
-                
-                const serviciosConTasker = await Promise.all(servicios.map(async (servicio) => {
-                    if (servicio.tasker_id) {
+                serviciosTotales = servicios || [];
+                await actualizarListaServicios();
+            } catch (error) { console.error(error); contenedor.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>'; }
+        };
+
+        async function actualizarListaServicios() {
+            const contenedor = document.getElementById('contenedorServicios');
+            const start = (paginaActualServicios - 1) * 4;
+            const servicios = serviciosTotales.slice(start, start + 4);
+            if (!servicios.length) { contenedor.innerHTML = '<p class="text-slate-400 text-center py-8">No hay servicios</p>'; }
+            else {
+                const serviciosConTasker = await Promise.all(servicios.map(async (s) => {
+                    if (s.tasker_id) {
                         const supabase = initSupabase();
-                        const { data: tasker } = await supabase
-                            .from('profiles')
-                            .select('full_name, photo_url, calificacion_promedio')
-                            .eq('id', servicio.tasker_id)
-                            .maybeSingle();
-                        if (tasker) servicio.tasker_info = tasker;
+                        const { data: tasker } = await supabase.from('profiles').select('full_name, photo_url, calificacion_promedio').eq('id', s.tasker_id).maybeSingle();
+                        if (tasker) s.tasker_info = tasker;
                     }
-                    return servicio;
+                    return s;
                 }));
-                
                 contenedor.innerHTML = serviciosConTasker.map(s => {
                     const tasker = s.tasker_info;
                     const puedeConfirmar = s.status === 'en_progreso';
-                    
                     return `
                     <div class="bg-white rounded-xl shadow-sm p-5">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
-                                <p class="text-sm text-slate-600">${s.descripcion || ''}</p>
-                            </div>
-                            <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
-                            <div><p class="text-slate-500">$${(s.monto_ofertado || 0).toFixed(2)}</p></div>
-                            <div><p class="text-slate-500">${s.ubicacion || ''}</p></div>
-                            <div><p class="text-slate-500">${new Date(s.created_at).toLocaleDateString()}</p></div>
-                        </div>
-                        ${tasker ? `
-                        <div class="border-t pt-4 mt-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-slate-300" 
-                                         style="background-image: url('${tasker.photo_url || ''}'); background-size: cover;">
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-slate-800">${tasker.full_name || 'Tasker'}</p>
-                                        <p class="text-xs text-slate-500">⭐ ${tasker.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p>
-                                    </div>
-                                </div>
-                                <button onclick="abrirChat('${s.id}','${s.tasker_id}')" 
-                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-                                    <i class="fas fa-comment mr-2"></i>Chat
-                                </button>
-                            </div>
-                        </div>
-                        ` : s.status === 'publicado' ? `
-                        <div class="border-t pt-4 mt-4 text-center text-slate-500">
-                            <i class="fas fa-clock mr-2"></i>Esperando propuestas...
-                        </div>
-                        ` : ''}
-                        ${puedeConfirmar ? `
-                        <div class="border-t pt-4 mt-4">
-                            <button onclick="confirmarFinalizacion('${s.id}')" 
-                                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
-                                <i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO
-                            </button>
-                        </div>
-                        ` : ''}
+                        <div class="flex justify-between items-start"><div><h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion || ''}</p></div>
+                        <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span></div>
+                        <div class="grid grid-cols-3 gap-4 mt-4 text-sm"><div><p class="text-slate-500">$${(s.monto_ofertado || 0).toFixed(2)}</p></div>
+                        <div><p class="text-slate-500">${s.ubicacion || ''}</p></div><div><p class="text-slate-500">${new Date(s.created_at).toLocaleDateString()}</p></div></div>
+                        ${tasker ? `<div class="border-t pt-4 mt-4"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${tasker.photo_url || ''}')"></div>
+                        <div><p class="font-medium">${tasker.full_name || 'Tasker'}</p><p class="text-xs">⭐ ${tasker.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div></div>
+                        <button onclick="abrirChat('${s.id}','${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Chat</button></div></div>` : s.status === 'publicado' ? `<div class="border-t pt-4 mt-4 text-center text-slate-500"><i class="fas fa-clock mr-2"></i>Esperando tasker...</div>` : ''}
+                        ${puedeConfirmar ? `<div class="border-t pt-4 mt-4"><button onclick="confirmarFinalizacion('${s.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700"><i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO</button></div>` : ''}
                     </div>`;
                 }).join('');
-            } catch (error) {
-                console.error('Error:', error);
-                contenedor.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar servicios</p>';
+            }
+            const totalPages = Math.ceil(serviciosTotales.length / 4);
+            document.getElementById('paginaInfoServicios').textContent = `Página ${paginaActualServicios} de ${totalPages || 1}`;
+            document.getElementById('btnPrevServicios').disabled = paginaActualServicios <= 1;
+            document.getElementById('btnNextServicios').disabled = paginaActualServicios >= totalPages;
+        }
+
+        window.paginaServicios = (dir) => {
+            const totalPages = Math.ceil(serviciosTotales.length / 4);
+            const nuevaPagina = paginaActualServicios + dir;
+            if (nuevaPagina >= 1 && nuevaPagina <= totalPages) {
+                paginaActualServicios = nuevaPagina;
+                actualizarListaServicios();
             }
         };
 
@@ -1143,34 +1039,13 @@
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('servicios')
-                    .update({ status: 'completado', fecha_completado: new Date() })
-                    .eq('id', id);
-                    
-                const { data: d } = await supabase
-                    .from('servicios')
-                    .select('tasker_id')
-                    .eq('id', id)
-                    .single();
-                    
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: d.tasker_id,
-                        tipo: 'pago',
-                        titulo: 'Servicio completado',
-                        mensaje: 'El cliente confirmó la finalización del servicio'
-                    }]);
-                    
+                await supabase.from('servicios').update({ status: 'completado', fecha_completado: new Date() }).eq('id', id);
+                const { data: d } = await supabase.from('servicios').select('tasker_id').eq('id', id).single();
+                await supabase.from('notificaciones').insert([{ usuario_id: d.tasker_id, tipo: 'pago', titulo: 'Servicio completado', mensaje: 'El cliente confirmó la finalización' }]);
                 mostrarToast('¡Gracias por confirmar!', 'success');
                 window.cargarMisServicios();
                 await cargarDashboard();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
@@ -1180,36 +1055,10 @@
             const supabase = initSupabase();
             const c = document.getElementById('listaConversaciones');
             try {
-                const { data: chats } = await supabase
-                    .from('chats')
-                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
-                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
-                    .order('ultimo_mensaje_time', { ascending: false });
-                    
-                if (!chats?.length) {
-                    c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>';
-                    return;
-                }
-                
-                c.innerHTML = chats.map(ch => {
-                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `
-                        <div class="p-3 border-b hover:bg-slate-50 cursor-pointer" 
-                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-300"></div>
-                                <div>
-                                    <p class="font-medium">${otro.full_name || ''}</p>
-                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
-                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) {
-                console.error(e);
-            }
+                const { data: chats } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', { ascending: false });
+                if (!chats?.length) { c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>'; return; }
+                c.innerHTML = chats.map(ch => { const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1; return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url || ''}')"></div><div><p class="font-medium">${otro.full_name || ''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}</div></div></div>`; }).join('');
+            } catch (e) { console.error(e); }
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
@@ -1221,129 +1070,51 @@
             document.getElementById('infoServicio').textContent = info;
             document.getElementById('inputChat').classList.remove('hidden');
             await cargarMensajes(id);
-            
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = supabase
-                .channel(`chat-${id}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new))
-                .subscribe();
+            suscripcionChat = supabase.channel(`chat-${id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
         };
 
         async function cargarMensajes(id) {
             const supabase = initSupabase();
             const c = document.getElementById('mensajesChat');
             try {
-                const { data: msgs } = await supabase
-                    .from('mensajes')
-                    .select('*')
-                    .eq('chat_id', id)
-                    .order('created_at');
-                    
-                if (!msgs?.length) {
-                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
-                    return;
-                }
-                
-                c.innerHTML = msgs.map(m => `
-                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                        <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
-                            <p class="text-sm">${m.mensaje}</p>
-                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
-                        </div>
-                    </div>
-                `).join('');
+                const { data: msgs } = await supabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
+                if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
+                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
                 c.scrollTop = c.scrollHeight;
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function agregarMensaje(m) {
             const c = document.getElementById('mensajesChat');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `
-                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                    <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
-                        <p class="text-sm">${m.mensaje}</p>
-                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
-                    </div>
-                </div>
-            `;
+            c.innerHTML += `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
             c.scrollTop = c.scrollHeight;
         }
 
         document.getElementById('formMensaje')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!chatActual) {
-                mostrarToast('Selecciona un chat', 'warning');
-                return;
-            }
-            
+            if (!chatActual) { mostrarToast('Selecciona un chat', 'warning'); return; }
             const txt = document.getElementById('textoMensaje').value.trim();
             if (!txt) return;
-            
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('mensajes')
-                    .insert([{
-                        chat_id: chatActual.id,
-                        remitente_id: usuarioActual.id,
-                        mensaje: txt,
-                        created_at: new Date()
-                    }]);
-                    
-                await supabase
-                    .from('chats')
-                    .update({
-                        ultimo_mensaje: txt,
-                        ultimo_mensaje_time: new Date(),
-                        ultimo_mensaje_leido: false
-                    })
-                    .eq('id', chatActual.id);
-                    
+                await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
+                await supabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
                 document.getElementById('textoMensaje').value = '';
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al enviar', 'error');
-            }
+            } catch (e) { mostrarToast('Error al enviar', 'error'); }
         });
 
         window.abrirChat = async (sid, tid) => {
             try {
                 const supabase = initSupabase();
-                const { data: ex } = await supabase
-                    .from('chats')
-                    .select('*')
-                    .eq('servicio_id', sid)
-                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
-                    .maybeSingle();
-                    
-                let cid;
-                if (ex) {
-                    cid = ex.id;
-                } else {
-                    const { data: n } = await supabase
-                        .from('chats')
-                        .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
-                        .select()
-                        .single();
-                    cid = n.id;
-                }
-                
-                const { data: t } = await supabase
-                    .from('profiles')
-                    .select('full_name,photo_url')
-                    .eq('id', tid)
-                    .single();
-                    
+                const { data: ex } = await supabase.from('chats').select('*').eq('servicio_id', sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
+                let cid = ex ? ex.id : (await supabase.from('chats').insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }]).select().single()).data.id;
+                const { data: t } = await supabase.from('profiles').select('full_name,photo_url').eq('id', tid).single();
                 window.cambiarSeccion('chat');
                 await cargarConversaciones();
                 await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al abrir chat', 'error');
-            }
+            } catch (e) { mostrarToast('Error al abrir chat', 'error'); }
         };
 
         // =============================================
@@ -1351,30 +1122,33 @@
         // =============================================
         window.cargarPagos = async function() {
             const supabase = initSupabase();
-            const t = document.getElementById('tablaPagos');
             try {
-                const { data: p } = await supabase
-                    .from('pagos')
-                    .select('*, servicio:servicio_id(subcategoria)')
-                    .eq('cliente_id', usuarioActual.id)
-                    .order('fecha_pago', { ascending: false });
-                    
-                if (!p?.length) {
-                    t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</td></tr>';
-                    return;
-                }
-                
-                t.innerHTML = p.map(x => `
-                    <tr class="border-b">
-                        <td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-4">${x.servicio?.subcategoria || ''}</td>
-                        <td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td>
-                        <td class="p-4">$${x.comision_taskers?.toFixed(2)}</td>
-                        <td class="p-4"><span class="badge-estado badge-completado">Completado</span></td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                console.error(e);
+                const { data: p } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id', usuarioActual.id).order('fecha_pago', { ascending: false });
+                pagosTotales = p || [];
+                await actualizarListaPagos();
+            } catch (e) { console.error(e); }
+        };
+
+        async function actualizarListaPagos() {
+            const t = document.getElementById('tablaPagos');
+            const start = (paginaActualPagos - 1) * 10;
+            const pagos = pagosTotales.slice(start, start + 10);
+            if (!pagos.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</tbody>'; }
+            else {
+                t.innerHTML = pagos.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria || ''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4">$${x.comision_taskers?.toFixed(2)}</td><td class="p-4"><span class="badge-estado badge-completado">Completado</span></td></tr>`).join('');
+            }
+            const totalPages = Math.ceil(pagosTotales.length / 10);
+            document.getElementById('paginaInfoPagos').textContent = `Página ${paginaActualPagos} de ${totalPages || 1}`;
+            document.getElementById('btnPrevPagos').disabled = paginaActualPagos <= 1;
+            document.getElementById('btnNextPagos').disabled = paginaActualPagos >= totalPages;
+        }
+
+        window.paginaPagos = (dir) => {
+            const totalPages = Math.ceil(pagosTotales.length / 10);
+            const nuevaPagina = paginaActualPagos + dir;
+            if (nuevaPagina >= 1 && nuevaPagina <= totalPages) {
+                paginaActualPagos = nuevaPagina;
+                actualizarListaPagos();
             }
         };
 
@@ -1385,80 +1159,56 @@
             e.preventDefault();
             try {
                 const supabase = initSupabase();
-                await supabase
-                    .from('profiles')
-                    .update({
-                        full_name: document.getElementById('perfilNombre').value,
-                        phone: document.getElementById('perfilTelefono').value,
-                        updated_at: new Date()
-                    })
-                    .eq('id', usuarioActual.id);
-                    
+                await supabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, updated_at: new Date() }).eq('id', usuarioActual.id);
                 mostrarToast('Perfil actualizado', 'success');
                 await cargarUsuario();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
         });
 
         window.subirFotoPerfil = async function() {
             const i = document.getElementById('fotoPerfil');
             if (!i.files?.[0]) return;
-            
             mostrarCarga();
             try {
                 const f = i.files[0];
                 if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
-                
                 const supabase = initSupabase();
                 const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
                 await supabase.storage.from('profiles-photos').upload(n, f);
-                
                 const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
                 await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
-                
                 document.getElementById('avatarHeader').style.backgroundImage = `url('${publicUrl}')`;
                 document.getElementById('avatarPerfil').style.backgroundImage = `url('${publicUrl}')`;
                 mostrarToast('Foto actualizada', 'success');
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+        };
+
+        // =============================================
+        // CANCELAR CUENTA
+        // =============================================
+        window.cancelarCuenta = async function() {
+            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible.')) return;
+            mostrarCarga();
+            try {
+                const supabase = initSupabase();
+                await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+                await supabase.auth.signOut();
+                mostrarToast('Cuenta cancelada', 'success');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
         // UTILIDADES
         // =============================================
         function obtenerClase(s) {
-            const clases = {
-                pendiente_pago: 'badge-pendiente',
-                publicado: 'badge-publicado',
-                asignado: 'badge-asignado',
-                en_progreso: 'badge-progreso',
-                completado: 'badge-completado',
-                cancelado: 'badge-cancelado'
-            };
+            const clases = { pendiente_pago: 'badge-pendiente', publicado: 'badge-publicado', asignado: 'badge-asignado', en_progreso: 'badge-progreso', completado: 'badge-completado', cancelado: 'badge-cancelado' };
             return clases[s] || 'badge-pendiente';
         }
-        
         function obtenerTexto(s) {
-            const textos = {
-                pendiente_pago: 'Pendiente pago',
-                publicado: 'Buscando',
-                asignado: 'Asignado',
-                en_progreso: 'En progreso',
-                completado: 'Completado',
-                cancelado: 'Cancelado'
-            };
+            const textos = { pendiente_pago: 'Pendiente pago', publicado: 'Buscando', asignado: 'Asignado', en_progreso: 'En progreso', completado: 'Completado', cancelado: 'Cancelado' };
             return textos[s] || s;
         }
-
-        function cerrarModalServicio() {
-            document.getElementById('modalServicio').classList.add('hidden');
-            document.getElementById('modalServicio').classList.remove('flex');
-        }
-        
         window.verServicio = (id) => window.cambiarSeccion('mis-servicios');
 
         // =============================================
@@ -1466,15 +1216,12 @@
         // =============================================
         function configurarRealtime() {
             const supabase = initSupabase();
-            supabase
-                .channel('mensajes-cliente')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
-                    if (p.new.remitente_id !== usuarioActual?.id) {
-                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                        else mostrarToast('Nuevo mensaje recibido', 'info');
-                    }
-                })
-                .subscribe();
+            supabase.channel('mensajes-cliente').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                if (p.new.remitente_id !== usuarioActual?.id) {
+                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                    else mostrarToast('Nuevo mensaje recibido', 'info');
+                }
+            }).subscribe();
         }
 
         // =============================================
@@ -1485,28 +1232,13 @@
             document.querySelectorAll('.enlace-moderno').forEach(l => l.classList.remove('activo'));
             document.getElementById('seccion-' + sec).classList.add('activo');
             document.getElementById('link-' + sec)?.classList.add('activo');
-            
-            const tit = {
-                inicio: 'Inicio',
-                'nuevo-servicio': 'Solicitar Servicio',
-                'mis-servicios': 'Mis Servicios',
-                chat: 'Mensajes',
-                pagos: 'Mis Pagos',
-                perfil: 'Mi Perfil'
-            };
-            
+            const tit = { inicio: 'Inicio', 'nuevo-servicio': 'Solicitar Servicio', 'mis-servicios': 'Mis Servicios', chat: 'Mensajes', pagos: 'Mis Pagos', perfil: 'Mi Perfil', 'cancelar-cuenta': 'Cancelar Cuenta' };
             document.getElementById('tituloSeccion').textContent = tit[sec];
-            document.getElementById('subtituloSeccion').innerHTML = `Bienvenido a tu panel de ${tit[sec].toLowerCase()}`;
-            
             if (sec === 'nuevo-servicio') cargarCategorias();
             if (sec === 'mis-servicios') window.cargarMisServicios();
             if (sec === 'chat') window.cargarConversaciones();
             if (sec === 'pagos') window.cargarPagos();
-            if (sec === 'inicio') {
-                cargarDashboard();
-                actualizarUbicacion();
-            }
-            
+            if (sec === 'inicio') { cargarDashboard(); actualizarUbicacion(); }
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
