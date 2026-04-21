@@ -108,7 +108,6 @@
             z-index: 1;
         }
         
-        /* Navegación entre páginas */
         .nav-paginacion {
             display: flex;
             justify-content: center;
@@ -556,8 +555,10 @@
                             <div id="mensajesChat" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
                             <div id="inputChat" class="p-4 border-t hidden">
                                 <form id="formMensaje" class="flex gap-2">
-                                    <input type="text" id="textoMensaje" class="flex-1 p-3 border rounded-xl" placeholder="Escribe...">
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"><i class="fas fa-paper-plane"></i></button>
+                                    <input type="text" id="textoMensaje" class="flex-1 p-3 border rounded-xl" placeholder="Escribe tu mensaje...">
+                                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -571,7 +572,7 @@
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th></tr>
+                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th><th class="p-4 text-left">Estado</th></td>
                                 </thead>
                                 <tbody id="tablaPagos"></tbody>
                             </table>
@@ -1049,38 +1050,103 @@
         };
 
         // =============================================
-        // CHAT
+        // CHAT (CORREGIDO)
         // =============================================
         window.cargarConversaciones = async function() {
             const supabase = initSupabase();
             const c = document.getElementById('listaConversaciones');
             try {
-                const { data: chats } = await supabase.from('chats').select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)').or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`).order('ultimo_mensaje_time', { ascending: false });
-                if (!chats?.length) { c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>'; return; }
-                c.innerHTML = chats.map(ch => { const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1; return `<div class="p-3 border-b hover:bg-slate-50 cursor-pointer" onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url || ''}')"></div><div><p class="font-medium">${otro.full_name || ''}</p><p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}</div></div></div>`; }).join('');
+                const { data: chats } = await supabase
+                    .from('chats')
+                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
+                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+                    .order('ultimo_mensaje_time', { ascending: false });
+                    
+                if (!chats?.length) {
+                    c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>';
+                    return;
+                }
+                
+                c.innerHTML = chats.map(ch => {
+                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
+                    return `
+                        <div class="p-3 border-b hover:bg-slate-50 cursor-pointer" 
+                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url || ''}')"></div>
+                                <div>
+                                    <p class="font-medium">${otro.full_name || ''}</p>
+                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
+                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             } catch (e) { console.error(e); }
         };
 
         window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
             const supabase = initSupabase();
             chatActual = { id, oid, nombre, avatar, info };
-            document.getElementById('cabeceraChat').classList.remove('hidden');
-            document.getElementById('nombreTasker').textContent = nombre;
-            if (avatar) document.getElementById('avatarTasker').style.backgroundImage = `url('${avatar}')`;
-            document.getElementById('infoServicio').textContent = info;
-            document.getElementById('inputChat').classList.remove('hidden');
+            
+            console.log('Chat seleccionado:', chatActual);
+            
+            // Mostrar cabecera del chat
+            const cabecera = document.getElementById('cabeceraChat');
+            const inputChat = document.getElementById('inputChat');
+            const nombreTasker = document.getElementById('nombreTasker');
+            const avatarTasker = document.getElementById('avatarTasker');
+            const infoServicio = document.getElementById('infoServicio');
+            
+            if (cabecera) cabecera.classList.remove('hidden');
+            if (nombreTasker) nombreTasker.textContent = nombre;
+            if (avatarTasker && avatar) avatarTasker.style.backgroundImage = `url('${avatar}')`;
+            if (infoServicio) infoServicio.textContent = info;
+            if (inputChat) inputChat.classList.remove('hidden');
+            
+            // Cargar mensajes existentes
             await cargarMensajes(id);
+            
+            // Suscribirse a nuevos mensajes
             if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = supabase.channel(`chat-${id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `chat_id=eq.${id}` }, p => agregarMensaje(p.new)).subscribe();
+            suscripcionChat = supabase
+                .channel(`chat-${id}`)
+                .on('postgres_changes', { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'mensajes', 
+                    filter: `chat_id=eq.${id}` 
+                }, payload => {
+                    console.log('Nuevo mensaje recibido:', payload.new);
+                    agregarMensaje(payload.new);
+                })
+                .subscribe();
         };
 
         async function cargarMensajes(id) {
             const supabase = initSupabase();
             const c = document.getElementById('mensajesChat');
             try {
-                const { data: msgs } = await supabase.from('mensajes').select('*').eq('chat_id', id).order('created_at');
-                if (!msgs?.length) { c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>'; return; }
-                c.innerHTML = msgs.map(m => `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`).join('');
+                const { data: msgs } = await supabase
+                    .from('mensajes')
+                    .select('*')
+                    .eq('chat_id', id)
+                    .order('created_at');
+                    
+                if (!msgs?.length) {
+                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
+                    return;
+                }
+                
+                c.innerHTML = msgs.map(m => `
+                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                        <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
+                            <p class="text-sm">${m.mensaje}</p>
+                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                        </div>
+                    </div>
+                `).join('');
                 c.scrollTop = c.scrollHeight;
             } catch (e) { console.error(e); }
         }
@@ -1088,33 +1154,115 @@
         function agregarMensaje(m) {
             const c = document.getElementById('mensajesChat');
             if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `<div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}"><div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3"><p class="text-sm">${m.mensaje}</p><p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p></div></div>`;
+            c.innerHTML += `
+                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
+                    <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
+                        <p class="text-sm">${m.mensaje}</p>
+                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+            `;
             c.scrollTop = c.scrollHeight;
         }
 
-        document.getElementById('formMensaje')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!chatActual) { mostrarToast('Selecciona un chat', 'warning'); return; }
-            const txt = document.getElementById('textoMensaje').value.trim();
-            if (!txt) return;
-            try {
-                const supabase = initSupabase();
-                await supabase.from('mensajes').insert([{ chat_id: chatActual.id, remitente_id: usuarioActual.id, mensaje: txt, created_at: new Date() }]);
-                await supabase.from('chats').update({ ultimo_mensaje: txt, ultimo_mensaje_time: new Date(), ultimo_mensaje_leido: false }).eq('id', chatActual.id);
-                document.getElementById('textoMensaje').value = '';
-            } catch (e) { mostrarToast('Error al enviar', 'error'); }
-        });
+        // Configurar envío de mensajes
+        const formMensaje = document.getElementById('formMensaje');
+        if (formMensaje) {
+            formMensaje.removeEventListener('submit', window.enviarMensajeHandler);
+            
+            window.enviarMensajeHandler = async (e) => {
+                e.preventDefault();
+                
+                if (!chatActual) {
+                    mostrarToast('Selecciona un chat primero', 'warning');
+                    return;
+                }
+                
+                const input = document.getElementById('textoMensaje');
+                const txt = input?.value.trim();
+                
+                if (!txt) {
+                    mostrarToast('Escribe un mensaje', 'warning');
+                    return;
+                }
+                
+                console.log('Enviando mensaje a chat:', chatActual.id, 'Mensaje:', txt);
+                
+                try {
+                    const supabase = initSupabase();
+                    
+                    const { data, error } = await supabase
+                        .from('mensajes')
+                        .insert([{
+                            chat_id: chatActual.id,
+                            remitente_id: usuarioActual.id,
+                            mensaje: txt,
+                            created_at: new Date()
+                        }])
+                        .select();
+                    
+                    if (error) throw error;
+                    
+                    console.log('Mensaje enviado:', data);
+                    
+                    // Actualizar último mensaje en el chat
+                    await supabase
+                        .from('chats')
+                        .update({
+                            ultimo_mensaje: txt,
+                            ultimo_mensaje_time: new Date(),
+                            ultimo_mensaje_leido: false
+                        })
+                        .eq('id', chatActual.id);
+                    
+                    // Limpiar input
+                    if (input) input.value = '';
+                    
+                    // Agregar mensaje al chat localmente
+                    agregarMensaje({
+                        remitente_id: usuarioActual.id,
+                        mensaje: txt,
+                        created_at: new Date()
+                    });
+                    
+                } catch (error) {
+                    console.error('Error al enviar mensaje:', error);
+                    mostrarToast('Error al enviar mensaje: ' + error.message, 'error');
+                }
+            };
+            
+            formMensaje.addEventListener('submit', window.enviarMensajeHandler);
+        }
 
         window.abrirChat = async (sid, tid) => {
             try {
                 const supabase = initSupabase();
-                const { data: ex } = await supabase.from('chats').select('*').eq('servicio_id', sid).or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`).maybeSingle();
-                let cid = ex ? ex.id : (await supabase.from('chats').insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }]).select().single()).data.id;
-                const { data: t } = await supabase.from('profiles').select('full_name,photo_url').eq('id', tid).single();
+                const { data: ex } = await supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('servicio_id', sid)
+                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
+                    .maybeSingle();
+                    
+                let cid = ex ? ex.id : (await supabase
+                    .from('chats')
+                    .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
+                    .select()
+                    .single()).data.id;
+                    
+                const { data: t } = await supabase
+                    .from('profiles')
+                    .select('full_name,photo_url')
+                    .eq('id', tid)
+                    .single();
+                    
                 window.cambiarSeccion('chat');
                 await cargarConversaciones();
                 await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) { mostrarToast('Error al abrir chat', 'error'); }
+            } catch (e) {
+                console.error(e);
+                mostrarToast('Error al abrir chat', 'error');
+            }
         };
 
         // =============================================
@@ -1123,7 +1271,12 @@
         window.cargarPagos = async function() {
             const supabase = initSupabase();
             try {
-                const { data: p } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria)').eq('cliente_id', usuarioActual.id).order('fecha_pago', { ascending: false });
+                const { data: p } = await supabase
+                    .from('pagos')
+                    .select('*, servicio:servicio_id(subcategoria)')
+                    .eq('cliente_id', usuarioActual.id)
+                    .order('fecha_pago', { ascending: false });
+                    
                 pagosTotales = p || [];
                 await actualizarListaPagos();
             } catch (e) { console.error(e); }
@@ -1159,7 +1312,11 @@
             e.preventDefault();
             try {
                 const supabase = initSupabase();
-                await supabase.from('profiles').update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, updated_at: new Date() }).eq('id', usuarioActual.id);
+                await supabase
+                    .from('profiles')
+                    .update({ full_name: document.getElementById('perfilNombre').value, phone: document.getElementById('perfilTelefono').value, updated_at: new Date() })
+                    .eq('id', usuarioActual.id);
+                    
                 mostrarToast('Perfil actualizado', 'success');
                 await cargarUsuario();
             } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
@@ -1183,48 +1340,33 @@
             } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
-      // =============================================
-// CANCELAR CUENTA - VERSIÓN CON EDGE FUNCTION
-// =============================================
-window.cancelarCuenta = async function() {
-    if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos.')) return;
-    mostrarCarga();
-    try {
-        const supabase = initSupabase();
-        
-        // Obtener el ID del usuario actual
-        const userId = usuarioActual.id;
-        
-        // 1. Eliminar todos los servicios del cliente
-        await supabase.from('servicios').delete().eq('cliente_id', userId);
-        
-        // 2. Eliminar notificaciones
-        await supabase.from('notificaciones').delete().eq('usuario_id', userId);
-        
-        // 3. Eliminar ubicaciones activas (si es tasker)
-        await supabase.from('ubicaciones_activas').delete().eq('tasker_id', userId);
-        
-        // 4. Eliminar el perfil
-        const { error: profileError } = await supabase.from('profiles').delete().eq('id', userId);
-        if (profileError) throw profileError;
-        
-        // 5. IMPORTANTE: Llamar a la API de Supabase para eliminar el usuario de auth
-        // Esto requiere usar la service_role key (solo desde backend)
-        // Por ahora, cerramos sesión y el usuario quedará marcado como inactivo
-        
-        // 6. Cerrar sesión
-        await supabase.auth.signOut();
-        
-        mostrarToast('Cuenta eliminada. Tus datos han sido borrados.', 'success');
-        setTimeout(() => window.location.href = 'index.html', 2000);
-        
-    } catch (e) { 
-        console.error('Error al eliminar cuenta:', e);
-        mostrarToast('Error: ' + e.message, 'error'); 
-    } finally { 
-        ocultarCarga(); 
-    }
-};
+        // =============================================
+        // CANCELAR CUENTA
+        // =============================================
+        window.cancelarCuenta = async function() {
+            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos.')) return;
+            mostrarCarga();
+            try {
+                const supabase = initSupabase();
+                
+                await supabase.from('servicios').delete().eq('cliente_id', usuarioActual.id);
+                await supabase.from('notificaciones').delete().eq('usuario_id', usuarioActual.id);
+                await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
+                
+                const { error } = await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+                if (error) throw error;
+                
+                await supabase.auth.signOut();
+                mostrarToast('Cuenta eliminada permanentemente', 'success');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (e) { 
+                console.error('Error al eliminar cuenta:', e);
+                mostrarToast('Error: ' + e.message, 'error'); 
+            } finally { 
+                ocultarCarga(); 
+            }
+        };
+
         // =============================================
         // UTILIDADES
         // =============================================
@@ -1243,12 +1385,15 @@ window.cancelarCuenta = async function() {
         // =============================================
         function configurarRealtime() {
             const supabase = initSupabase();
-            supabase.channel('mensajes-cliente').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
-                if (p.new.remitente_id !== usuarioActual?.id) {
-                    if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
-                    else mostrarToast('Nuevo mensaje recibido', 'info');
-                }
-            }).subscribe();
+            supabase
+                .channel('mensajes-cliente')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, p => {
+                    if (p.new.remitente_id !== usuarioActual?.id) {
+                        if (chatActual && p.new.chat_id === chatActual.id) agregarMensaje(p.new);
+                        else mostrarToast('Nuevo mensaje recibido', 'info');
+                    }
+                })
+                .subscribe();
         }
 
         // =============================================
