@@ -1048,222 +1048,379 @@
                 await cargarDashboard();
             } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
+// =============================================
+// CHAT (VERSIÓN COMPLETAMENTE CORREGIDA)
+// =============================================
 
-        // =============================================
-        // CHAT (CORREGIDO)
-        // =============================================
-        window.cargarConversaciones = async function() {
-            const supabase = initSupabase();
-            const c = document.getElementById('listaConversaciones');
-            try {
-                const { data: chats } = await supabase
-                    .from('chats')
-                    .select('*, usuario1:usuario1_id(full_name,photo_url), usuario2:usuario2_id(full_name,photo_url), servicio:servicio_id(subcategoria)')
-                    .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
-                    .order('ultimo_mensaje_time', { ascending: false });
-                    
-                if (!chats?.length) {
-                    c.innerHTML = '<p class="text-center p-4 text-slate-400">No hay conversaciones</p>';
-                    return;
-                }
-                
-                c.innerHTML = chats.map(ch => {
-                    const otro = ch.usuario1_id === usuarioActual.id ? ch.usuario2 : ch.usuario1;
-                    return `
-                        <div class="p-3 border-b hover:bg-slate-50 cursor-pointer" 
-                             onclick="seleccionarChat('${ch.id}','${otro.id}','${otro.full_name}','${otro.photo_url}','${ch.servicio?.subcategoria || ''}')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${otro.photo_url || ''}')"></div>
-                                <div>
-                                    <p class="font-medium">${otro.full_name || ''}</p>
-                                    <p class="text-xs text-slate-500">${ch.servicio?.subcategoria || ''}</p>
-                                    ${ch.ultimo_mensaje ? `<p class="text-xs text-slate-400">${ch.ultimo_mensaje}</p>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) { console.error(e); }
-        };
-
-        window.seleccionarChat = async (id, oid, nombre, avatar, info) => {
-            const supabase = initSupabase();
-            chatActual = { id, oid, nombre, avatar, info };
-            
-            console.log('Chat seleccionado:', chatActual);
-            
-            // Mostrar cabecera del chat
-            const cabecera = document.getElementById('cabeceraChat');
-            const inputChat = document.getElementById('inputChat');
-            const nombreTasker = document.getElementById('nombreTasker');
-            const avatarTasker = document.getElementById('avatarTasker');
-            const infoServicio = document.getElementById('infoServicio');
-            
-            if (cabecera) cabecera.classList.remove('hidden');
-            if (nombreTasker) nombreTasker.textContent = nombre;
-            if (avatarTasker && avatar) avatarTasker.style.backgroundImage = `url('${avatar}')`;
-            if (infoServicio) infoServicio.textContent = info;
-            if (inputChat) inputChat.classList.remove('hidden');
-            
-            // Cargar mensajes existentes
-            await cargarMensajes(id);
-            
-            // Suscribirse a nuevos mensajes
-            if (suscripcionChat) suscripcionChat.unsubscribe();
-            suscripcionChat = supabase
-                .channel(`chat-${id}`)
-                .on('postgres_changes', { 
-                    event: 'INSERT', 
-                    schema: 'public', 
-                    table: 'mensajes', 
-                    filter: `chat_id=eq.${id}` 
-                }, payload => {
-                    console.log('Nuevo mensaje recibido:', payload.new);
-                    agregarMensaje(payload.new);
-                })
-                .subscribe();
-        };
-
-        async function cargarMensajes(id) {
-            const supabase = initSupabase();
-            const c = document.getElementById('mensajesChat');
-            try {
-                const { data: msgs } = await supabase
-                    .from('mensajes')
-                    .select('*')
-                    .eq('chat_id', id)
-                    .order('created_at');
-                    
-                if (!msgs?.length) {
-                    c.innerHTML = '<p class="text-center py-8 text-slate-400">No hay mensajes</p>';
-                    return;
-                }
-                
-                c.innerHTML = msgs.map(m => `
-                    <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                        <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
-                            <p class="text-sm">${m.mensaje}</p>
-                            <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
-                        </div>
-                    </div>
-                `).join('');
-                c.scrollTop = c.scrollHeight;
-            } catch (e) { console.error(e); }
+// Cargar lista de conversaciones
+window.cargarConversaciones = async function() {
+    const supabase = initSupabase();
+    const c = document.getElementById('listaConversaciones');
+    try {
+        console.log('Cargando conversaciones para usuario:', usuarioActual.id);
+        
+        const { data: chats, error } = await supabase
+            .from('chats')
+            .select(`
+                *,
+                servicio:servicio_id(subcategoria),
+                usuario1:usuario1_id(id, full_name, photo_url),
+                usuario2:usuario2_id(id, full_name, photo_url)
+            `)
+            .or(`usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${usuarioActual.id}`)
+            .order('ultimo_mensaje_time', { ascending: false });
+        
+        if (error) {
+            console.error('Error cargando conversaciones:', error);
+            return;
         }
-
-        function agregarMensaje(m) {
-            const c = document.getElementById('mensajesChat');
-            if (c.children.length === 1 && c.children[0].tagName === 'P') c.innerHTML = '';
-            c.innerHTML += `
-                <div class="flex ${m.remitente_id === usuarioActual.id ? 'justify-end' : 'justify-start'}">
-                    <div class="${m.remitente_id === usuarioActual.id ? 'mensaje-cliente' : 'mensaje-tasker'} p-3">
-                        <p class="text-sm">${m.mensaje}</p>
-                        <p class="text-xs opacity-75 mt-1">${new Date(m.created_at).toLocaleTimeString()}</p>
+        
+        console.log('Conversaciones encontradas:', chats?.length || 0);
+        
+        if (!chats || chats.length === 0) {
+            c.innerHTML = '<div class="text-center p-4 text-slate-400">No hay conversaciones</div>';
+            return;
+        }
+        
+        c.innerHTML = chats.map(chat => {
+            // Determinar el otro usuario (el que no es el actual)
+            const otroUsuario = chat.usuario1_id === usuarioActual.id ? chat.usuario2 : chat.usuario1;
+            const nombreOtro = otroUsuario?.full_name || 'Usuario';
+            const fotoOtro = otroUsuario?.photo_url || '';
+            const servicioInfo = chat.servicio?.subcategoria || 'Servicio';
+            
+            return `
+                <div class="p-3 border-b hover:bg-slate-50 cursor-pointer transition" 
+                     onclick="seleccionarChat('${chat.id}', '${otroUsuario?.id || ''}', '${nombreOtro}', '${fotoOtro}', '${servicioInfo}')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-300 bg-cover bg-center" 
+                             style="background-image: url('${fotoOtro}')"></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-slate-800 truncate">${nombreOtro}</p>
+                            <p class="text-xs text-slate-500 truncate">${servicioInfo}</p>
+                            ${chat.ultimo_mensaje ? `<p class="text-xs text-slate-400 truncate">${chat.ultimo_mensaje.substring(0, 40)}</p>` : ''}
+                        </div>
                     </div>
                 </div>
             `;
-            c.scrollTop = c.scrollHeight;
-        }
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        c.innerHTML = '<div class="text-center p-4 text-red-400">Error al cargar conversaciones</div>';
+    }
+};
 
-        // Configurar envío de mensajes
-        const formMensaje = document.getElementById('formMensaje');
-        if (formMensaje) {
-            formMensaje.removeEventListener('submit', window.enviarMensajeHandler);
-            
-            window.enviarMensajeHandler = async (e) => {
-                e.preventDefault();
-                
-                if (!chatActual) {
-                    mostrarToast('Selecciona un chat primero', 'warning');
-                    return;
-                }
-                
-                const input = document.getElementById('textoMensaje');
-                const txt = input?.value.trim();
-                
-                if (!txt) {
-                    mostrarToast('Escribe un mensaje', 'warning');
-                    return;
-                }
-                
-                console.log('Enviando mensaje a chat:', chatActual.id, 'Mensaje:', txt);
-                
-                try {
-                    const supabase = initSupabase();
-                    
-                    const { data, error } = await supabase
-                        .from('mensajes')
-                        .insert([{
-                            chat_id: chatActual.id,
-                            remitente_id: usuarioActual.id,
-                            mensaje: txt,
-                            created_at: new Date()
-                        }])
-                        .select();
-                    
-                    if (error) throw error;
-                    
-                    console.log('Mensaje enviado:', data);
-                    
-                    // Actualizar último mensaje en el chat
-                    await supabase
-                        .from('chats')
-                        .update({
-                            ultimo_mensaje: txt,
-                            ultimo_mensaje_time: new Date(),
-                            ultimo_mensaje_leido: false
-                        })
-                        .eq('id', chatActual.id);
-                    
-                    // Limpiar input
-                    if (input) input.value = '';
-                    
-                    // Agregar mensaje al chat localmente
-                    agregarMensaje({
-                        remitente_id: usuarioActual.id,
-                        mensaje: txt,
-                        created_at: new Date()
-                    });
-                    
-                } catch (error) {
-                    console.error('Error al enviar mensaje:', error);
-                    mostrarToast('Error al enviar mensaje: ' + error.message, 'error');
-                }
-            };
-            
-            formMensaje.addEventListener('submit', window.enviarMensajeHandler);
-        }
+// Seleccionar un chat y mostrar mensajes
+window.seleccionarChat = async (chatId, otroId, nombre, avatar, servicioInfo) => {
+    console.log('Seleccionando chat:', { chatId, otroId, nombre });
+    
+    if (!chatId || !otroId) {
+        mostrarToast('Error: No se pudo cargar el chat', 'error');
+        return;
+    }
+    
+    // Guardar chat actual
+    chatActual = {
+        id: chatId,
+        otroId: otroId,
+        nombre: nombre,
+        avatar: avatar,
+        servicioInfo: servicioInfo
+    };
+    
+    // Mostrar cabecera del chat
+    const cabecera = document.getElementById('cabeceraChat');
+    const inputChat = document.getElementById('inputChat');
+    const nombreTasker = document.getElementById('nombreTasker');
+    const avatarTasker = document.getElementById('avatarTasker');
+    const infoServicio = document.getElementById('infoServicio');
+    
+    if (cabecera) cabecera.classList.remove('hidden');
+    if (nombreTasker) nombreTasker.textContent = nombre;
+    if (avatarTasker && avatar) avatarTasker.style.backgroundImage = `url('${avatar}')`;
+    if (infoServicio) infoServicio.textContent = servicioInfo;
+    if (inputChat) inputChat.classList.remove('hidden');
+    
+    // Cargar mensajes del chat
+    await cargarMensajes(chatId);
+    
+    // Suscribirse a nuevos mensajes en tiempo real
+    if (suscripcionChat) {
+        suscripcionChat.unsubscribe();
+    }
+    
+    const supabase = initSupabase();
+    suscripcionChat = supabase
+        .channel(`chat-${chatId}`)
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'mensajes',
+            filter: `chat_id=eq.${chatId}`
+        }, (payload) => {
+            console.log('Nuevo mensaje en tiempo real:', payload.new);
+            agregarMensajeAlChat(payload.new);
+        })
+        .subscribe();
+};
 
-        window.abrirChat = async (sid, tid) => {
-            try {
-                const supabase = initSupabase();
-                const { data: ex } = await supabase
-                    .from('chats')
-                    .select('*')
-                    .eq('servicio_id', sid)
-                    .or(`and(usuario1_id.eq.${usuarioActual.id},usuario2_id.eq.${tid}),and(usuario1_id.eq.${tid},usuario2_id.eq.${usuarioActual.id})`)
-                    .maybeSingle();
-                    
-                let cid = ex ? ex.id : (await supabase
-                    .from('chats')
-                    .insert([{ servicio_id: sid, usuario1_id: usuarioActual.id, usuario2_id: tid }])
-                    .select()
-                    .single()).data.id;
-                    
-                const { data: t } = await supabase
-                    .from('profiles')
-                    .select('full_name,photo_url')
-                    .eq('id', tid)
-                    .single();
-                    
-                window.cambiarSeccion('chat');
-                await cargarConversaciones();
-                await seleccionarChat(cid, tid, t.full_name, t.photo_url, 'Servicio');
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al abrir chat', 'error');
+// Cargar mensajes de un chat específico
+async function cargarMensajes(chatId) {
+    const supabase = initSupabase();
+    const container = document.getElementById('mensajesChat');
+    
+    try {
+        console.log('Cargando mensajes del chat:', chatId);
+        
+        const { data: mensajes, error } = await supabase
+            .from('mensajes')
+            .select('*')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('Error cargando mensajes:', error);
+            container.innerHTML = '<div class="text-center py-8 text-red-400">Error al cargar mensajes</div>';
+            return;
+        }
+        
+        console.log('Mensajes cargados:', mensajes?.length || 0);
+        
+        if (!mensajes || mensajes.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-slate-400">No hay mensajes aún. ¡Envía el primero!</div>';
+            return;
+        }
+        
+        // Mostrar mensajes
+        container.innerHTML = mensajes.map(msg => {
+            const esMio = msg.remitente_id === usuarioActual.id;
+            return `
+                <div class="flex ${esMio ? 'justify-end' : 'justify-start'} mb-3">
+                    <div class="${esMio ? 'mensaje-cliente' : 'mensaje-tasker'} p-3 rounded-2xl max-w-[75%]">
+                        <p class="text-sm">${escapeHtml(msg.mensaje)}</p>
+                        <p class="text-xs opacity-75 mt-1 text-right">${formatearHora(msg.created_at)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Scroll al final
+        container.scrollTop = container.scrollHeight;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        container.innerHTML = '<div class="text-center py-8 text-red-400">Error al cargar mensajes</div>';
+    }
+}
+
+// Agregar un mensaje al chat (sin recargar toda la lista)
+function agregarMensajeAlChat(mensaje) {
+    const container = document.getElementById('mensajesChat');
+    const esMio = mensaje.remitente_id === usuarioActual.id;
+    
+    // Si es un mensaje nuevo y no hay mensajes previos, limpiar el mensaje de "no hay mensajes"
+    if (container.children.length === 1 && container.children[0].innerText.includes('No hay mensajes')) {
+        container.innerHTML = '';
+    }
+    
+    const mensajeHtml = `
+        <div class="flex ${esMio ? 'justify-end' : 'justify-start'} mb-3">
+            <div class="${esMio ? 'mensaje-cliente' : 'mensaje-tasker'} p-3 rounded-2xl max-w-[75%]">
+                <p class="text-sm">${escapeHtml(mensaje.mensaje)}</p>
+                <p class="text-xs opacity-75 mt-1 text-right">${formatearHora(mensaje.created_at)}</p>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', mensajeHtml);
+    container.scrollTop = container.scrollHeight;
+    
+    // Si el mensaje es del otro usuario, mostrar notificación
+    if (!esMio) {
+        mostrarToast('Nuevo mensaje de ' + chatActual?.nombre, 'info');
+    }
+}
+
+// Enviar mensaje
+async function enviarMensaje() {
+    const input = document.getElementById('textoMensaje');
+    const mensaje = input?.value.trim();
+    
+    if (!mensaje) {
+        mostrarToast('Escribe un mensaje', 'warning');
+        return;
+    }
+    
+    if (!chatActual || !chatActual.id) {
+        mostrarToast('Selecciona un chat primero', 'warning');
+        return;
+    }
+    
+    console.log('Enviando mensaje:', { chatId: chatActual.id, mensaje });
+    
+    try {
+        const supabase = initSupabase();
+        
+        const { data, error } = await supabase
+            .from('mensajes')
+            .insert({
+                chat_id: chatActual.id,
+                remitente_id: usuarioActual.id,
+                mensaje: mensaje,
+                created_at: new Date().toISOString(),
+                leido: false,
+                tipo: 'texto'
+            })
+            .select();
+        
+        if (error) {
+            console.error('Error al enviar mensaje:', error);
+            mostrarToast('Error al enviar: ' + error.message, 'error');
+            return;
+        }
+        
+        console.log('Mensaje enviado:', data);
+        
+        // Actualizar último mensaje en el chat
+        await supabase
+            .from('chats')
+            .update({
+                ultimo_mensaje: mensaje,
+                ultimo_mensaje_time: new Date().toISOString(),
+                ultimo_mensaje_leido: false
+            })
+            .eq('id', chatActual.id);
+        
+        // Limpiar input
+        input.value = '';
+        
+        // Agregar mensaje al chat localmente
+        agregarMensajeAlChat({
+            remitente_id: usuarioActual.id,
+            mensaje: mensaje,
+            created_at: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarToast('Error al enviar mensaje', 'error');
+    }
+}
+
+// Función auxiliar para escapar HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Función auxiliar para formatear hora
+function formatearHora(fecha) {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Abrir chat desde un servicio
+window.abrirChat = async (servicioId, taskerId) => {
+    try {
+        console.log('Abriendo chat para servicio:', servicioId, 'tasker:', taskerId);
+        
+        const supabase = initSupabase();
+        
+        // Buscar si ya existe un chat para este servicio
+        let { data: chatExistente, error: searchError } = await supabase
+            .from('chats')
+            .select('*')
+            .eq('servicio_id', servicioId)
+            .maybeSingle();
+        
+        if (searchError) {
+            console.error('Error buscando chat:', searchError);
+        }
+        
+        let chatId;
+        
+        if (chatExistente) {
+            chatId = chatExistente.id;
+            console.log('Chat existente:', chatId);
+        } else {
+            // Crear nuevo chat
+            const { data: nuevoChat, error: createError } = await supabase
+                .from('chats')
+                .insert({
+                    servicio_id: servicioId,
+                    usuario1_id: usuarioActual.id,
+                    usuario2_id: taskerId,
+                    created_at: new Date().toISOString(),
+                    ultimo_mensaje_time: new Date().toISOString()
+                })
+                .select()
+                .single();
+            
+            if (createError) {
+                console.error('Error creando chat:', createError);
+                mostrarToast('Error al crear chat: ' + createError.message, 'error');
+                return;
             }
+            
+            chatId = nuevoChat.id;
+            console.log('Chat creado:', chatId);
+        }
+        
+        // Obtener información del tasker
+        const { data: taskerInfo, error: taskerError } = await supabase
+            .from('profiles')
+            .select('full_name, photo_url')
+            .eq('id', taskerId)
+            .single();
+        
+        if (taskerError) {
+            console.error('Error obteniendo info del tasker:', taskerError);
+        }
+        
+        const nombreTasker = taskerInfo?.full_name || 'Tasker';
+        const fotoTasker = taskerInfo?.photo_url || '';
+        
+        // Cambiar a la sección de chat y seleccionar el chat
+        window.cambiarSeccion('chat');
+        
+        // Esperar un momento para que se cargue la UI
+        setTimeout(async () => {
+            await window.cargarConversaciones();
+            await window.seleccionarChat(chatId, taskerId, nombreTasker, fotoTasker, 'Servicio');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error al abrir chat:', error);
+        mostrarToast('Error al abrir chat', 'error');
+    }
+};
+
+// Configurar event listener del formulario de mensaje
+function configurarFormularioMensaje() {
+    const form = document.getElementById('formMensaje');
+    if (form) {
+        // Remover event listener anterior si existe
+        form.removeEventListener('submit', window.submitMensajeHandler);
+        
+        // Crear nuevo handler
+        window.submitMensajeHandler = (e) => {
+            e.preventDefault();
+            enviarMensaje();
         };
+        
+        form.addEventListener('submit', window.submitMensajeHandler);
+        console.log('Formulario de mensaje configurado');
+    }
+}
+
+// Llamar a esta función después de cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+    configurarFormularioMensaje();
+});
 
         // =============================================
         // PAGOS
