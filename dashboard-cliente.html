@@ -1187,17 +1187,38 @@
         // CANCELAR CUENTA
         // =============================================
         window.cancelarCuenta = async function() {
-            if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible.')) return;
-            mostrarCarga();
-            try {
-                const supabase = initSupabase();
-                await supabase.from('profiles').delete().eq('id', usuarioActual.id);
-                await supabase.auth.signOut();
-                mostrarToast('Cuenta cancelada', 'success');
-                setTimeout(() => window.location.href = 'index.html', 2000);
-            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
-        };
-
+    if (!confirm('¿Estás ABSOLUTAMENTE SEGURO? Esta acción es irreversible. Se eliminarán TODOS tus datos.')) return;
+    mostrarCarga();
+    try {
+        const supabase = initSupabase();
+        
+        // 1. Eliminar todos los servicios del cliente (con CASCADE se eliminan propuestas, pagos, chats, mensajes)
+        await supabase.from('servicios').delete().eq('cliente_id', usuarioActual.id);
+        
+        // 2. Eliminar notificaciones
+        await supabase.from('notificaciones').delete().eq('usuario_id', usuarioActual.id);
+        
+        // 3. Eliminar ubicaciones activas (si es tasker)
+        await supabase.from('ubicaciones_activas').delete().eq('tasker_id', usuarioActual.id);
+        
+        // 4. Eliminar el perfil (CASCADE eliminará auth.user automáticamente si la política está bien configurada)
+        const { error } = await supabase.from('profiles').delete().eq('id', usuarioActual.id);
+        
+        if (error) throw error;
+        
+        // 5. Cerrar sesión
+        await supabase.auth.signOut();
+        
+        mostrarToast('Cuenta eliminada permanentemente', 'success');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        
+    } catch (e) { 
+        console.error('Error al eliminar cuenta:', e);
+        mostrarToast('Error: ' + e.message, 'error'); 
+    } finally { 
+        ocultarCarga(); 
+    }
+};
         // =============================================
         // UTILIDADES
         // =============================================
