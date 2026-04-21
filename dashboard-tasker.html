@@ -734,7 +734,6 @@
                     document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                     document.getElementById('profileAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                 }
-                // Ya no mostramos badge de pendiente porque ahora se registran como verified
                 if (perfil.status === 'pending') document.getElementById('verificationBadge').classList.remove('hidden');
                 document.getElementById('perfilNombre').value = perfil.full_name || '';
                 document.getElementById('perfilEmail').value = perfil.email || '';
