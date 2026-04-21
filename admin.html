@@ -42,6 +42,7 @@
         
         .stat-card {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .stat-card:hover {
@@ -74,6 +75,34 @@
         .badge-active { background: #d1fae5; color: #065f46; }
         .badge-inactive { background: #fee2e2; color: #991b1b; }
         
+        /* Scroll personalizado */
+        .contenido-scroll {
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .contenido-scroll::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+        
+        .documento-preview {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
         @media (max-width: 768px) {
             .admin-sidebar {
                 position: fixed !important;
@@ -100,13 +129,10 @@
                 background: rgba(0, 0, 0, 0.5) !important;
                 z-index: 9998 !important;
                 display: none;
-                opacity: 0;
-                transition: opacity 0.3s ease;
             }
             
             #overlayMenu.visible {
                 display: block !important;
-                opacity: 1 !important;
             }
             
             #btnMenuMovil {
@@ -122,7 +148,6 @@
                 border-radius: 12px !important;
                 align-items: center !important;
                 justify-content: center !important;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
             }
             
             .ml-12 {
@@ -143,7 +168,6 @@
             
             .table-container {
                 overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
                 margin: 0 -1rem !important;
                 padding: 0 1rem !important;
                 width: calc(100% + 2rem) !important;
@@ -155,20 +179,10 @@
             
             button, .sidebar-link, [onclick] {
                 min-height: 44px !important;
-                min-width: 44px !important;
             }
             
-            input, select, textarea {
-                font-size: 16px !important;
-            }
-        }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .stat-card {
-                padding: 1.25rem;
-            }
-            .stat-card p.text-3xl {
-                font-size: 2rem;
+            .contenido-scroll {
+                max-height: calc(100vh - 100px);
             }
         }
         
@@ -194,7 +208,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        /* Estilos para pestañas */
         .tab-btn {
             transition: all 0.2s ease;
         }
@@ -208,12 +221,12 @@
 <body class="bg-slate-100">
 
     <!-- Botón menú móvil -->
-    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg flex items-center justify-center hover:bg-blue-700 transition">
+    <button id="btnMenuMovil" class="hidden md:hidden bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg items-center justify-center hover:bg-blue-700 transition">
         <i class="fas fa-bars text-xl"></i>
     </button>
 
     <!-- Overlay para móvil -->
-    <div id="overlayMenu" class="hidden md:hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; display:none;"></div>
+    <div id="overlayMenu" class="hidden md:hidden"></div>
 
     <!-- Modal de carga -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
@@ -223,12 +236,25 @@
         </div>
     </div>
 
+    <!-- Modal de documentos -->
+    <div id="documentosModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
+                <h3 class="text-xl font-bold text-slate-800">Documentos del Usuario</h3>
+                <button onclick="cerrarDocumentosModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="documentosModalContenido" class="space-y-4"></div>
+        </div>
+    </div>
+
     <!-- Modal de estadísticas -->
     <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4 border-b">
                 <h3 class="text-xl font-bold text-slate-800">Estadísticas Detalladas</h3>
-                <button onclick="cerrarStatsModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <button onclick="cerrarStatsModal()" class="text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
@@ -257,49 +283,40 @@
                 </div>
             </div>
             
-            <nav class="flex-1 mt-6 px-3 space-y-1">
+            <nav class="flex-1 mt-6 px-3 space-y-1 overflow-y-auto">
                 <a href="#" onclick="window.mostrarSeccion('dashboard'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all active" id="link-dashboard">
-                    <i class="fas fa-chart-pie w-6"></i>
-                    <span>Dashboard</span>
+                    <i class="fas fa-chart-pie w-6"></i><span>Dashboard</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('taskers'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-taskers">
-                    <i class="fas fa-users w-6"></i>
-                    <span>Taskers Pendientes</span>
+                    <i class="fas fa-users w-6"></i><span>Taskers Pendientes</span>
                     <span id="pendingCount" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
                 </a>
-                <a href="#" onclick="window.mostrarSeccion('propuestas'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-propuestas">
-                    <i class="fas fa-file-signature w-6"></i>
-                    <span>Propuestas Pendientes</span>
-                    <span id="propuestasCount" class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                <a href="#" onclick="window.mostrarSeccion('usuarios'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-usuarios">
+                    <i class="fas fa-user-friends w-6"></i><span>Gestión de Usuarios</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('servicios'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-servicios">
-                    <i class="fas fa-briefcase w-6"></i>
-                    <span>Servicios</span>
-                </a>
-                <a href="#" onclick="window.mostrarSeccion('usuarios'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-usuarios">
-                    <i class="fas fa-user-friends w-6"></i>
-                    <span>Usuarios</span>
+                    <i class="fas fa-briefcase w-6"></i><span>Servicios</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('pagos'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-pagos">
-                    <i class="fas fa-credit-card w-6"></i>
-                    <span>Pagos</span>
+                    <i class="fas fa-credit-card w-6"></i><span>Pagos</span>
                 </a>
                 <a href="#" onclick="window.mostrarSeccion('ganancias'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-ganancias">
-                    <i class="fas fa-chart-line w-6"></i>
-                    <span>Mis Ganancias</span>
+                    <i class="fas fa-chart-line w-6"></i><span>Ganancias</span>
+                </a>
+                <a href="#" onclick="window.mostrarSeccion('perfil'); return false;" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:text-white transition-all" id="link-perfil">
+                    <i class="fas fa-user-cog w-6"></i><span>Mi Perfil</span>
                 </a>
             </nav>
             
             <div class="p-4 border-t border-white/10">
                 <button onclick="window.cerrarSesionAdmin()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Cerrar Sesión
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-y-auto">
+        <main class="flex-1 flex flex-col overflow-y-auto bg-slate-100">
             <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
                 <div class="flex justify-between items-center">
                     <div class="ml-12 md:ml-0">
@@ -307,31 +324,31 @@
                         <p id="section-subtitle" class="text-sm text-slate-500">Panel de control administrativo</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-500"></div>
+                        <div id="headerAvatar" class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-500 cursor-pointer" onclick="window.mostrarSeccion('perfil')"></div>
                     </div>
                 </div>
             </header>
 
-            <div class="p-4 md:p-6">
+            <div class="contenido-scroll p-4 md:p-6">
                 <!-- DASHBOARD -->
                 <section id="seccion-dashboard" class="seccion-contenido active">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 cursor-pointer hover:shadow-md" onclick="verEstadisticas('usuarios')">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500" onclick="verEstadisticas('usuarios')">
                             <p class="text-slate-500 text-sm">Total Usuarios</p>
                             <p id="totalUsuarios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                             <p class="text-xs text-blue-600 mt-2">Ver detalle →</p>
                         </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500 cursor-pointer hover:shadow-md" onclick="verEstadisticas('taskers')">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500" onclick="verEstadisticas('taskers')">
                             <p class="text-slate-500 text-sm">Taskers Pendientes</p>
                             <p id="totalPendientes" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                             <p class="text-xs text-blue-600 mt-2">Ver detalle →</p>
                         </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 cursor-pointer hover:shadow-md" onclick="verEstadisticas('servicios')">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500" onclick="verEstadisticas('servicios')">
                             <p class="text-slate-500 text-sm">Servicios Activos</p>
                             <p id="totalServicios" class="text-3xl font-bold text-slate-800 mt-2">0</p>
                             <p class="text-xs text-blue-600 mt-2">Ver detalle →</p>
                         </div>
-                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 cursor-pointer hover:shadow-md" onclick="verEstadisticas('ganancias')">
+                        <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500" onclick="verEstadisticas('ganancias')">
                             <p class="text-slate-500 text-sm">Ganancias Totales</p>
                             <p id="totalGanancias" class="text-3xl font-bold text-slate-800 mt-2">$0</p>
                             <p class="text-xs text-blue-600 mt-2">Ver detalle →</p>
@@ -340,26 +357,17 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-chart-line text-blue-600"></i>
-                                Actividad Reciente
-                            </h3>
+                            <h3 class="font-bold text-lg text-slate-800 mb-4"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Actividad Reciente</h3>
                             <canvas id="activityChart" height="200"></canvas>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-chart-bar text-green-600"></i>
-                                Servicios por Estado
-                            </h3>
+                            <h3 class="font-bold text-lg text-slate-800 mb-4"><i class="fas fa-chart-bar text-green-600 mr-2"></i>Servicios por Estado</h3>
                             <canvas id="estadosChart" height="200"></canvas>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-clock text-purple-600"></i>
-                            Últimas Actividades
-                        </h3>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4"><i class="fas fa-clock text-purple-600 mr-2"></i>Últimas Actividades</h3>
                         <div id="ultimasActividades" class="space-y-3 max-h-80 overflow-y-auto">
                             <p class="text-slate-400 text-center py-4">Cargando...</p>
                         </div>
@@ -370,56 +378,38 @@
                 <section id="seccion-taskers" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-users"></i>
-                                Taskers Pendientes de Verificación
-                            </h3>
+                            <h3 class="font-bold flex items-center gap-2"><i class="fas fa-users"></i> Taskers Pendientes de Verificación</h3>
                         </div>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Nombre</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Email</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Teléfono</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Documentos</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
-                                    </tr>
+                                    <tr><th class="p-4 text-left">Nombre</th><th class="p-4 text-left">Email</th><th class="p-4 text-left">Teléfono</th><th class="p-4 text-left">Documentos</th><th class="p-4 text-left">Acciones</th></tr>
                                 </thead>
-                                <tbody id="taskersTable">
-                                    <tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
+                                <tbody id="taskersTable"><tr><td colspan="5" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
+                            }</table>
                         </div>
                     </div>
                 </section>
 
-                <!-- PROPUESTAS PENDIENTES -->
-                <section id="seccion-propuestas" class="seccion-contenido">
+                <!-- GESTIÓN DE USUARIOS -->
+                <section id="seccion-usuarios" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-file-signature"></i>
-                                Propuestas Pendientes de Revisión
-                            </h3>
+                        <div class="p-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white flex justify-between items-center">
+                            <h3 class="font-bold"><i class="fas fa-user-friends mr-2"></i>Gestión de Usuarios</h3>
+                            <select id="filtroUsuarios" onchange="window.cargarUsuarios()" class="px-3 py-1 rounded-lg text-sm text-slate-700">
+                                <option value="todos">Todos</option>
+                                <option value="client">Clientes</option>
+                                <option value="tasker">Taskers</option>
+                                <option value="admin">Administradores</option>
+                            </select>
                         </div>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Propuesta</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Mensaje</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tiempo</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
-                                    </tr>
+                                    <tr><th class="p-4 text-left">Usuario</th><th class="p-4 text-left">Email</th><th class="p-4 text-left">Rol</th><th class="p-4 text-left">Estado</th><th class="p-4 text-left">Documentos</th><th class="p-4 text-left">Acciones</th></tr>
                                 </thead>
-                                <tbody id="propuestasTable">
-                                    <tr><td colspan="7" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
+                                <tbody id="usuariosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
+                            }</table>
                         </div>
                     </div>
                 </section>
@@ -428,74 +418,23 @@
                 <section id="seccion-servicios" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white flex justify-between items-center">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-briefcase"></i>
-                                Todos los Servicios
-                            </h3>
-                            <div class="flex gap-2">
-                                <select id="filtroServicios" onchange="window.cargarServicios()" class="px-3 py-1 rounded-lg text-sm text-slate-700">
-                                    <option value="todos">Todos</option>
-                                    <option value="pendiente_pago">Pendiente pago</option>
-                                    <option value="publicado">Publicado</option>
-                                    <option value="asignado">Asignado</option>
-                                    <option value="en_progreso">En progreso</option>
-                                    <option value="completado">Completado</option>
-                                </select>
-                            </div>
+                            <h3 class="font-bold"><i class="fas fa-briefcase mr-2"></i>Todos los Servicios</h3>
+                            <select id="filtroServicios" onchange="window.cargarServicios()" class="px-3 py-1 rounded-lg text-sm text-slate-700">
+                                <option value="todos">Todos</option>
+                                <option value="pendiente_pago">Pendiente pago</option>
+                                <option value="publicado">Publicado</option>
+                                <option value="asignado">Asignado</option>
+                                <option value="en_progreso">En progreso</option>
+                                <option value="completado">Completado</option>
+                            </select>
                         </div>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                    </tr>
+                                    <tr><th class="p-4 text-left">Cliente</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Tasker</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Estado</th><th class="p-4 text-left">Fecha</th></tr>
                                 </thead>
-                                <tbody id="serviciosTable">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- USUARIOS -->
-                <section id="seccion-usuarios" class="seccion-contenido">
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white flex justify-between items-center">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-user-friends"></i>
-                                Gestión de Usuarios
-                            </h3>
-                            <div class="flex gap-2">
-                                <select id="filtroUsuarios" onchange="window.cargarUsuarios()" class="px-3 py-1 rounded-lg text-sm text-slate-700">
-                                    <option value="todos">Todos</option>
-                                    <option value="client">Clientes</option>
-                                    <option value="tasker">Taskers</option>
-                                    <option value="admin">Administradores</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="table-container">
-                            <table class="w-full">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Usuario</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Email</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Rol</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Estado</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Registro</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usuariosTable">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
+                                <tbody id="serviciosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
+                            }</table>
                         </div>
                     </div>
                 </section>
@@ -504,27 +443,15 @@
                 <section id="seccion-pagos" class="seccion-contenido">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="p-4 bg-gradient-to-r from-green-600 to-green-500 text-white">
-                            <h3 class="font-bold flex items-center gap-2">
-                                <i class="fas fa-credit-card"></i>
-                                Historial de Pagos
-                            </h3>
+                            <h3 class="font-bold"><i class="fas fa-credit-card mr-2"></i>Historial de Pagos</h3>
                         </div>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Cliente</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Tasker</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Monto</th>
-                                        <th class="p-4 text-left text-sm font-bold text-slate-600">Comisión</th>
-                                    </tr>
+                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Cliente</th><th class="p-4 text-left">Tasker</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Comisión</th></tr>
                                 </thead>
-                                <tbody id="pagosTable">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
+                                <tbody id="pagosTable"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tr></tbody>
+                            }</table>
                         </div>
                     </div>
                 </section>
@@ -533,58 +460,54 @@
                 <section id="seccion-ganancias" class="seccion-contenido">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-chart-line text-blue-600"></i>
-                                Resumen de Ganancias
-                            </h3>
+                            <h3 class="font-bold text-lg mb-4"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Resumen de Ganancias</h3>
                             <div class="space-y-4">
-                                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                                    <span class="text-sm text-slate-600">Ganancias Totales (15%)</span>
-                                    <span id="gananciasTotales" class="text-xl font-bold text-blue-600">$0.00</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                                    <span class="text-sm text-slate-600">Este mes</span>
-                                    <span id="gananciasMes" class="text-lg font-bold text-green-600">$0.00</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                                    <span class="text-sm text-slate-600">Hoy</span>
-                                    <span id="gananciasHoy" class="text-lg font-bold text-purple-600">$0.00</span>
-                                </div>
+                                <div class="flex justify-between p-3 bg-blue-50 rounded-lg"><span>Ganancias Totales (15%)</span><span id="gananciasTotales" class="font-bold text-blue-600">$0.00</span></div>
+                                <div class="flex justify-between p-3 bg-green-50 rounded-lg"><span>Este mes</span><span id="gananciasMes" class="font-bold text-green-600">$0.00</span></div>
+                                <div class="flex justify-between p-3 bg-purple-50 rounded-lg"><span>Hoy</span><span id="gananciasHoy" class="font-bold text-purple-600">$0.00</span></div>
                             </div>
                         </div>
-
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4">Proyección Mensual</h3>
+                            <h3 class="font-bold text-lg mb-4">Proyección Mensual</h3>
                             <canvas id="gananciasChart" height="200"></canvas>
                         </div>
-
                         <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="font-bold text-lg text-slate-800 mb-4">Comisiones por Tasker</h3>
-                            <div id="topTaskers" class="space-y-2 max-h-64 overflow-y-auto">
-                                <p class="text-slate-400 text-center py-4">Cargando...</p>
-                            </div>
+                            <h3 class="font-bold text-lg mb-4">Top Taskers</h3>
+                            <div id="topTaskers" class="space-y-2 max-h-64 overflow-y-auto"><p class="text-slate-400 text-center py-4">Cargando...</p></div>
                         </div>
                     </div>
-
                     <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4">Detalle de Comisiones</h3>
+                        <h3 class="font-bold text-lg mb-4">Detalle de Comisiones</h3>
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Fecha</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Servicio</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Cliente</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Tasker</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Monto Total</th>
-                                        <th class="p-3 text-left text-sm font-bold text-slate-600">Comisión (15%)</th>
-                                    </tr>
+                                    <tr><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Servicio</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Tasker</th><th class="p-3 text-left">Monto Total</th><th class="p-3 text-left">Comisión</th></tr>
                                 </thead>
-                                <tbody id="gananciasTable">
-                                    <tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
-                                </tbody>
-                            </table>
+                                <tbody id="gananciasTable"><td><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr></tbody>
+                            }</table>
                         </div>
+                    </div>
+                </section>
+
+                <!-- PERFIL ADMIN -->
+                <section id="seccion-perfil" class="seccion-contenido">
+                    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-6">Mi Perfil</h3>
+                        <div class="flex flex-col items-center mb-8">
+                            <div class="relative">
+                                <div id="adminAvatar" class="w-32 h-32 rounded-full bg-slate-300 border-4 border-blue-100"></div>
+                                <button onclick="document.getElementById('fotoAdmin').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <input type="file" id="fotoAdmin" accept="image/*" class="hidden" onchange="subirFotoAdmin()">
+                        </div>
+                        <form id="formPerfilAdmin" class="space-y-4">
+                            <input type="text" id="adminNombre" required class="w-full p-3 border rounded-xl" placeholder="Nombre completo">
+                            <input type="email" id="adminEmail" readonly class="w-full p-3 border rounded-xl bg-slate-50">
+                            <input type="tel" id="adminTelefono" class="w-full p-3 border rounded-xl" placeholder="Teléfono">
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Guardar Cambios</button>
+                        </form>
                     </div>
                 </section>
             </div>
@@ -602,56 +525,29 @@
         let estadosChart = null;
 
         // =============================================
-        // VERIFICAR AUTENTICACIÓN Y ROL
+        // VERIFICAR ADMIN
         // =============================================
         async function verificarAdmin() {
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                if (!supabase) throw new Error('Supabase no inicializado');
-                
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                if (!session) {
-                    window.location.href = 'login.html';
-                    return null;
-                }
-
-                const { data: perfil, error: perfilError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-
-                if (perfilError) {
-                    console.error('Error obteniendo perfil:', perfilError);
-                    return null;
-                }
-
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) { window.location.href = 'login.html'; return null; }
+                const { data: perfil } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
                 if (!perfil || perfil?.role !== 'admin') {
-                    mostrarToast('Acceso no autorizado. Esta área es solo para administradores.', 'error');
+                    mostrarToast('Acceso no autorizado', 'error');
                     setTimeout(() => window.location.href = 'index.html', 2000);
                     return null;
                 }
-
                 usuarioActual = perfil;
-                document.getElementById('adminInfo').innerHTML = `
-                    <p class="font-bold">${perfil.full_name || 'Administrador'}</p>
-                    <p class="text-xs text-blue-300">${perfil.email}</p>
-                `;
-                
-                if (perfil.photo_url) {
-                    document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
-                }
-
+                document.getElementById('adminInfo').innerHTML = `<p class="font-bold">${perfil.full_name || 'Administrador'}</p><p class="text-xs text-blue-300">${perfil.email}</p>`;
+                if (perfil.photo_url) document.getElementById('headerAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
+                document.getElementById('adminNombre').value = perfil.full_name || '';
+                document.getElementById('adminEmail').value = perfil.email || '';
+                document.getElementById('adminTelefono').value = perfil.phone || '';
+                if (perfil.photo_url) document.getElementById('adminAvatar').style.backgroundImage = `url('${perfil.photo_url}')`;
                 return session;
-            } catch (error) {
-                console.error('Error en autenticación:', error);
-                window.location.href = 'login.html';
-                return null;
-            } finally {
-                ocultarCarga();
-            }
+            } catch (error) { console.error(error); window.location.href = 'login.html'; return null; } finally { ocultarCarga(); }
         }
 
         // =============================================
@@ -661,47 +557,14 @@
             const menuBtn = document.getElementById('btnMenuMovil');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlayMenu');
-            
-            if (!menuBtn || !sidebar || !overlay) return;
-            
-            menuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                sidebar.classList.add('abierto');
-                overlay.classList.add('visible');
-                document.body.classList.add('menu-open');
-            });
-            
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            });
-            
-            const links = document.querySelectorAll('.sidebar-link');
-            links.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
-                        sidebar.classList.remove('abierto');
-                        overlay.classList.remove('visible');
-                        document.body.classList.remove('menu-open');
-                    }
-                });
+            if (!menuBtn) return;
+            menuBtn.style.display = 'flex';
+            menuBtn.addEventListener('click', () => { sidebar.classList.add('abierto'); overlay.classList.add('visible'); document.body.classList.add('menu-open'); });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); });
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', () => { if (window.innerWidth < 768) { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); document.body.classList.remove('menu-open'); } });
             });
         }
-        
-        function cerrarMenuMovil() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlayMenu');
-            if (sidebar && overlay) {
-                sidebar.classList.remove('abierto');
-                overlay.classList.remove('visible');
-                document.body.classList.remove('menu-open');
-            }
-        }
-        
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) cerrarMenuMovil();
-        });
 
         // =============================================
         // DASHBOARD
@@ -709,185 +572,53 @@
         async function cargarDashboard() {
             try {
                 const supabase = initSupabase();
-                
-                // Contar usuarios
-                const { count: totalUsuarios } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
-                
-                // Contar taskers pendientes
-                const { count: totalPendientes } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('role', 'tasker')
-                    .eq('status', 'pending');
-                
-                // Contar servicios activos
-                const { count: totalServicios } = await supabase
-                    .from('servicios')
-                    .select('*', { count: 'exact', head: true })
-                    .in('status', ['publicado', 'asignado', 'en_progreso']);
-                
-                // Calcular ganancias totales
-                const { data: pagos } = await supabase
-                    .from('pagos')
-                    .select('comision_taskers')
-                    .eq('status', 'completado');
-                
+                const { count: totalUsuarios } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: totalPendientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
+                const { count: totalServicios } = await supabase.from('servicios').select('*', { count: 'exact', head: true }).in('status', ['publicado', 'asignado', 'en_progreso']);
+                const { data: pagos } = await supabase.from('pagos').select('comision_taskers').eq('status', 'completado');
                 const totalGanancias = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-                
                 document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
                 document.getElementById('totalPendientes').textContent = totalPendientes || 0;
                 document.getElementById('totalServicios').textContent = totalServicios || 0;
                 document.getElementById('totalGanancias').textContent = `$${totalGanancias.toFixed(2)}`;
                 document.getElementById('pendingCount').textContent = totalPendientes || 0;
-                
-                // Cargar gráficas
                 await cargarGraficas();
                 await cargarUltimasActividades();
-                
-            } catch (e) {
-                console.error('Error loading dashboard:', e);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // =============================================
-        // GRÁFICAS
-        // =============================================
         async function cargarGraficas() {
             try {
                 const supabase = initSupabase();
-                
-                // Datos para actividad mensual
                 const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
                 const datosActividad = [];
-                
                 for (let i = 0; i < 6; i++) {
-                    const fecha = new Date();
-                    fecha.setMonth(fecha.getMonth() - (5 - i));
+                    const fecha = new Date(); fecha.setMonth(fecha.getMonth() - (5 - i));
                     const inicioMes = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
                     const finMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0);
-                    
-                    const { count } = await supabase
-                        .from('servicios')
-                        .select('*', { count: 'exact', head: true })
-                        .gte('created_at', inicioMes.toISOString())
-                        .lte('created_at', finMes.toISOString());
-                    
+                    const { count } = await supabase.from('servicios').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes.toISOString()).lte('created_at', finMes.toISOString());
                     datosActividad.push(count || 0);
                 }
-                
-                // Datos para estados de servicios
-                const { data: estados } = await supabase
-                    .from('servicios')
-                    .select('status');
-                
-                const estadosCount = {
-                    pendiente_pago: 0,
-                    publicado: 0,
-                    asignado: 0,
-                    en_progreso: 0,
-                    completado: 0,
-                    cancelado: 0
-                };
-                
-                (estados || []).forEach(s => {
-                    if (estadosCount[s.status] !== undefined) estadosCount[s.status]++;
-                });
-                
-                // Gráfica de actividad
+                const { data: estados } = await supabase.from('servicios').select('status');
+                const estadosCount = { pendiente_pago: 0, publicado: 0, asignado: 0, en_progreso: 0, completado: 0, cancelado: 0 };
+                (estados || []).forEach(s => { if (estadosCount[s.status] !== undefined) estadosCount[s.status]++; });
                 const ctx = document.getElementById('activityChart').getContext('2d');
                 if (activityChart) activityChart.destroy();
-                activityChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Hace 5 meses', 'Hace 4 meses', 'Hace 3 meses', 'Hace 2 meses', 'Mes pasado', 'Este mes'],
-                        datasets: [{
-                            label: 'Servicios creados',
-                            data: datosActividad,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59,130,246,0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } }
-                    }
-                });
-                
-                // Gráfica de estados
+                activityChart = new Chart(ctx, { type: 'line', data: { labels: ['Hace 5 meses', 'Hace 4 meses', 'Hace 3 meses', 'Hace 2 meses', 'Mes pasado', 'Este mes'], datasets: [{ label: 'Servicios creados', data: datosActividad, borderColor: '#3b82f6', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
                 const ctx2 = document.getElementById('estadosChart').getContext('2d');
                 if (estadosChart) estadosChart.destroy();
-                estadosChart = new Chart(ctx2, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pendiente pago', 'Publicado', 'Asignado', 'En progreso', 'Completado', 'Cancelado'],
-                        datasets: [{
-                            data: [
-                                estadosCount.pendiente_pago,
-                                estadosCount.publicado,
-                                estadosCount.asignado,
-                                estadosCount.en_progreso,
-                                estadosCount.completado,
-                                estadosCount.cancelado
-                            ],
-                            backgroundColor: ['#fef3c7', '#dbeafe', '#ede9fe', '#d1fae5', '#fee2e2', '#f1f5f9'],
-                            borderColor: ['#92400e', '#1e40af', '#5b21b6', '#065f46', '#991b1b', '#475569']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } }
-                    }
-                });
-                
-            } catch (e) {
-                console.error('Error cargando gráficas:', e);
-            }
+                estadosChart = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Pendiente pago', 'Publicado', 'Asignado', 'En progreso', 'Completado', 'Cancelado'], datasets: [{ data: [estadosCount.pendiente_pago, estadosCount.publicado, estadosCount.asignado, estadosCount.en_progreso, estadosCount.completado, estadosCount.cancelado], backgroundColor: ['#fef3c7', '#dbeafe', '#ede9fe', '#d1fae5', '#fee2e2', '#f1f5f9'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+            } catch (e) { console.error(e); }
         }
 
-        // =============================================
-        // ÚLTIMAS ACTIVIDADES
-        // =============================================
         async function cargarUltimasActividades() {
             try {
                 const supabase = initSupabase();
                 const container = document.getElementById('ultimasActividades');
-                
-                // Obtener últimos servicios
-                const { data: servicios } = await supabase
-                    .from('servicios')
-                    .select('*, profiles:cliente_id(full_name)')
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-                
-                if (!servicios || servicios.length === 0) {
-                    container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay actividades recientes</p>';
-                    return;
-                }
-                
-                container.innerHTML = servicios.map(s => `
-                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-briefcase text-blue-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-sm">${s.profiles?.full_name || 'Cliente'} solicitó ${s.subcategoria || 'un servicio'}</p>
-                                <p class="text-xs text-slate-400">${new Date(s.created_at).toLocaleString()}</p>
-                            </div>
-                        </div>
-                        <span class="badge-estado ${obtenerClaseEstado(s.status)} text-xs px-2 py-1 rounded-full">${obtenerTextoEstado(s.status)}</span>
-                    </div>
-                `).join('');
-                
-            } catch (e) {
-                console.error('Error:', e);
-            }
+                const { data: servicios } = await supabase.from('servicios').select('*, cliente:cliente_id(full_name)').order('created_at', { ascending: false }).limit(10);
+                if (!servicios?.length) { container.innerHTML = '<p class="text-slate-400 text-center py-4">No hay actividades</p>'; return; }
+                container.innerHTML = servicios.map(s => `<div class="flex justify-between p-3 bg-slate-50 rounded-lg"><div><p class="font-medium text-sm">${s.cliente?.full_name || 'Cliente'} solicitó ${s.subcategoria}</p><p class="text-xs text-slate-400">${new Date(s.created_at).toLocaleString()}</p></div><span class="px-2 py-1 rounded-full text-xs ${obtenerClaseEstado(s.status)}">${obtenerTextoEstado(s.status)}</span></div>`).join('');
+            } catch (e) { console.error(e); }
         }
 
         // =============================================
@@ -897,304 +628,35 @@
             const tbody = document.getElementById('taskersTable');
             try {
                 const supabase = initSupabase();
-                const { data: taskers, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('role', 'tasker')
-                    .eq('status', 'pending')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                if (!taskers || taskers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = taskers.map(t => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td>
-                        <td class="p-4">${t.email || 'No especificado'}</td>
-                        <td class="p-4">${t.phone || 'No especificado'}</td>
-                        <td class="p-4">
-                            <div class="flex gap-2 flex-wrap">
-                                ${t.photo_url ? `<a href="${t.photo_url}" target="_blank" class="text-blue-600 hover:underline text-sm"><i class="fas fa-camera"></i> Foto</a>` : ''}
-                                ${t.document_ine_url ? `<a href="${t.document_ine_url}" target="_blank" class="text-blue-600 hover:underline text-sm"><i class="fas fa-id-card"></i> INE</a>` : ''}
-                                ${t.document_penal_url ? `<a href="${t.document_penal_url}" target="_blank" class="text-blue-600 hover:underline text-sm"><i class="fas fa-gavel"></i> Antecedentes</a>` : ''}
-                            </div>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex gap-2">
-                                <button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
-                                    <i class="fas fa-check mr-1"></i>Aprobar
-                                </button>
-                                <button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
-                                    <i class="fas fa-times mr-1"></i>Rechazar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al cargar datos</td></tr>';
-            }
+                const { data: taskers } = await supabase.from('profiles').select('*').eq('role', 'tasker').eq('status', 'pending').order('created_at', { ascending: false });
+                if (!taskers?.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No hay taskers pendientes</td></tr>'; return; }
+                tbody.innerHTML = taskers.map(t => `<tr class="border-b"><td class="p-4 font-medium">${t.full_name || 'Sin nombre'}</td><td class="p-4">${t.email}</td><td class="p-4">${t.phone || 'N/A'}</td>
+                <td class="p-4"><div class="flex gap-2 flex-wrap">${t.photo_url ? `<button onclick="verDocumento('${t.photo_url}', 'Foto de perfil')" class="text-blue-600 text-sm"><i class="fas fa-camera"></i> Foto</button>` : ''}${t.document_ine_url ? `<button onclick="verDocumento('${t.document_ine_url}', 'INE')" class="text-blue-600 text-sm"><i class="fas fa-id-card"></i> INE</button>` : ''}${t.document_penal_url ? `<button onclick="verDocumento('${t.document_penal_url}', 'Antecedentes')" class="text-blue-600 text-sm"><i class="fas fa-gavel"></i> Antecedentes</button>` : ''}</div></td>
+                <td class="p-4"><div class="flex gap-2"><button onclick="window.aprobarTasker('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Aprobar</button><button onclick="window.rechazarTasker('${t.id}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm">Rechazar</button></div></td></tr>`).join('');
+            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="5" class="text-center p-8 text-red-400">Error</td></tr>'; }
         }
 
-        window.aprobarTasker = async function(id) {
-            if (!confirm('¿Estás seguro de aprobar este tasker?')) return;
+        window.aprobarTasker = async (id) => {
+            if (!confirm('¿Aprobar este tasker?')) return;
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ status: 'verified', updated_at: new Date() })
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                mostrarToast('Tasker aprobado exitosamente', 'success');
+                await supabase.from('profiles').update({ status: 'verified', updated_at: new Date() }).eq('id', id);
+                mostrarToast('Tasker aprobado', 'success');
                 await cargarTaskers();
                 await cargarDashboard();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
-
-        window.rechazarTasker = async function(id) {
-            if (!confirm('¿Estás seguro de rechazar este tasker?')) return;
+        window.rechazarTasker = async (id) => {
+            if (!confirm('¿Rechazar este tasker?')) return;
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ status: 'rejected', updated_at: new Date() })
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
+                await supabase.from('profiles').update({ status: 'rejected', updated_at: new Date() }).eq('id', id);
                 mostrarToast('Tasker rechazado', 'info');
                 await cargarTaskers();
                 await cargarDashboard();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-        // =============================================
-        // PROPUESTAS PENDIENTES
-        // =============================================
-        async function cargarPropuestas() {
-            const tbody = document.getElementById('propuestasTable');
-            try {
-                const supabase = initSupabase();
-                const { data: propuestas, error } = await supabase
-                    .from('propuestas')
-                    .select('*, servicio:servicio_id(*), tasker:tasker_id(full_name, photo_url)')
-                    .eq('status', 'pendiente')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                document.getElementById('propuestasCount').textContent = propuestas?.length || 0;
-
-                if (!propuestas || propuestas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">No hay propuestas pendientes</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = propuestas.map(p => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">
-                            <p class="font-medium">${p.servicio?.subcategoria || 'Servicio'}</p>
-                            <p class="text-xs text-slate-500">${p.servicio?.descripcion?.substring(0, 50) || ''}...</p>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-300 bg-cover bg-center" 
-                                     style="background-image: url('${p.tasker?.photo_url || ''}')">
-                                </div>
-                                <span>${p.tasker?.full_name || 'Tasker'}</span>
-                            </div>
-                        </td>
-                        <td class="p-4 font-bold text-blue-600">$${p.monto_propuesto?.toFixed(2)}</td>
-                        <td class="p-4 text-sm text-slate-600 max-w-xs truncate">${p.mensaje || 'Sin mensaje'}</td>
-                        <td class="p-4">${p.tiempo_estimado || '—'} min</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Pendiente</span>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex gap-2">
-                                <button onclick="window.aprobarPropuesta('${p.id}', '${p.servicio_id}', '${p.tasker_id}')" 
-                                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition">
-                                    <i class="fas fa-check mr-1"></i>Aprobar
-                                </button>
-                                <button onclick="window.rechazarPropuesta('${p.id}')" 
-                                        class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition">
-                                    <i class="fas fa-times mr-1"></i>Rechazar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error cargando propuestas:', error);
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-400">Error al cargar propuestas</td></tr>';
-            }
-        }
-
-        window.aprobarPropuesta = async function(propuestaId, servicioId, taskerId) {
-            if (!confirm('¿Estás seguro de aprobar esta propuesta? Las demás serán rechazadas automáticamente.')) return;
-            
-            mostrarCarga();
-            try {
-                const supabase = initSupabase();
-                
-                // Aprobar propuesta seleccionada
-                const { error: aprobarError } = await supabase
-                    .from('propuestas')
-                    .update({ status: 'aceptada', updated_at: new Date() })
-                    .eq('id', propuestaId);
-
-                if (aprobarError) throw aprobarError;
-
-                // Rechazar las demás propuestas
-                const { error: rechazarError } = await supabase
-                    .from('propuestas')
-                    .update({ status: 'rechazada', updated_at: new Date() })
-                    .eq('servicio_id', servicioId)
-                    .neq('id', propuestaId);
-
-                if (rechazarError) throw rechazarError;
-
-                // Actualizar servicio con tasker asignado
-                const { error: servicioError } = await supabase
-                    .from('servicios')
-                    .update({ 
-                        status: 'asignado',
-                        tasker_id: taskerId,
-                        updated_at: new Date()
-                    })
-                    .eq('id', servicioId);
-
-                if (servicioError) throw servicioError;
-
-                // Notificar al tasker
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: taskerId,
-                        tipo: 'propuesta',
-                        titulo: '¡Propuesta aceptada!',
-                        mensaje: 'Tu propuesta ha sido aprobada por el administrador. Ya puedes comenzar a trabajar.'
-                    }]);
-
-                // Notificar al cliente
-                const { data: servicio } = await supabase
-                    .from('servicios')
-                    .select('cliente_id')
-                    .eq('id', servicioId)
-                    .single();
-
-                await supabase
-                    .from('notificaciones')
-                    .insert([{
-                        usuario_id: servicio.cliente_id,
-                        tipo: 'servicio',
-                        titulo: '¡Tasker asignado!',
-                        mensaje: 'Un profesional ha sido asignado a tu servicio. Ya puedes contactarlo.'
-                    }]);
-
-                mostrarToast('Propuesta aprobada exitosamente', 'success');
-                
-                await cargarPropuestas();
-                await cargarServicios();
-                await cargarDashboard();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarToast('Error: ' + error.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-        window.rechazarPropuesta = async function(propuestaId) {
-            if (!confirm('¿Estás seguro de rechazar esta propuesta?')) return;
-            
-            mostrarCarga();
-            try {
-                const supabase = initSupabase();
-                const { error } = await supabase
-                    .from('propuestas')
-                    .update({ status: 'rechazada', updated_at: new Date() })
-                    .eq('id', propuestaId);
-
-                if (error) throw error;
-
-                mostrarToast('Propuesta rechazada', 'info');
-                await cargarPropuestas();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarToast('Error: ' + error.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-        // =============================================
-        // SERVICIOS
-        // =============================================
-        window.cargarServicios = async function() {
-            const filtro = document.getElementById('filtroServicios')?.value || 'todos';
-            const tbody = document.getElementById('serviciosTable');
-            try {
-                const supabase = initSupabase();
-                let query = supabase
-                    .from('servicios')
-                    .select('*, cliente:cliente_id(full_name), tasker:tasker_id(full_name)')
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-
-                if (filtro !== 'todos') {
-                    query = query.eq('status', filtro);
-                }
-
-                const { data: servicios, error } = await query;
-
-                if (error) throw error;
-
-                if (!servicios || servicios.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay servicios</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = servicios.map(s => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">${s.cliente?.full_name || 'Cliente'}</td>
-                        <td class="p-4">${s.subcategoria || 'Servicio'}</td>
-                        <td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td>
-                        <td class="p-4 font-bold text-blue-600">$${s.monto_ofertado?.toFixed(2)}</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${obtenerClaseEstado(s.status)}">
-                                ${obtenerTextoEstado(s.status)}
-                            </span>
-                        </td>
-                        <td class="p-4 text-sm">${new Date(s.created_at).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
-
-            } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar servicios</td></tr>';
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
@@ -1205,233 +667,112 @@
             const tbody = document.getElementById('usuariosTable');
             try {
                 const supabase = initSupabase();
-                let query = supabase
-                    .from('profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (filtro !== 'todos') {
-                    query = query.eq('role', filtro);
-                }
-
-                const { data: usuarios, error } = await query;
-
-                if (error) throw error;
-
-                if (!usuarios || usuarios.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = usuarios.map(u => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-300 bg-cover bg-center" 
-                                     style="background-image: url('${u.photo_url || ''}')">
-                                </div>
-                                <span class="font-medium">${u.full_name || 'Sin nombre'}</span>
-                            </div>
-                        </td>
-                        <td class="p-4">${u.email || ''}</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'tasker' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">
-                                ${u.role === 'admin' ? 'Administrador' : u.role === 'tasker' ? 'Tasker' : 'Cliente'}
-                            </span>
-                        </td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${u.status === 'active' || u.status === 'verified' ? 'bg-green-100 text-green-700' : u.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">
-                                ${u.status === 'active' ? 'Activo' : u.status === 'verified' ? 'Verificado' : u.status === 'pending' ? 'Pendiente' : 'Rechazado'}
-                            </span>
-                        </td>
-                        <td class="p-4 text-sm">${new Date(u.created_at).toLocaleDateString()}</td>
-                        <td class="p-4">
-                            <button onclick="cambiarEstadoUsuario('${u.id}', '${u.status}')" 
-                                    class="text-blue-600 hover:text-blue-800 transition text-sm">
-                                <i class="fas fa-edit"></i> Cambiar estado
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar usuarios</td></tr>';
-            }
+                let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
+                if (filtro !== 'todos') query = query.eq('role', filtro);
+                const { data: usuarios } = await query;
+                if (!usuarios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay usuarios</td></tr>'; return; }
+                tbody.innerHTML = usuarios.map(u => `<tr class="border-b"><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-slate-300 bg-cover" style="background-image: url('${u.photo_url || ''}')"></div><span class="font-medium">${u.full_name || 'Sin nombre'}</span></div></td>
+                <td class="p-4">${u.email}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'tasker' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${u.role === 'admin' ? 'Admin' : u.role === 'tasker' ? 'Tasker' : 'Cliente'}</span></td>
+                <td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${u.status === 'active' || u.status === 'verified' ? 'bg-green-100 text-green-700' : u.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${u.status === 'active' ? 'Activo' : u.status === 'verified' ? 'Verificado' : u.status === 'pending' ? 'Pendiente' : 'Rechazado'}</span></td>
+                <td class="p-4"><div class="flex gap-2">${u.photo_url ? `<button onclick="verDocumento('${u.photo_url}', 'Foto')" class="text-blue-600 text-sm"><i class="fas fa-image"></i></button>` : ''}${u.document_ine_url ? `<button onclick="verDocumento('${u.document_ine_url}', 'INE')" class="text-blue-600 text-sm"><i class="fas fa-id-card"></i></button>` : ''}${u.document_penal_url ? `<button onclick="verDocumento('${u.document_penal_url}', 'Antecedentes')" class="text-blue-600 text-sm"><i class="fas fa-gavel"></i></button>` : ''}</div></td>
+                <td class="p-4"><div class="flex gap-2"><button onclick="cambiarEstadoUsuario('${u.id}', '${u.status}')" class="text-blue-600 text-sm"><i class="fas fa-edit"></i> Estado</button><button onclick="eliminarUsuario('${u.id}')" class="text-red-600 text-sm"><i class="fas fa-trash"></i> Eliminar</button></div></td></tr>`).join('');
+            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
         };
 
-        window.cambiarEstadoUsuario = async function(id, estadoActual) {
-            const nuevoEstado = estadoActual === 'active' || estadoActual === 'verified' ? 'inactive' : 'active';
-            if (!confirm(`¿Cambiar estado del usuario a ${nuevoEstado === 'active' ? 'ACTIVO' : 'INACTIVO'}?`)) return;
-            
+        window.cambiarEstadoUsuario = async (id, estadoActual) => {
+            const nuevoEstado = (estadoActual === 'active' || estadoActual === 'verified') ? 'inactive' : 'active';
+            if (!confirm(`¿Cambiar estado a ${nuevoEstado === 'active' ? 'ACTIVO' : 'INACTIVO'}?`)) return;
             mostrarCarga();
             try {
                 const supabase = initSupabase();
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ status: nuevoEstado, updated_at: new Date() })
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                mostrarToast(`Usuario ${nuevoEstado === 'active' ? 'activado' : 'desactivado'} correctamente`, 'success');
+                await supabase.from('profiles').update({ status: nuevoEstado, updated_at: new Date() }).eq('id', id);
+                mostrarToast(`Usuario ${nuevoEstado === 'active' ? 'activado' : 'desactivado'}`, 'success');
                 await cargarUsuarios();
-            } catch (e) {
-                mostrarToast('Error: ' + e.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+        };
+
+        window.eliminarUsuario = async (id) => {
+            if (!confirm('¿ELIMINAR permanentemente este usuario? Esta acción es irreversible.')) return;
+            mostrarCarga();
+            try {
+                const supabase = initSupabase();
+                await supabase.from('profiles').delete().eq('id', id);
+                mostrarToast('Usuario eliminado', 'success');
+                await cargarUsuarios();
+                await cargarDashboard();
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
         };
 
         // =============================================
-        // PAGOS
+        // SERVICIOS
+        // =============================================
+        window.cargarServicios = async function() {
+            const filtro = document.getElementById('filtroServicios')?.value || 'todos';
+            const tbody = document.getElementById('serviciosTable');
+            try {
+                const supabase = initSupabase();
+                let query = supabase.from('servicios').select('*, cliente:cliente_id(full_name), tasker:tasker_id(full_name)').order('created_at', { ascending: false }).limit(50);
+                if (filtro !== 'todos') query = query.eq('status', filtro);
+                const { data: servicios } = await query;
+                if (!servicios?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay servicios</td></tr>'; return; }
+                tbody.innerHTML = servicios.map(s => `<tr class="border-b"><td class="p-4">${s.cliente?.full_name || 'Cliente'}</td><td class="p-4">${s.subcategoria}</td><td class="p-4">${s.tasker?.full_name || 'Sin asignar'}</td><td class="p-4 font-bold">$${s.monto_ofertado?.toFixed(2)}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${obtenerClaseEstado(s.status)}">${obtenerTextoEstado(s.status)}</span></td><td class="p-4 text-sm">${new Date(s.created_at).toLocaleDateString()}</td></tr>`).join('');
+            } catch (e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
+        };
+
+        // =============================================
+        // PAGOS Y GANANCIAS
         // =============================================
         async function cargarPagos() {
             const tbody = document.getElementById('pagosTable');
             try {
                 const supabase = initSupabase();
-                const { data: pagos, error } = await supabase
-                    .from('pagos')
-                    .select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)')
-                    .eq('status', 'completado')
-                    .order('fecha_pago', { ascending: false })
-                    .limit(50);
-
-                if (error) throw error;
-
-                if (!pagos || pagos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-4">${p.servicio?.subcategoria || 'Servicio'}</td>
-                        <td class="p-4">${p.cliente?.full_name || 'Cliente'}</td>
-                        <td class="p-4">${p.tasker?.full_name || 'Tasker'}</td>
-                        <td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
-                    </tr>
-                `).join('');
-
-            } catch (e) {
-                console.error('Error:', e);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-400">Error al cargar pagos</td></tr>';
-            }
+                const { data: pagos } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)').eq('status', 'completado').order('fecha_pago', { ascending: false }).limit(50);
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay pagos</td></tr>'; return; }
+                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-4">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-4">${p.servicio?.subcategoria || ''}</td><td class="p-4">${p.cliente?.full_name || ''}</td><td class="p-4">${p.tasker?.full_name || ''}</td><td class="p-4 font-bold">$${p.monto_total?.toFixed(2)}</td><td class="p-4 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td></tr>`).join('');
+            } catch (e) { console.error(e); tbody.innerHTML = '<td><td colspan="6" class="text-center p-8 text-red-400">Error</td></tr>'; }
         }
 
-        // =============================================
-        // GANANCIAS
-        // =============================================
         async function cargarGanancias() {
             try {
                 const supabase = initSupabase();
-                const { data: pagos, error } = await supabase
-                    .from('pagos')
-                    .select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)')
-                    .eq('status', 'completado')
-                    .order('fecha_pago', { ascending: false });
-
-                if (error) throw error;
-
-                const total = pagos?.reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
+                const { data: pagos } = await supabase.from('pagos').select('*, servicio:servicio_id(subcategoria), cliente:cliente_id(full_name), tasker:tasker_id(full_name)').eq('status', 'completado').order('fecha_pago', { ascending: false });
+                const total = pagos?.reduce((s, p) => s + (p.comision_taskers || 0), 0) || 0;
                 const hoy = new Date();
-                const mes = pagos?.filter(p => {
-                    const fecha = new Date(p.fecha_pago);
-                    return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
-                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-                const dia = pagos?.filter(p => {
-                    const fecha = new Date(p.fecha_pago);
-                    return fecha.toDateString() === hoy.toDateString();
-                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0) || 0;
-
+                const mes = pagos?.filter(p => { const f = new Date(p.fecha_pago); return f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear(); }).reduce((s, p) => s + (p.comision_taskers || 0), 0) || 0;
+                const dia = pagos?.filter(p => { const f = new Date(p.fecha_pago); return f.toDateString() === hoy.toDateString(); }).reduce((s, p) => s + (p.comision_taskers || 0), 0) || 0;
                 document.getElementById('gananciasTotales').textContent = `$${total.toFixed(2)}`;
                 document.getElementById('gananciasMes').textContent = `$${mes.toFixed(2)}`;
                 document.getElementById('gananciasHoy').textContent = `$${dia.toFixed(2)}`;
-
-                // Top taskers por comisiones
                 const taskerComisiones = {};
-                (pagos || []).forEach(p => {
-                    if (p.tasker_id) {
-                        taskerComisiones[p.tasker_id] = (taskerComisiones[p.tasker_id] || 0) + (p.comision_taskers || 0);
-                    }
-                });
-                
-                const topTaskers = Object.entries(taskerComisiones)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5);
-                
-                const topTaskersContainer = document.getElementById('topTaskers');
-                if (topTaskers.length === 0) {
-                    topTaskersContainer.innerHTML = '<p class="text-slate-400 text-center py-4">Sin datos</p>';
-                } else {
-                    // Obtener nombres de los taskers
+                (pagos || []).forEach(p => { if (p.tasker_id) taskerComisiones[p.tasker_id] = (taskerComisiones[p.tasker_id] || 0) + (p.comision_taskers || 0); });
+                const topTaskers = Object.entries(taskerComisiones).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const topContainer = document.getElementById('topTaskers');
+                if (!topTaskers.length) topContainer.innerHTML = '<p class="text-slate-400 text-center py-4">Sin datos</p>';
+                else {
                     const taskerIds = topTaskers.map(t => t[0]);
-                    const { data: perfiles } = await supabase
-                        .from('profiles')
-                        .select('id, full_name')
-                        .in('id', taskerIds);
-                    
-                    const nombresMap = {};
-                    (perfiles || []).forEach(p => nombresMap[p.id] = p.full_name);
-                    
-                    topTaskersContainer.innerHTML = topTaskers.map(([id, total]) => `
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
-                            <span class="text-sm font-medium">${nombresMap[id] || 'Tasker'}</span>
-                            <span class="text-sm font-bold text-green-600">$${total.toFixed(2)}</span>
-                        </div>
-                    `).join('');
+                    const { data: perfiles } = await supabase.from('profiles').select('id, full_name').in('id', taskerIds);
+                    const nombres = {};
+                    (perfiles || []).forEach(p => nombres[p.id] = p.full_name);
+                    topContainer.innerHTML = topTaskers.map(([id, total]) => `<div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>${nombres[id] || 'Tasker'}</span><span class="font-bold text-green-600">$${total.toFixed(2)}</span></div>`).join('');
                 }
-
-                // Tabla de ganancias
                 const tbody = document.getElementById('gananciasTable');
-                if (!pagos || pagos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones registradas</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = pagos.map(p => `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td>
-                        <td class="p-3">${p.servicio?.subcategoria || ''}</td>
-                        <td class="p-3">${p.cliente?.full_name || ''}</td>
-                        <td class="p-3">${p.tasker?.full_name || ''}</td>
-                        <td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td>
-                        <td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td>
-                    </tr>
-                `).join('');
-
-                // Gráfica de ganancias mensuales
+                if (!pagos?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400">No hay comisiones</td></tr>'; return; }
+                tbody.innerHTML = pagos.map(p => `<tr class="border-b"><td class="p-3">${new Date(p.fecha_pago).toLocaleDateString()}</td><td class="p-3">${p.servicio?.subcategoria || ''}</td><td class="p-3">${p.cliente?.full_name || ''}</td><td class="p-3">${p.tasker?.full_name || ''}</td><td class="p-3 font-bold">$${p.monto_total?.toFixed(2)}</td><td class="p-3 text-green-600 font-bold">$${p.comision_taskers?.toFixed(2)}</td></tr>`).join('');
                 actualizarGraficaGanancias(pagos);
-                
-            } catch (e) {
-                console.error('Error:', e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function actualizarGraficaGanancias(pagos) {
             if (!gananciasChart && document.getElementById('gananciasChart')) {
                 const ctx = document.getElementById('gananciasChart').getContext('2d');
-                gananciasChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: [], datasets: [{ label: 'Tus Ganancias (15%)', data: [], backgroundColor: '#3b82f6', borderRadius: 8 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
+                gananciasChart = new Chart(ctx, { type: 'bar', data: { labels: [], datasets: [{ label: 'Ganancias (15%)', data: [], backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false } });
             }
-            
             if (!gananciasChart || !pagos) return;
-            
-            const meses = [];
-            const valores = [];
+            const meses = [], valores = [];
             for (let i = 5; i >= 0; i--) {
-                const fecha = new Date();
-                fecha.setMonth(fecha.getMonth() - i);
+                const fecha = new Date(); fecha.setMonth(fecha.getMonth() - i);
                 meses.push(fecha.toLocaleDateString('es', { month: 'short' }));
-                valores.push(pagos.filter(p => {
-                    const pf = new Date(p.fecha_pago);
-                    return pf.getMonth() === fecha.getMonth() && pf.getFullYear() === fecha.getFullYear();
-                }).reduce((sum, p) => sum + (p.comision_taskers || 0), 0));
+                valores.push(pagos.filter(p => { const f = new Date(p.fecha_pago); return f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear(); }).reduce((s, p) => s + (p.comision_taskers || 0), 0));
             }
             gananciasChart.data.labels = meses;
             gananciasChart.data.datasets[0].data = valores;
@@ -1439,113 +780,90 @@
         }
 
         // =============================================
-        // ESTADÍSTICAS DETALLADAS
+        // DOCUMENTOS
         // =============================================
-        window.verEstadisticas = async function(tipo) {
+        window.verDocumento = (url, titulo) => {
+            const modal = document.getElementById('documentosModal');
+            const content = document.getElementById('documentosModalContenido');
+            const esImagen = url.match(/\.(jpeg|jpg|gif|png)$/i);
+            content.innerHTML = `<div class="text-center"><h4 class="font-bold mb-4">${titulo}</h4>${esImagen ? `<img src="${url}" class="documento-preview mx-auto" alt="${titulo}">` : `<iframe src="${url}" class="w-full h-96 rounded-lg"></iframe>`}<div class="mt-4 flex gap-3 justify-center"><a href="${url}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Abrir en nueva ventana</a><button onclick="cerrarDocumentosModal()" class="border px-4 py-2 rounded-lg">Cerrar</button></div></div>`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+        function cerrarDocumentosModal() { document.getElementById('documentosModal').classList.add('hidden'); document.getElementById('documentosModal').classList.remove('flex'); }
+
+        // =============================================
+        // ESTADÍSTICAS
+        // =============================================
+        window.verEstadisticas = async (tipo) => {
             mostrarCarga();
             try {
                 const supabase = initSupabase();
                 const modal = document.getElementById('statsModal');
                 const content = document.getElementById('statsModalContent');
-                
                 if (tipo === 'usuarios') {
-                    const { data: clientes } = await supabase.from('profiles').select('count', { count: 'exact', head: true }).eq('role', 'client');
-                    const { data: taskers } = await supabase.from('profiles').select('count', { count: 'exact', head: true }).eq('role', 'tasker');
-                    const { data: admins } = await supabase.from('profiles').select('count', { count: 'exact', head: true }).eq('role', 'admin');
-                    const { data: pendientes } = await supabase.from('profiles').select('count', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
-                    const { data: verificados } = await supabase.from('profiles').select('count', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'verified');
-                    
-                    content.innerHTML = `
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">${clientes?.count || 0}</p><p class="text-sm">Clientes</p></div>
-                            <div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">${taskers?.count || 0}</p><p class="text-sm">Taskers totales</p></div>
-                            <div class="bg-purple-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-purple-600">${admins?.count || 0}</p><p class="text-sm">Administradores</p></div>
-                            <div class="bg-yellow-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-yellow-600">${pendientes?.count || 0}</p><p class="text-sm">Taskers pendientes</p></div>
-                            <div class="bg-green-50 p-4 rounded-xl text-center col-span-2"><p class="text-2xl font-bold text-green-600">${verificados?.count || 0}</p><p class="text-sm">Taskers verificados</p></div>
-                        </div>
-                    `;
-                } else if (tipo === 'taskers') {
-                    const { data: taskers } = await supabase.from('profiles').select('full_name, email, phone, status, created_at').eq('role', 'tasker').order('created_at', { ascending: false }).limit(10);
-                    content.innerHTML = `
-                        <div class="space-y-3">
-                            ${taskers.map(t => `
-                                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                                    <div><p class="font-medium">${t.full_name || 'Sin nombre'}</p><p class="text-xs text-slate-500">${t.email}</p></div>
-                                    <span class="text-xs px-2 py-1 rounded-full ${t.status === 'verified' ? 'bg-green-100 text-green-700' : t.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${t.status}</span>
-                                </div>
-                            `).join('')}
-                            ${taskers.length === 0 ? '<p class="text-center text-slate-400">No hay taskers registrados</p>' : ''}
-                        </div>
-                    `;
+                    const { count: clientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client');
+                    const { count: taskers } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker');
+                    const { count: admins } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin');
+                    const { count: pendientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tasker').eq('status', 'pending');
+                    content.innerHTML = `<div class="grid grid-cols-2 gap-4"><div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">${clientes || 0}</p><p>Clientes</p></div><div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">${taskers || 0}</p><p>Taskers</p></div><div class="bg-purple-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-purple-600">${admins || 0}</p><p>Admins</p></div><div class="bg-yellow-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-yellow-600">${pendientes || 0}</p><p>Taskers pendientes</p></div></div>`;
                 } else if (tipo === 'servicios') {
                     const estados = ['pendiente_pago', 'publicado', 'asignado', 'en_progreso', 'completado', 'cancelado'];
                     const stats = {};
-                    for (const estado of estados) {
-                        const { count } = await supabase.from('servicios').select('count', { count: 'exact', head: true }).eq('status', estado);
-                        stats[estado] = count || 0;
-                    }
-                    content.innerHTML = `
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-yellow-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-yellow-600">${stats.pendiente_pago}</p><p class="text-sm">Pendiente pago</p></div>
-                            <div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">${stats.publicado}</p><p class="text-sm">Publicados</p></div>
-                            <div class="bg-purple-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-purple-600">${stats.asignado}</p><p class="text-sm">Asignados</p></div>
-                            <div class="bg-indigo-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-indigo-600">${stats.en_progreso}</p><p class="text-sm">En progreso</p></div>
-                            <div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">${stats.completado}</p><p class="text-sm">Completados</p></div>
-                            <div class="bg-red-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-red-600">${stats.cancelado}</p><p class="text-sm">Cancelados</p></div>
-                        </div>
-                    `;
+                    for (const e of estados) { const { count } = await supabase.from('servicios').select('*', { count: 'exact', head: true }).eq('status', e); stats[e] = count || 0; }
+                    content.innerHTML = `<div class="grid grid-cols-2 gap-4"><div class="bg-yellow-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-yellow-600">${stats.pendiente_pago}</p><p>Pendiente pago</p></div><div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">${stats.publicado}</p><p>Publicados</p></div><div class="bg-purple-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-purple-600">${stats.asignado}</p><p>Asignados</p></div><div class="bg-indigo-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-indigo-600">${stats.en_progreso}</p><p>En progreso</p></div><div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">${stats.completado}</p><p>Completados</p></div><div class="bg-red-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-red-600">${stats.cancelado}</p><p>Cancelados</p></div></div>`;
                 } else if (tipo === 'ganancias') {
                     const { data: pagos } = await supabase.from('pagos').select('monto_total, comision_taskers').eq('status', 'completado');
                     const total = pagos?.reduce((s, p) => s + (p.monto_total || 0), 0) || 0;
                     const comisiones = pagos?.reduce((s, p) => s + (p.comision_taskers || 0), 0) || 0;
-                    content.innerHTML = `
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">$${total.toFixed(2)}</p><p class="text-sm">Volumen total</p></div>
-                            <div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">$${comisiones.toFixed(2)}</p><p class="text-sm">Comisiones (15%)</p></div>
-                        </div>
-                    `;
+                    content.innerHTML = `<div class="grid grid-cols-2 gap-4"><div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-blue-600">$${total.toFixed(2)}</p><p>Volumen total</p></div><div class="bg-green-50 p-4 rounded-xl text-center"><p class="text-2xl font-bold text-green-600">$${comisiones.toFixed(2)}</p><p>Comisiones (15%)</p></div></div>`;
                 }
-                
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-            } catch (e) {
-                console.error(e);
-                mostrarToast('Error al cargar estadísticas', 'error');
-            } finally {
-                ocultarCarga();
-            }
+            } catch (e) { mostrarToast('Error al cargar estadísticas', 'error'); } finally { ocultarCarga(); }
         };
-        
-        function cerrarStatsModal() {
-            document.getElementById('statsModal').classList.add('hidden');
-            document.getElementById('statsModal').classList.remove('flex');
-        }
+        function cerrarStatsModal() { document.getElementById('statsModal').classList.add('hidden'); document.getElementById('statsModal').classList.remove('flex'); }
+
+        // =============================================
+        // PERFIL ADMIN
+        // =============================================
+        document.getElementById('formPerfilAdmin')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const supabase = initSupabase();
+                await supabase.from('profiles').update({ full_name: document.getElementById('adminNombre').value, phone: document.getElementById('adminTelefono').value, updated_at: new Date() }).eq('id', usuarioActual.id);
+                mostrarToast('Perfil actualizado', 'success');
+                await verificarAdmin();
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
+        });
+        window.subirFotoAdmin = async function() {
+            const i = document.getElementById('fotoAdmin');
+            if (!i.files?.[0]) return;
+            mostrarCarga();
+            try {
+                const f = i.files[0];
+                if (f.size > 2 * 1024 * 1024) throw new Error('Máx 2MB');
+                const supabase = initSupabase();
+                const n = `profiles/${usuarioActual.id}/${Date.now()}_${f.name}`;
+                await supabase.storage.from('profiles-photos').upload(n, f);
+                const { data: { publicUrl } } = supabase.storage.from('profiles-photos').getPublicUrl(n);
+                await supabase.from('profiles').update({ photo_url: publicUrl }).eq('id', usuarioActual.id);
+                document.getElementById('headerAvatar').style.backgroundImage = `url('${publicUrl}')`;
+                document.getElementById('adminAvatar').style.backgroundImage = `url('${publicUrl}')`;
+                mostrarToast('Foto actualizada', 'success');
+            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+        };
 
         // =============================================
         // UTILIDADES
         // =============================================
-        function obtenerClaseEstado(status) {
-            const clases = {
-                pendiente_pago: 'bg-yellow-100 text-yellow-700',
-                publicado: 'bg-blue-100 text-blue-700',
-                asignado: 'bg-purple-100 text-purple-700',
-                en_progreso: 'bg-indigo-100 text-indigo-700',
-                completado: 'bg-green-100 text-green-700',
-                cancelado: 'bg-red-100 text-red-700'
-            };
-            return clases[status] || 'bg-gray-100 text-gray-700';
+        function obtenerClaseEstado(s) {
+            const clases = { pendiente_pago: 'bg-yellow-100 text-yellow-700', publicado: 'bg-blue-100 text-blue-700', asignado: 'bg-purple-100 text-purple-700', en_progreso: 'bg-indigo-100 text-indigo-700', completado: 'bg-green-100 text-green-700', cancelado: 'bg-red-100 text-red-700' };
+            return clases[s] || 'bg-gray-100 text-gray-700';
         }
-        
-        function obtenerTextoEstado(status) {
-            const textos = {
-                pendiente_pago: 'Pendiente pago',
-                publicado: 'Publicado',
-                asignado: 'Asignado',
-                en_progreso: 'En progreso',
-                completado: 'Completado',
-                cancelado: 'Cancelado'
-            };
-            return textos[status] || status;
+        function obtenerTextoEstado(s) {
+            const textos = { pendiente_pago: 'Pendiente pago', publicado: 'Publicado', asignado: 'Asignado', en_progreso: 'En progreso', completado: 'Completado', cancelado: 'Cancelado' };
+            return textos[s] || s;
         }
 
         // =============================================
@@ -1556,27 +874,13 @@
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('seccion-' + sec).classList.add('active');
             document.getElementById('link-' + sec)?.classList.add('active');
-            
-            const tit = { 
-                dashboard: 'Dashboard', 
-                taskers: 'Taskers Pendientes', 
-                propuestas: 'Propuestas Pendientes',
-                servicios: 'Servicios', 
-                usuarios: 'Usuarios',
-                pagos: 'Pagos', 
-                ganancias: 'Mis Ganancias' 
-            };
-            
+            const tit = { dashboard: 'Dashboard', taskers: 'Taskers Pendientes', usuarios: 'Gestión de Usuarios', servicios: 'Servicios', pagos: 'Pagos', ganancias: 'Ganancias', perfil: 'Mi Perfil' };
             document.getElementById('section-title').textContent = tit[sec] || 'Admin';
-            document.getElementById('section-subtitle').innerHTML = `Panel de control de ${tit[sec].toLowerCase()}`;
-            
             if (sec === 'taskers') cargarTaskers();
-            if (sec === 'propuestas') cargarPropuestas();
-            if (sec === 'servicios') cargarServicios();
             if (sec === 'usuarios') cargarUsuarios();
+            if (sec === 'servicios') cargarServicios();
             if (sec === 'pagos') cargarPagos();
             if (sec === 'ganancias') cargarGanancias();
-            
             if (window.innerWidth < 768) cerrarMenuMovil();
         };
 
@@ -1600,9 +904,8 @@
             if (session) {
                 await cargarDashboard();
                 await cargarTaskers();
-                await cargarPropuestas();
-                await cargarServicios();
                 await cargarUsuarios();
+                await cargarServicios();
                 await cargarPagos();
                 await cargarGanancias();
                 iniciarMenuMovil();
