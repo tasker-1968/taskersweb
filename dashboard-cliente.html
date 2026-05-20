@@ -307,6 +307,7 @@
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
+            <div id="contenidoModalPago" class="mb-4"></div>
             <div class="space-y-3">
                 <button onclick="procesarPagoConMetodo('tarjeta')" class="w-full flex items-center gap-3 p-4 border rounded-xl hover:bg-slate-50 transition">
                     <i class="fas fa-credit-card text-2xl text-blue-600"></i>
@@ -540,6 +541,7 @@
                             <option value="asignado">Asignados</option>
                             <option value="en_progreso">En progreso</option>
                             <option value="completado">Completados</option>
+                            <option value="cancelado">Cancelados</option>
                         </select>
                     </div>
                     <div id="contenedorServicios" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
@@ -588,7 +590,7 @@
                         <div class="table-container">
                             <table class="w-full">
                                 <thead class="bg-slate-50">
-                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Estado</th></tr>
+                                    <tr><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Servicio</th><th class="p-4 text-left">Monto</th><th class="p-4 text-left">Estado</th></td>
                                 </thead>
                                 <tbody id="tablaPagos"></tbody>
                             </table>
@@ -1064,10 +1066,10 @@
                         </div>
                         ${p.mensaje ? `<div class="bg-slate-50 p-3 rounded-lg mb-4"><p class="text-sm text-slate-600"><i class="fas fa-comment-dots text-blue-400 mr-2"></i>${p.mensaje}</p></div>` : ''}
                         <div class="border-t pt-4 flex gap-3">
-                            <button onclick="aceptarPropuesta('${p.id}', '${p.servicio_info.id}', ${p.monto_propuesto}, '${p.tasker_id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                            <button onclick="window.aceptarPropuesta('${p.id}', '${p.servicio_info.id}', ${p.monto_propuesto}, '${p.tasker_id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
                                 <i class="fas fa-check mr-1"></i>Aceptar y pagar
                             </button>
-                            <button onclick="rechazarPropuesta('${p.id}')" class="flex-1 border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 transition">
+                            <button onclick="window.rechazarPropuesta('${p.id}')" class="flex-1 border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 transition">
                                 <i class="fas fa-times mr-1"></i>Rechazar
                             </button>
                         </div>
@@ -1082,31 +1084,54 @@
         window.aceptarPropuesta = async (propuestaId, servicioId, monto, taskerId) => {
             if (!confirm(`¿Aceptar esta propuesta por $${monto.toFixed(2)}? Se procederá al pago.`)) return;
             
-            mostrarCarga();
+            mostrarCarga('Procesando aceptación...');
             try {
                 const supabase = initSupabase();
                 
-                // Actualizar propuesta
-                await supabase.from('propuestas').update({ status: 'aceptada', updated_at: new Date() }).eq('id', propuestaId);
+                // Actualizar propuesta a aceptada
+                const { error: propError } = await supabase
+                    .from('propuestas')
+                    .update({ status: 'aceptada', updated_at: new Date() })
+                    .eq('id', propuestaId);
+                if (propError) throw propError;
                 
                 // Rechazar otras propuestas del mismo servicio
-                await supabase.from('propuestas').update({ status: 'rechazada', updated_at: new Date() }).eq('servicio_id', servicioId).neq('id', propuestaId);
+                await supabase
+                    .from('propuestas')
+                    .update({ status: 'rechazada', updated_at: new Date() })
+                    .eq('servicio_id', servicioId)
+                    .neq('id', propuestaId);
                 
-                // Actualizar servicio
-                await supabase.from('servicios').update({ 
-                    tasker_id: taskerId, 
-                    status: 'pendiente_pago',
-                    monto_acordado: monto,
-                    updated_at: new Date() 
-                }).eq('id', servicioId);
+                // Actualizar servicio con el monto acordado y estado pendiente_pago
+                const { error: servError } = await supabase
+                    .from('servicios')
+                    .update({ 
+                        tasker_id: taskerId, 
+                        status: 'pendiente_pago',
+                        monto_acordado: monto,
+                        updated_at: new Date() 
+                    })
+                    .eq('id', servicioId);
+                if (servError) throw servError;
+                
+                ocultarCarga();
+                
+                // Obtener el servicio actualizado y mostrar modal de pago
+                const { data: servicioActualizado, error: getError } = await supabase
+                    .from('servicios')
+                    .select('*')
+                    .eq('id', servicioId)
+                    .single();
+                
+                if (getError) throw getError;
                 
                 // Mostrar modal de pago
-                const { data: servicioActualizado } = await supabase.from('servicios').select('*').eq('id', servicioId).single();
                 await mostrarModalPago(servicioActualizado);
                 
             } catch (error) {
-                mostrarToast('Error: ' + error.message, 'error');
                 ocultarCarga();
+                console.error('Error al aceptar propuesta:', error);
+                mostrarToast('Error: ' + error.message, 'error');
             }
         };
 
@@ -1122,8 +1147,32 @@
         };
 
         async function mostrarModalPago(servicio) {
+            console.log('Mostrando modal de pago para servicio:', servicio);
+            
             const modal = document.getElementById('modalMetodosPago');
+            const contenido = document.getElementById('contenidoModalPago');
+            
+            if (!modal) {
+                console.error('Modal no encontrado');
+                mostrarToast('Error al mostrar opciones de pago', 'error');
+                return;
+            }
+            
+            // Guardar servicio pendiente de pago
             servicioPendientePago = servicio;
+            
+            // Limpiar y preparar contenido del modal
+            if (contenido) {
+                contenido.innerHTML = `
+                    <div class="text-center mb-4">
+                        <i class="fas fa-credit-card text-4xl text-blue-600 mb-2"></i>
+                        <p class="font-bold text-lg">$${servicio.monto_acordado?.toFixed(2)}</p>
+                        <p class="text-sm text-slate-500">Servicio: ${servicio.subcategoria}</p>
+                    </div>
+                    <p class="text-sm text-slate-600 text-center mb-4">Selecciona tu método de pago preferido</p>
+                `;
+            }
+            
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -1136,53 +1185,85 @@
         }
 
         window.procesarPagoConMetodo = async (metodo) => {
-            if (!servicioPendientePago) return;
-            mostrarCarga();
+            if (!servicioPendientePago) {
+                mostrarToast('Error: No hay servicio pendiente de pago', 'error');
+                cerrarModalMetodosPago();
+                return;
+            }
+            
+            mostrarCarga('Procesando pago...');
             try {
                 const supabase = initSupabase();
+                const servicio = servicioPendientePago;
+                
+                console.log('Procesando pago para servicio:', servicio.id, 'Monto:', servicio.monto_acordado);
                 
                 // Actualizar servicio a asignado
-                await supabase.from('servicios').update({ status: 'asignado', updated_at: new Date() }).eq('id', servicioPendientePago.id);
+                const { error: updateError } = await supabase
+                    .from('servicios')
+                    .update({ status: 'asignado', updated_at: new Date() })
+                    .eq('id', servicio.id);
+                if (updateError) throw updateError;
                 
                 // Crear registro de pago
-                await supabase.from('pagos').insert([{
-                    servicio_id: servicioPendientePago.id,
-                    cliente_id: usuarioActual.id,
-                    tasker_id: servicioPendientePago.tasker_id,
-                    monto_total: servicioPendientePago.monto_acordado,
-                    comision_taskers: servicioPendientePago.monto_acordado * 0.15,
-                    monto_tasker: servicioPendientePago.monto_acordado * 0.85,
-                    metodo_pago: metodo,
-                    status: 'completado',
-                    fecha_pago: new Date()
-                }]);
+                const { error: pagoError } = await supabase
+                    .from('pagos')
+                    .insert([{
+                        servicio_id: servicio.id,
+                        cliente_id: usuarioActual.id,
+                        tasker_id: servicio.tasker_id,
+                        monto_total: servicio.monto_acordado,
+                        comision_taskers: servicio.monto_acordado * 0.15,
+                        monto_tasker: servicio.monto_acordado * 0.85,
+                        metodo_pago: metodo,
+                        status: 'completado',
+                        fecha_pago: new Date()
+                    }]);
+                if (pagoError) throw pagoError;
                 
                 // Notificar al tasker
-                await supabase.from('notificaciones').insert([{
-                    usuario_id: servicioPendientePago.tasker_id,
-                    tipo: 'servicio',
-                    titulo: '¡Servicio asignado!',
-                    mensaje: `El cliente ha aceptado tu propuesta y realizado el pago.`
-                }]);
-                
-                // Crear chat automáticamente
-                const { data: chatExistente } = await supabase.from('chats').select('id').eq('servicio_id', servicioPendientePago.id).maybeSingle();
-                if (!chatExistente) {
-                    await supabase.from('chats').insert([{
-                        servicio_id: servicioPendientePago.id,
-                        usuario1_id: usuarioActual.id,
-                        usuario2_id: servicioPendientePago.tasker_id,
-                        created_at: new Date(),
-                        ultimo_mensaje_time: new Date()
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        usuario_id: servicio.tasker_id,
+                        tipo: 'servicio',
+                        titulo: '¡Servicio asignado!',
+                        mensaje: `El cliente ha aceptado tu propuesta y realizado el pago por $${servicio.monto_acordado?.toFixed(2)}`
                     }]);
+                
+                // Crear chat automáticamente si no existe
+                const { data: chatExistente } = await supabase
+                    .from('chats')
+                    .select('id')
+                    .eq('servicio_id', servicio.id)
+                    .maybeSingle();
+                    
+                if (!chatExistente) {
+                    await supabase
+                        .from('chats')
+                        .insert([{
+                            servicio_id: servicio.id,
+                            usuario1_id: usuarioActual.id,
+                            usuario2_id: servicio.tasker_id,
+                            created_at: new Date(),
+                            ultimo_mensaje_time: new Date()
+                        }]);
                 }
                 
-                mostrarToast(`Pago realizado con ${metodo.toUpperCase()}. Servicio asignado correctamente.`, 'success');
+                mostrarToast(`✅ Pago realizado con ${metodo.toUpperCase()}. Servicio asignado correctamente.`, 'success');
                 cerrarModalMetodosPago();
-                window.cargarMisServicios();
-                window.cargarPropuestas();
+                
+                // Recargar secciones
+                await window.cargarMisServicios();
+                await window.cargarPropuestas();
                 await cargarDashboard();
-            } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+                
+            } catch (error) {
+                console.error('Error al procesar pago:', error);
+                mostrarToast('Error al procesar el pago: ' + error.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
         
         function cerrarModalPago() { cerrarModalMetodosPago(); }
@@ -1220,18 +1301,28 @@
                 contenedor.innerHTML = serviciosConTasker.map(s => {
                     const tasker = s.tasker_info;
                     const puedeConfirmar = s.status === 'en_progreso';
+                    const puedeCancelar = s.status === 'pendiente_propuestas' || s.status === 'pendiente_pago';
                     const montoMostrar = s.monto_acordado || 0;
                     
                     return `
                     <div class="bg-white rounded-xl shadow-sm p-5">
-                        <div class="flex justify-between items-start"><div><h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4><p class="text-sm text-slate-600">${s.descripcion || ''}</p></div>
-                        <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span></div>
-                        <div class="grid grid-cols-3 gap-4 mt-4 text-sm"><div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">${s.monto_acordado ? `$${s.monto_acordado.toFixed(2)}` : 'Por definir'}</p></div>
-                        <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p></div><div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-bold">${s.subcategoria || 'Servicio'}</h4>
+                                <p class="text-sm text-slate-600">${s.descripcion || ''}</p>
+                            </div>
+                            <span class="badge-estado ${obtenerClase(s.status)}">${obtenerTexto(s.status)}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+                            <div><p class="text-slate-500">Presupuesto</p><p class="font-bold text-blue-600">${s.monto_acordado ? `$${s.monto_acordado.toFixed(2)}` : 'Por definir'}</p></div>
+                            <div><p class="text-slate-500">Ubicación</p><p>${s.ubicacion || ''}</p></div>
+                            <div><p class="text-slate-500">Publicado</p><p>${new Date(s.created_at).toLocaleDateString()}</p></div>
+                        </div>
                         ${tasker ? `<div class="border-t pt-4 mt-4"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-300 bg-cover" style="background-image: url('${tasker.photo_url || ''}')"></div>
                         <div><p class="font-medium">${tasker.full_name || 'Tasker'}</p><p class="text-xs">⭐ ${tasker.calificacion_promedio?.toFixed(1) || 'Nuevo'}</p></div></div>
                         <button onclick="abrirChat('${s.id}','${s.tasker_id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-comment mr-2"></i>Chat</button></div></div>` : s.status === 'pendiente_propuestas' ? `<div class="border-t pt-4 mt-4 text-center text-slate-500"><i class="fas fa-clock mr-2"></i>Esperando propuestas de taskers...</div>` : ''}
                         ${puedeConfirmar ? `<div class="border-t pt-4 mt-4"><button onclick="confirmarFinalizacion('${s.id}')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700"><i class="fas fa-check-circle mr-2"></i>Confirmar COMPLETADO</button></div>` : ''}
+                        ${puedeCancelar ? `<div class="border-t pt-4 mt-4"><button onclick="cancelarServicio('${s.id}')" class="w-full bg-red-500 text-white py-3 rounded-lg font-bold hover:bg-red-600"><i class="fas fa-times-circle mr-2"></i>Cancelar Servicio</button></div>` : ''}
                     </div>`;
                 }).join('');
             }
@@ -1263,6 +1354,67 @@
                 window.cargarMisServicios();
                 await cargarDashboard();
             } catch (e) { mostrarToast('Error: ' + e.message, 'error'); } finally { ocultarCarga(); }
+        };
+
+        // Cancelar servicio
+        window.cancelarServicio = async (servicioId) => {
+            if (!confirm('¿Estás seguro de que deseas cancelar este servicio? Esta acción no se puede deshacer.')) return;
+            
+            mostrarCarga('Cancelando servicio...');
+            try {
+                const supabase = initSupabase();
+                
+                // Obtener el servicio para verificar su estado
+                const { data: servicio, error: getError } = await supabase
+                    .from('servicios')
+                    .select('*, propuestas(*)')
+                    .eq('id', servicioId)
+                    .single();
+                
+                if (getError) throw getError;
+                
+                // Si hay propuestas pendientes, rechazarlas
+                if (servicio.propuestas && servicio.propuestas.length > 0) {
+                    await supabase
+                        .from('propuestas')
+                        .update({ status: 'rechazada', updated_at: new Date() })
+                        .eq('servicio_id', servicioId)
+                        .eq('status', 'pendiente');
+                }
+                
+                // Actualizar servicio a cancelado
+                const { error: updateError } = await supabase
+                    .from('servicios')
+                    .update({ status: 'cancelado', updated_at: new Date() })
+                    .eq('id', servicioId);
+                
+                if (updateError) throw updateError;
+                
+                // Notificar al tasker si estaba asignado
+                if (servicio.tasker_id) {
+                    await supabase
+                        .from('notificaciones')
+                        .insert([{
+                            usuario_id: servicio.tasker_id,
+                            tipo: 'servicio',
+                            titulo: 'Servicio cancelado',
+                            mensaje: 'El cliente ha cancelado el servicio'
+                        }]);
+                }
+                
+                mostrarToast('Servicio cancelado correctamente', 'success');
+                
+                // Recargar secciones
+                await window.cargarMisServicios();
+                await window.cargarPropuestas();
+                await cargarDashboard();
+                
+            } catch (error) {
+                console.error('Error al cancelar servicio:', error);
+                mostrarToast('Error al cancelar servicio: ' + error.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
         };
 
         // =============================================
@@ -1406,7 +1558,7 @@
             const t = document.getElementById('tablaPagos');
             const start = (paginaActualPagos - 1) * 10;
             const pagos = pagosTotales.slice(start, start + 10);
-            if (!pagos.length) { t.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</tbody>'; }
+            if (!pagos.length) { t.innerHTML = '<td><td colspan="5" class="text-center p-4 text-slate-400">No hay pagos</tbody>'; }
             else {
                 t.innerHTML = pagos.map(x => `<tr class="border-b"><td class="p-4">${new Date(x.fecha_pago).toLocaleDateString()}</td><td class="p-4">${x.servicio?.subcategoria || ''}</td><td class="p-4 font-bold">$${x.monto_total?.toFixed(2)}</td><td class="p-4"><span class="badge-estado badge-completado">Completado</span></td></tr>`).join('');
             }
