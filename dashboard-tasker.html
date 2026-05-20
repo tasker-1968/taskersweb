@@ -233,22 +233,6 @@
             }
         }
         
-        .file-upload {
-            border: 2px dashed #e2e8f0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .file-upload:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-        
-        .file-upload.has-file {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
         .animate-spin {
             animation: spin 1s linear infinite;
         }
@@ -365,7 +349,7 @@
     </div>
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
+        <!-- Sidebar SIN botón de cerrar sesión -->
         <aside id="sidebar" class="sidebar-tasker w-64 text-white hidden md:flex flex-col fixed md:relative h-full">
             <div class="p-6 border-b border-white/20">
                 <div class="flex items-center gap-3">
@@ -406,12 +390,6 @@
                     <i class="fas fa-trash-alt w-6"></i><span>Cancelar Cuenta</span>
                 </a>
             </nav>
-            
-            <div class="p-4 border-t border-white/20">
-                <button onclick="window.cerrarSesionTasker()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </button>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -573,8 +551,7 @@
                                 <thead class="bg-slate-50">
                                     <tr><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Servicio</th><th class="p-3 text-left">Monto</th><th class="p-3 text-left">Comisión</th><th class="p-3 text-left">Neto</th><th class="p-3 text-left">Estado</th></tr>
                                 </thead>
-                                <tbody id="pagosTableBody"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...                                </thead>
-                                <tbody id="pagosTableBody"><tr><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</td></tr>
+                                <tbody id="pagosTableBody"><td><td colspan="6" class="text-center p-8 text-slate-400">Cargando...</tbody>
                             </table>
                         </div>
                     </div>
